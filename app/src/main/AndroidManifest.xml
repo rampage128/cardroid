@@ -23,7 +23,7 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <service android:name=".OverlayService" android:launchMode="singleTop" android:exported="false" />
+        <service android:name=".MainService" android:launchMode="singleTop" android:exported="false" />
     </application>
 
 </manifest>

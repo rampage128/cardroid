@@ -15,11 +15,7 @@ import de.jlab.cardroid.usb.SerialDataPacket;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
 
-/**
- * Created by rampage on 04.06.2017.
- */
-
-public class OverlayService extends Service {
+public class MainService extends Service {
     private static final String LOG_TAG = "MainService";
 
     private OverlayWindow overlayWindow;
@@ -60,7 +56,7 @@ public class OverlayService extends Service {
         }
     };
 
-    public OverlayService() {
+    public MainService() {
     }
 
     @Override

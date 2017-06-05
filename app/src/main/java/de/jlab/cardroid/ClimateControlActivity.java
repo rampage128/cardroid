@@ -24,7 +24,7 @@ public class ClimateControlActivity extends AppCompatActivity {
         if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {
             //Check if the permission is granted or not.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
-                startService(new Intent(ClimateControlActivity.this, OverlayService.class));
+                startService(new Intent(ClimateControlActivity.this, MainService.class));
                 finish();
             } else { //Permission is not available
                 Toast.makeText(this,
@@ -62,7 +62,7 @@ public class ClimateControlActivity extends AppCompatActivity {
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
         } else {
-            startService(new Intent(ClimateControlActivity.this, OverlayService.class));
+            startService(new Intent(ClimateControlActivity.this, MainService.class));
         }
     }
 
