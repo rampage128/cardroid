@@ -15,11 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by rampage on 04.06.2017.
- */
-
-public class CarduinoManager {
+public class SerialConnectionManager {
 
     private static String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -40,7 +36,7 @@ public class CarduinoManager {
         }
     };
 
-    public CarduinoManager(Context context) {
+    public SerialConnectionManager(Context context) {
         this.context = context;
     }
 

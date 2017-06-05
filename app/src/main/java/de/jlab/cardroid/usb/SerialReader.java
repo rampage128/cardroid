@@ -5,7 +5,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class SerialReader implements CarduinoManager.CarduinoListener {
+public class SerialReader implements SerialConnectionManager.CarduinoListener {
     private static final String LOG_TAG = "SerialReader";
 
     private ArrayList<SerialPacketListener> packetListeners = new ArrayList<>();

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
-import de.jlab.cardroid.usb.CarduinoManager;
+import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.SerialDataPacket;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
@@ -21,7 +21,7 @@ public class MainService extends Service {
     private OverlayWindow overlayWindow;
     private Handler uiHandler;
 
-    private CarduinoManager carduino;
+    private SerialConnectionManager connectionManager;
 
     private SerialReader.SerialPacketListener listener = new SerialReader.SerialPacketListener() {
         @Override
@@ -69,10 +69,10 @@ public class MainService extends Service {
         super.onCreate();
         uiHandler = new Handler();
 
-        this.carduino = new CarduinoManager(this);
+        this.connectionManager = new SerialConnectionManager(this);
         SerialReader serialReader = new SerialReader();
         serialReader.addListener(this.listener);
-        this.carduino.addListener(serialReader);
+        this.connectionManager.addListener(serialReader);
 
         this.overlayWindow = new OverlayWindow(this);
         this.overlayWindow.create();
@@ -81,7 +81,7 @@ public class MainService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(LOG_TAG, "Service start requested.");
 
-        this.carduino.connect();
+        this.connectionManager.connect();
 
         return START_STICKY;
     }
@@ -90,7 +90,7 @@ public class MainService extends Service {
     public void onDestroy() {
         super.onDestroy();
         this.overlayWindow.destroy();
-        this.carduino.disconnect();
+        this.connectionManager.disconnect();
     }
 
     private void runOnUiThread(Runnable runnable) {
