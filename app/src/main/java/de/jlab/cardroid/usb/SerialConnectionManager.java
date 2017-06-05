@@ -25,12 +25,12 @@ public class SerialConnectionManager {
     private UsbDeviceConnection connection;
     private UsbSerialDevice serial;
 
-    private ArrayList<CarduinoListener> listeners = new ArrayList<>();
+    private ArrayList<SerialConnectionListener> listeners = new ArrayList<>();
 
     private UsbSerialInterface.UsbReadCallback readCallback = new UsbSerialInterface.UsbReadCallback() {
         @Override
         public void onReceivedData(byte[] bytes) {
-            for (CarduinoListener listener : listeners) {
+            for (SerialConnectionListener listener : listeners) {
                 listener.onReceiveData(bytes);
             }
         }
@@ -72,7 +72,7 @@ public class SerialConnectionManager {
 
                 createSerialDevice();
 
-                for (CarduinoListener listener : listeners) {
+                for (SerialConnectionListener listener : listeners) {
                     listener.onConnect();
                 }
                 return true;
@@ -93,7 +93,7 @@ public class SerialConnectionManager {
         }
         this.device = null;
 
-        for (CarduinoListener listener : listeners) {
+        for (SerialConnectionListener listener : listeners) {
             listener.onDisconnect();
         }
     }
@@ -118,15 +118,15 @@ public class SerialConnectionManager {
         return false;
     }
 
-    public void addListener(CarduinoListener listener) {
+    public void addListener(SerialConnectionListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(CarduinoListener listener) {
+    public void removeListener(SerialConnectionListener listener) {
         this.listeners.remove(listener);
     }
 
-    public interface CarduinoListener {
+    public interface SerialConnectionListener {
         void onReceiveData(byte[] data);
         void onConnect();
         void onDisconnect();
