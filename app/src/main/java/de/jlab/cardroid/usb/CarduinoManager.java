@@ -1,4 +1,4 @@
-package de.jlab.cardroid;
+package de.jlab.cardroid.usb;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -66,8 +66,11 @@ public class CarduinoManager {
                 manager.requestPermission(device, mPermissionIntent);
                 boolean hasPermision = manager.hasPermission(device);
 
+                if (!hasPermision) {
+                    return false;
+                }
                 connection = manager.openDevice(device);
-                if (!hasPermision || connection == null) {
+                if (connection == null) {
                     return false;
                 }
 
@@ -128,7 +131,7 @@ public class CarduinoManager {
     }
 
     public interface CarduinoListener {
-        void onReceiveData(byte[] arg0);
+        void onReceiveData(byte[] data);
         void onConnect();
         void onDisconnect();
     }
