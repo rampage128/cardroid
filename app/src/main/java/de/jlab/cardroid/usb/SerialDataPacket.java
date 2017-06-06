@@ -15,4 +15,8 @@ public abstract class SerialDataPacket extends SerialPacket {
     public boolean readFlag(int index, int bitNum) {
         return (this.payload[index] & (1<<bitNum)) != 0;
     }
+
+    public byte readByte(int index) {
+        return this.payload[index];
+    }
 }
