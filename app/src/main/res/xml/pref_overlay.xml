@@ -1,0 +1,9 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="overlay_active"
+        android:summary="@string/pref_description_overlay_toggle"
+        android:title="@string/pref_title_overlay_toggle" />
+
+</PreferenceScreen>

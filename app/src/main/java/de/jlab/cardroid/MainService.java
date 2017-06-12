@@ -2,8 +2,10 @@ package de.jlab.cardroid;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -69,17 +71,35 @@ public class MainService extends Service {
         super.onCreate();
         uiHandler = new Handler();
 
+        Log.d(LOG_TAG, "Creating main service.");
+
         this.connectionManager = new SerialConnectionManager(this);
         SerialReader serialReader = new SerialReader();
         serialReader.addListener(this.listener);
         this.connectionManager.addListener(serialReader);
 
         this.overlayWindow = new OverlayWindow(this);
-        this.overlayWindow.create();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("overlay_active", false)) {
+            this.overlayWindow.create();
+        }
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(LOG_TAG, "Service start requested.");
+
+        if (intent != null) {
+            String command = intent.getStringExtra("command");
+            if (command != null) {
+                if (command.equals("show_overlay")) {
+                    Log.d(LOG_TAG, "Showing overlay.");
+                    this.overlayWindow.create();
+                } else if (command.equals("hide_overlay")) {
+                    Log.d(LOG_TAG, "Hiding overlay.");
+                    this.overlayWindow.destroy();
+                }
+            }
+        }
 
         this.connectionManager.connect();
 

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="de.jlab.cardroid">
 
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -11,9 +11,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ClimateControlActivity" android:launchMode="singleTop">
+
+        <service
+            android:name=".MainService"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -23,7 +33,6 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <service android:name=".MainService" android:launchMode="singleTop" android:exported="false" />
     </application>
 
 </manifest>

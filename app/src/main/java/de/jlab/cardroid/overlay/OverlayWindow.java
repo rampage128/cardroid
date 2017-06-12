@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.preference.PreferenceActivity;
 import android.provider.Settings;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
@@ -18,8 +19,8 @@ import android.widget.TextView;
 import java.lang.reflect.Field;
 import java.util.Locale;
 
-import de.jlab.cardroid.ClimateControlActivity;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
 public class OverlayWindow {
@@ -42,9 +43,11 @@ public class OverlayWindow {
         //This permission is by default available for API<23. But for API > 23
         //you have to ask for the permission in runtime.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this.context)) {
-            Intent dialogIntent = new Intent(this.context, ClimateControlActivity.class);
-            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.context.startActivity(dialogIntent);
+            Intent permissionIntent = new Intent(this.context, SettingsActivity.class);
+            permissionIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.OverlayPreferenceFragment.class.getName());
+            permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            this.context.startActivity(permissionIntent);
+            return;
         }
 
         mFloatingView = LayoutInflater.from(this.context).inflate(R.layout.view_overlay, null);

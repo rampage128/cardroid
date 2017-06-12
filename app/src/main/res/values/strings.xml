@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name">CarDroid</string>
-    <string name="cc_auto">Automatic</string>
-    <string name="cc_ac">Air conditioning</string>
-    <string name="cc_recirculation">Recirculation</string>
-    <string name="cc_duct_windshield">Windshield duct</string>
-    <string name="cc_duct_face">Face duct</string>
-    <string name="cc_duct_feet">Feet duct</string>
-    <string name="cc_heat_windshield">Windshield heating</string>
-    <string name="cc_heat_rearwindow">Rear window heating</string>
-    <string name="cc_temperature">Temperature</string>
-    <string name="cc_fan_level">Fan level</string>
+    <string name="overlay_permission_missing">Permission to display overlay is missing. Overlay is disabled.</string>
+
+    <!-- Strings related to Settings -->
+    <string name="title_activity_settings">CarDroid Settings</string>
+
+    <!-- Overlay settings -->
+    <string name="pref_header_overlay">Overlay</string>
+    <string name="pref_header_description_overlay">Manage settings for quick car control overlay</string>
+
+    <string name="pref_title_overlay_toggle">Show Overlay</string>
+    <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 </resources>
