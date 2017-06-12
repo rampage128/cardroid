@@ -14,7 +14,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import java.lang.reflect.Field;
 import java.util.Locale;
@@ -37,6 +36,8 @@ public class OverlayWindow {
     }
 
     public void create() {
+        this.windowManager = (WindowManager) this.context.getSystemService(Context.WINDOW_SERVICE);
+
         //Check if the application has draw over other apps permission or not?
         //This permission is by default available for API<23. But for API > 23
         //you have to ask for the permission in runtime.
@@ -46,17 +47,13 @@ public class OverlayWindow {
             this.context.startActivity(dialogIntent);
         }
 
-        //Inflate the floating view layout we created
         mFloatingView = LayoutInflater.from(this.context).inflate(R.layout.view_overlay, null);
 
-        //Add the view to the window.
         final WindowManager.LayoutParams params = getWindowLayout(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT
         );
 
-        //Add the view to the window
-        this.windowManager = (WindowManager) this.context.getSystemService(Context.WINDOW_SERVICE);
         this.windowManager.addView(mFloatingView, params);
 
         this.buttonContainer = (ConstraintLayout) mFloatingView.findViewById(R.id.buttonContainer);
@@ -158,10 +155,24 @@ public class OverlayWindow {
     }
 
     private WindowManager.LayoutParams getWindowLayout(int width, int height) {
+        /*
+        Point fullSize = new Point();
+        Point usableSize = new Point();
+
+        windowManager.getDefaultDisplay().getRealSize(fullSize);
+        windowManager.getDefaultDisplay().getSize(usableSize);
+
+        int navigationBarOffset = usableSize.y - fullSize.y;
+        */
+
         WindowManager.LayoutParams params =  new WindowManager.LayoutParams(
                 width,
                 height,
                 WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+                WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
