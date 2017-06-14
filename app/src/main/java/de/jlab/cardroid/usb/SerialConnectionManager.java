@@ -7,15 +7,19 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SerialConnectionManager {
+    private static final String LOG_TAG = "SerialConnection";
 
     private static String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
@@ -98,6 +102,21 @@ public class SerialConnectionManager {
         }
     }
 
+    public boolean sendPacket(SerialPacket packet) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            outputStream.write(SerialPacketStructure.HEADER);
+            packet.serialize(outputStream);
+            outputStream.write(SerialPacketStructure.FOOTER);
+            this.serial.write(outputStream.toByteArray());
+            return true;
+        }
+        catch (IOException e) {
+            Log.e(LOG_TAG, "Error serializing packet " + packet.getClass().getSimpleName(), e);
+            return false;
+        }
+    }
+
     private boolean createSerialDevice() {
         this.serial = UsbSerialDevice.createUsbSerialDevice(device, connection);
         // SERIALPORT WILL BE NULL IF NO DRIVER IS FOUND
@@ -131,5 +150,4 @@ public class SerialConnectionManager {
         void onConnect();
         void onDisconnect();
     }
-
 }
