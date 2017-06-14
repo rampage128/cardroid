@@ -1,7 +1,18 @@
 package de.jlab.cardroid.usb;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public abstract class SerialDataPacket extends SerialPacket {
     private byte[] payload;
+
+    public SerialDataPacket(ByteArrayInputStream stream) throws IOException {
+        super(stream);
+        int payloadLength = stream.read();
+        this.payload = new byte[payloadLength];
+        stream.read(this.payload);
+    }
 
     public SerialDataPacket(byte id, byte[] payload) {
         super(id);
@@ -18,5 +29,12 @@ public abstract class SerialDataPacket extends SerialPacket {
 
     public byte readByte(int index) {
         return this.payload[index];
+    }
+
+    public void serialize(ByteArrayOutputStream stream) throws IOException {
+        super.serialize(stream);
+
+        stream.write(this.payload.length);
+        stream.write(this.payload);
     }
 }

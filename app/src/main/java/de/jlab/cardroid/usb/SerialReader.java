@@ -2,6 +2,7 @@ package de.jlab.cardroid.usb;
 
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -23,7 +24,7 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
             byte currentByte = data[i];
 
             if (!foundPacket) {
-                if (currentByte == 0x3E) {
+                if (currentByte == SerialPacketStructure.HEADER) {
                     foundPacket = true;
                     packetStartIndex = i;
                 }
@@ -41,30 +42,26 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
             }
 
             if (foundPacket && i == packetStartIndex + 3) {
-                int length = (int) currentByte & 0xFF;
-
-                if (data[i + length + 1] != 0x7C) {
-                    // got wrong packet length? Hard to tell why ... lets just skip this packet
-                    Log.d(LOG_TAG, "Wrong length given for packet type \"" + byteToHexString(packetType) + "\" with id \"" + byteToHexString(packetId) + "\". Length given: " + length);
-                    foundPacket = false;
-                    packetType = 0x00;
-                    continue;
+                int length = -1;
+                if (currentByte != SerialPacketStructure.FOOTER) {
+                    length = (int) currentByte & 0xFF;
+                    if (i + length + 1 >= data.length || data[i + length + 1] != SerialPacketStructure.FOOTER) {
+                        // got wrong packet length? Hard to tell why ... lets just skip this packet
+                        Log.d(LOG_TAG, "Wrong length given for packet type \"" + byteToHexString(packetType) + "\" with id \"" + byteToHexString(packetId) + "\". Length given: " + length);
+                        foundPacket = false;
+                        packetType = 0x00;
+                        continue;
+                    }
                 }
 
-                // TODO SCAN AHEAD TO CHECK IF DATA IS LONG ENOUGH ... IF NOT, STORE INCOMPLETE PACKAGE OR DROP IT
-                byte[] payload = Arrays.copyOfRange(data, i + 1, i + length + 1);
-
-                SerialPacket packet = null;
-                switch (packetType) {
-                    case 0x73:
-                        packet = new CarSystemSerialPacket(packetId, payload);
-                        break;
-                }
-
-                if (packet != null) {
+                ByteArrayInputStream packetStream = new ByteArrayInputStream(Arrays.copyOfRange(data, i - 2, i + length + 1));
+                try {
+                    SerialPacket packet = SerialPacketFactory.getPacketFromData(packetStream);
                     packetList.add(packet);
-                } else {
-                    Log.d(LOG_TAG, "Unknown Id for packet type \"" + byteToHexString(packetType) + "\" with id \"" + byteToHexString(packetId) + "\".");
+                } catch (DeserializationException e) {
+                    Log.e(LOG_TAG, e.getMessage(), e);
+                } catch (UnknownPacketTypeException e) {
+                    Log.d(LOG_TAG, e.getMessage());
                 }
 
                 foundPacket = false;

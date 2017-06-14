@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
-import de.jlab.cardroid.usb.SerialDataPacket;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
 
@@ -28,13 +27,8 @@ public class MainService extends Service {
     private SerialReader.SerialPacketListener listener = new SerialReader.SerialPacketListener() {
         @Override
         public void onReceivePackets(ArrayList<SerialPacket> packets) {
-            Log.d(LOG_TAG, "Received " + packets.size() + " packets.");
-
             for (final SerialPacket packet : packets) {
-                byte[] payload = ((SerialDataPacket)packet).getPayload();
-                Log.d(LOG_TAG, new String(payload) + ", " + Integer.toBinaryString(payload[0] & 0xFF) + ", " + bytesToHex(payload) + " (" + payload.length + ")");
-
-                if (packet instanceof CarSystemSerialPacket) {
+                if (packet instanceof CarSystemSerialPacket && packet.getId() == 0x63) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
