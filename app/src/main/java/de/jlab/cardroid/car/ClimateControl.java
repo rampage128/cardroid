@@ -72,6 +72,10 @@ public class ClimateControl extends ManageableCarSystem {
     }
 
 
+    public void pushOffButton() {
+        this.manage(CarSystemEvent.CC_OFF_BUTTON);
+    }
+
     public void pushAcButton() {
         this.manage(CarSystemEvent.CC_AC_BUTTON);
     }

@@ -2,163 +2,264 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:overlaytogglebutton="http://schemas.android.com/apk/res-auto"
     android:id="@+id/overlayContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/buttonContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_horizontal"
-        android:background="@color/colorOverlayBG"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="64dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="64dp"
-            android:orientation="horizontal"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <FrameLayout
-                android:id="@+id/temperatureButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@mipmap/ic_shortcut_blank"
-                tools:layout_editor_absoluteX="8dp"
-                tools:layout_editor_absoluteY="8dp">
-
-                <TextView
-                    android:id="@+id/temperatureTextView"
-                    android:layout_width="48dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    android:text="16°"
-                    android:textAlignment="center"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </FrameLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp">
-
-                <ImageView
-                    android:id="@+id/fanButton"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@mipmap/ic_shortcut_fanspeed"
-                    app:layout_constraintLeft_toRightOf="@+id/imageView4"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@mipmap/ic_shortcut_level_0" />
-
-                <TextView
-                    android:id="@+id/automaticTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:text="A"
-                    android:textColor="@android:color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:visibility="invisible" />
-            </FrameLayout>
-
-            <ImageView
-                android:id="@+id/airConditioningButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/ic_shortcut_ac"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:srcCompat="@mipmap/ic_shortcut_status_off"
-                tools:layout_editor_absoluteY="89dp" />
-
-            <ImageView
-                android:id="@+id/recirculationButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/ic_shortcut_recirculation"
-                app:layout_constraintLeft_toRightOf="@+id/imageView2"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@mipmap/ic_shortcut_status_off" />
-
-            <ImageView
-                android:id="@+id/windshieldHeaterButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/ic_shortcut_blank"
-                app:layout_constraintLeft_toRightOf="@+id/imageView"
-                app:srcCompat="@mipmap/ic_shortcut_status_off"
-                tools:layout_editor_absoluteY="89dp" />
-
-            <ImageView
-                android:id="@+id/rearHeaterButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                android:background="@mipmap/ic_shortcut_blank"
-                app:layout_constraintLeft_toRightOf="@+id/imageView2"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@mipmap/ic_shortcut_status_off" />
-
-        </LinearLayout>
-
-    </android.support.constraint.ConstraintLayout>
+    android:layout_height="match_parent">
 
     <FrameLayout
-        android:id="@+id/toggleContainer"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:id="@+id/toggleButton"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         android:layout_gravity="center_horizontal"
-        android:background="@mipmap/ic_shortcut_blank"
+        android:background="@mipmap/overlay_pill_large"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 
-        <ImageView
-            android:id="@+id/mainImageView"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/mainFanIcon"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             app:layout_constraintLeft_toRightOf="@+id/imageView2"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@mipmap/ic_shortcut_level_0" />
 
         <TextView
-            android:id="@+id/mainTextView"
+            android:id="@+id/mainText"
             android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
-            android:text="29,5"
             android:textAlignment="center"
             android:textColor="@android:color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/detailContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorOverlayBG"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center_horizontal">
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                app:srcCompat="@drawable/ic_overlay_close" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@mipmap/overlay_pill_large">
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/offButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_off" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@mipmap/overlay_pill_large">
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/wshButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_wsh" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@mipmap/overlay_pill_large">
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/rwhButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_rwh" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@mipmap/overlay_pill_large">
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/recirculationButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_recirculation" />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@mipmap/overlay_pill_large"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:id="@+id/modeButton"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="center_horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/modeDisplay"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="center_horizontal|center_vertical">
+
+                        <android.support.v7.widget.AppCompatImageView
+                            android:id="@+id/ductFace"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/ic_cc_mode_face" />
+
+                        <android.support.v7.widget.AppCompatImageView
+                            android:id="@+id/ductFeet"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/ic_cc_mode_feet" />
+
+                        <android.support.v7.widget.AppCompatImageView
+                            android:id="@+id/ductWindshield"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/ic_cc_mode_ws" />
+
+                        <android.support.v7.widget.AppCompatImageView
+                            android:id="@+id/ductBackground"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:srcCompat="@drawable/ic_cc_mode_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/fanChangeText"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
+                </FrameLayout>
+
+                <SeekBar
+                    android:id="@+id/fanBar"
+                    android:layout_width="192dp"
+                    android:layout_height="192dp"
+                    android:layout_gravity="center_horizontal"
+                    android:max="6"
+                    android:progress="0"
+                    android:rotation="270" />
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/autoButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_auto" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@mipmap/overlay_pill_large"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="8dp">
+
+                    <TextView
+                        android:id="@+id/temperatureChangeText"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/temperatureText"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </FrameLayout>
+
+                <SeekBar
+                    android:id="@+id/temperatureBar"
+                    android:layout_width="192dp"
+                    android:layout_height="192dp"
+                    android:layout_gravity="center_horizontal"
+                    android:max="28"
+                    android:rotation="270" />
+
+                <de.jlab.cardroid.overlay.OverlayToggleButton
+                    android:id="@+id/acButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    overlaytogglebutton:src="@drawable/ic_cc_ac" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>
