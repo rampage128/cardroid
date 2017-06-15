@@ -3,38 +3,39 @@ package de.jlab.cardroid;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
 
+import de.jlab.cardroid.car.Car;
+import de.jlab.cardroid.car.CarSystemFactory;
+import de.jlab.cardroid.car.ClimateControl;
+import de.jlab.cardroid.car.ManageableCarSystem;
+import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.SerialCommandPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
 
-public class MainService extends Service {
+public class MainService extends Service implements ManageableCarSystem.CarSystemEventListener {
     private static final String LOG_TAG = "MainService";
 
     private OverlayWindow overlayWindow;
-    private Handler uiHandler;
 
     private SerialConnectionManager connectionManager;
+    private Car car;
 
     private SerialReader.SerialPacketListener listener = new SerialReader.SerialPacketListener() {
         @Override
         public void onReceivePackets(ArrayList<SerialPacket> packets) {
             for (final SerialPacket packet : packets) {
-                if (packet instanceof CarSystemSerialPacket && packet.getId() == 0x63) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            overlayWindow.updateFromPacket((CarSystemSerialPacket)packet);
-                        }
-                    });
+                try {
+                    car.updateFromSerialPacket(packet);
+                } catch (UnknownCarSystemException e) {
+                    Log.e(LOG_TAG, "Cannot update car system", e);
                 }
             }
         }
@@ -63,21 +64,25 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        uiHandler = new Handler();
 
         Log.d(LOG_TAG, "Creating main service.");
+
+        this.car = new Car();
 
         this.connectionManager = new SerialConnectionManager(this);
         SerialReader serialReader = new SerialReader();
         serialReader.addListener(this.listener);
         this.connectionManager.addListener(serialReader);
 
-        this.overlayWindow = new OverlayWindow(this);
+        ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
+        this.overlayWindow = new OverlayWindow(this, climateControl);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getBoolean("overlay_active", false)) {
             this.overlayWindow.create();
         }
+
+        climateControl.addEventListener(this);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -107,7 +112,8 @@ public class MainService extends Service {
         this.connectionManager.disconnect();
     }
 
-    private void runOnUiThread(Runnable runnable) {
-        uiHandler.post(runnable);
+    @Override
+    public void onTrigger(SerialCommandPacket packet) {
+        this.connectionManager.sendPacket(packet);
     }
 }

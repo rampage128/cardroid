@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public abstract class SerialDataPacket extends SerialPacket {
+public class SerialDataPacket extends SerialPacket {
     private byte[] payload;
 
     public SerialDataPacket(ByteArrayInputStream stream) throws IOException {
@@ -34,7 +34,9 @@ public abstract class SerialDataPacket extends SerialPacket {
     public void serialize(ByteArrayOutputStream stream) throws IOException {
         super.serialize(stream);
 
-        stream.write(this.payload.length);
-        stream.write(this.payload);
+        if (this.payload != null && this.payload.length > 0) {
+            stream.write(this.payload.length);
+            stream.write(this.payload);
+        }
     }
 }

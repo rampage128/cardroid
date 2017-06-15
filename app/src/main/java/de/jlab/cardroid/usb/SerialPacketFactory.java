@@ -1,20 +1,33 @@
 package de.jlab.cardroid.usb;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 enum SerialPacketFactory {
-    CARSYSTEM((byte)0x73, CarSystemSerialPacket.class),
-    META((byte)0x61, SerialPacket.class),
-    ERROR((byte)0x65, SerialPacket.class);
+    META(0x61, SerialPacket.class),
+    COMMAND(0x63, SerialCommandPacket.class),
+    ERROR(0x65, SerialPacket.class),
+    CAR_SYSTEM(0x73, CarSystemSerialPacket.class);
 
     private byte identifier;
     private Class<? extends SerialPacket> packetClass;
 
-    SerialPacketFactory(byte identifier, Class<? extends SerialPacket> packetClass) {
-        this.identifier = identifier;
+    SerialPacketFactory(int identifier, Class<? extends SerialPacket> packetClass) {
+        this.identifier = (byte)identifier;
         this.packetClass   = packetClass;
+    }
+
+    private static byte getIdentifier(SerialPacket packet) throws UnknownPacketTypeException {
+        for (SerialPacketFactory packetType : SerialPacketFactory.values()) {
+            if (packetType.packetClass.isInstance(packet)) {
+                return packetType.identifier;
+            }
+        }
+
+        throw new UnknownPacketTypeException(packet.getClass());
     }
 
     public static SerialPacket getPacketFromData(ByteArrayInputStream stream) throws DeserializationException, UnknownPacketTypeException {
@@ -37,5 +50,10 @@ enum SerialPacketFactory {
         }
 
         throw new UnknownPacketTypeException((byte)identifier);
+    }
+
+    public static void serialize(SerialPacket packet, ByteArrayOutputStream output) throws UnknownPacketTypeException, IOException {
+        output.write(getIdentifier(packet));
+        packet.serialize(output);
     }
 }

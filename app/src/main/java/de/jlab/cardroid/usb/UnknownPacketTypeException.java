@@ -1,6 +1,11 @@
 package de.jlab.cardroid.usb;
 
 class UnknownPacketTypeException extends Exception {
+
+    UnknownPacketTypeException(Class<? extends SerialPacket> packetClass) {
+        super("Unknown packet type " + packetClass.getSimpleName());
+    }
+
     UnknownPacketTypeException(byte identifier) {
         super("Unknown packet type 0x" + byteToHexString(identifier));
     }

@@ -106,7 +106,7 @@ public class SerialConnectionManager {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(SerialPacketStructure.HEADER);
-            packet.serialize(outputStream);
+            SerialPacketFactory.serialize(packet, outputStream);
             outputStream.write(SerialPacketStructure.FOOTER);
             this.serial.write(outputStream.toByteArray());
             return true;
@@ -114,6 +114,8 @@ public class SerialConnectionManager {
         catch (IOException e) {
             Log.e(LOG_TAG, "Error serializing packet " + packet.getClass().getSimpleName(), e);
             return false;
+        } catch (UnknownPacketTypeException e) {
+            throw new UnsupportedOperationException("Packet " + packet.getClass().getCanonicalName() + " cannot be sent.", e);
         }
     }
 
