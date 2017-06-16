@@ -22,7 +22,7 @@ enum SerialPacketFactory {
 
     private static byte getIdentifier(SerialPacket packet) throws UnknownPacketTypeException {
         for (SerialPacketFactory packetType : SerialPacketFactory.values()) {
-            if (packetType.packetClass.isInstance(packet)) {
+            if (packet.getClass().isAssignableFrom(packetType.packetClass)) {
                 return packetType.identifier;
             }
         }

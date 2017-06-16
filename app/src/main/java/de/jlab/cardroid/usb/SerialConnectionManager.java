@@ -108,7 +108,9 @@ public class SerialConnectionManager {
             outputStream.write(SerialPacketStructure.HEADER);
             SerialPacketFactory.serialize(packet, outputStream);
             outputStream.write(SerialPacketStructure.FOOTER);
-            this.serial.write(outputStream.toByteArray());
+            byte[] data = outputStream.toByteArray();
+            Log.d(LOG_TAG, "Sending " + packet.getClass().getSimpleName() + ": " + new String(data));
+            this.serial.write(data);
             return true;
         }
         catch (IOException e) {
