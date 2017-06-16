@@ -102,7 +102,14 @@ public class SerialConnectionManager {
         }
     }
 
+    public boolean isConnected() {
+        return this.connection != null && this.serial != null && this.device != null;
+    }
+
     public boolean sendPacket(SerialPacket packet) {
+        if (!this.isConnected()) {
+            return false;
+        }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(SerialPacketStructure.HEADER);
