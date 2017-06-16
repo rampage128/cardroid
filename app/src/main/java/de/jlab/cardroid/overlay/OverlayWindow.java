@@ -39,6 +39,22 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private boolean trackingFans = false;
     private boolean trackingTemp = false;
 
+    private Runnable stopFanInteraction = new Runnable() {
+        @Override
+        public void run() {
+            trackingFans = false;
+        }
+    };
+
+    private Runnable stopTempInteraction = new Runnable() {
+        @Override
+        public void run() {
+            trackingTemp = false;
+            viewHolder.temperatureText.setVisibility(View.VISIBLE);
+            viewHolder.temperatureChangeText.setVisibility(View.INVISIBLE);
+        }
+    };
+
     private static class ViewHolder {
         View rootView;
 
@@ -186,13 +202,14 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             public void onStartTrackingTouch(SeekBar seekBar) {
                 viewHolder.modeDisplay.setVisibility(View.INVISIBLE);
                 viewHolder.fanChangeText.setVisibility(View.VISIBLE);
+                uiHandler.removeCallbacks(stopFanInteraction);
                 trackingFans = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                trackingFans = false;
                 climateControl.setFanLevel((byte)(seekBar.getProgress() + 1));
+                uiHandler.postDelayed(stopFanInteraction, 1000);
             }
         });
 
@@ -207,15 +224,14 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             public void onStartTrackingTouch(SeekBar seekBar) {
                 viewHolder.temperatureText.setVisibility(View.INVISIBLE);
                 viewHolder.temperatureChangeText.setVisibility(View.VISIBLE);
+                uiHandler.removeCallbacks(stopTempInteraction);
                 trackingTemp = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                viewHolder.temperatureText.setVisibility(View.VISIBLE);
-                viewHolder.temperatureChangeText.setVisibility(View.INVISIBLE);
                 climateControl.setTemperature((seekBar.getProgress() + 32) / 2f);
-                trackingTemp = false;
+                uiHandler.postDelayed(stopTempInteraction, 1000);
             }
         });
 
