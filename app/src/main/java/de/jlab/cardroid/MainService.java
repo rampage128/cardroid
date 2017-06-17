@@ -3,6 +3,7 @@ package de.jlab.cardroid;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -19,6 +20,7 @@ import de.jlab.cardroid.usb.SerialCommandPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
+import de.jlab.cardroid.usb.UsageStatistics;
 
 public class MainService extends Service implements ManageableCarSystem.CarSystemEventListener {
     private static final String LOG_TAG = "MainService";
@@ -26,7 +28,28 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     private OverlayWindow overlayWindow;
 
     private SerialConnectionManager connectionManager;
+    private SerialReader serialReader;
     private Car car;
+
+    public class MainServiceBinder extends Binder {
+        public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            MainService.this.connectionManager.addBandwidthStatisticsListener(listener);
+        }
+
+        public void removeBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            MainService.this.connectionManager.removeBandwidthStatisticsListener(listener);
+        }
+
+        public void addPacketStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            MainService.this.serialReader.addPacketStatisticListener(listener);
+        }
+
+        public void removePacketStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            MainService.this.serialReader.removePacketStatisticListener(listener);
+        }
+    };
+
+    private final IBinder binder = new MainServiceBinder();
 
     private SerialReader.SerialPacketListener listener = new SerialReader.SerialPacketListener() {
         @Override
@@ -58,7 +81,7 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return this.binder;
     }
 
     @Override
@@ -70,9 +93,9 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         this.car = new Car();
 
         this.connectionManager = new SerialConnectionManager(this);
-        SerialReader serialReader = new SerialReader();
-        serialReader.addListener(this.listener);
-        this.connectionManager.addListener(serialReader);
+        this.serialReader = new SerialReader();
+        this.serialReader.addListener(this.listener);
+        this.connectionManager.addConnectionListener(this.serialReader);
 
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
         this.overlayWindow = new OverlayWindow(this, climateControl);

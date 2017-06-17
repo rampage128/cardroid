@@ -2,29 +2,29 @@ package de.jlab.cardroid;
 
 
 import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.media.audiofx.BassBoost;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.support.v7.app.ActionBar;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.util.List;
+
+import de.jlab.cardroid.usb.UsbStatsPreference;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -38,6 +38,18 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+    private static MainService.MainServiceBinder mainService;
+
+    private ServiceConnection mainServiceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mainService = (MainService.MainServiceBinder)service;
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mainService = null;
+        }
+    };
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -107,8 +119,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         startMainService();
+        bindService(new Intent(this, MainService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (this.mainService != null) {
+            unbindService(this.mainServiceConnection);
+        }
     }
 
     /**
@@ -161,7 +181,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || OverlayPreferenceFragment.class.getName().equals(fragmentName);
+                || OverlayPreferenceFragment.class.getName().equals(fragmentName)
+                || UsbPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -241,6 +262,51 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         private boolean canDrawOverlay() {
             return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(getActivity());
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * This fragment shows overlay preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class UsbPreferenceFragment extends PreferenceFragment {
+        private UsbStatsPreference bandwidthStats;
+        private UsbStatsPreference packetStats;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_usb);
+            setHasOptionsMenu(true);
+
+            this.bandwidthStats = (UsbStatsPreference) findPreference("usb_stats_bandwidth");
+            this.packetStats = (UsbStatsPreference) findPreference("usb_stats_packets");
+        }
+
+        @Override
+        public void onResume(){
+            super.onResume();
+
+            mainService.addBandwidthStatisticsListener(bandwidthStats);
+            mainService.addPacketStatisticsListener(this.packetStats);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            mainService.removeBandwidthStatisticsListener(bandwidthStats);
+            mainService.removePacketStatisticsListener(this.packetStats);
         }
 
         @Override

@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <de.jlab.cardroid.usb.UsbBandwidthPreference
+        android:defaultValue="false"
+        android:key="usb_stats_bandwidth"
+        android:summary="@string/pref_description_usb_bandwidth"
+        android:title="@string/pref_title_usb_bandwidth" />
+
+    <de.jlab.cardroid.usb.UsbPacketPreference
+        android:defaultValue="false"
+        android:key="usb_stats_packets"
+        android:summary="@string/pref_description_usb_packets"
+        android:title="@string/pref_title_usb_packets" />
+
+</PreferenceScreen>

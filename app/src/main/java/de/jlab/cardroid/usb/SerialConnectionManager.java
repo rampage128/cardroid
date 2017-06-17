@@ -29,11 +29,22 @@ public class SerialConnectionManager {
     private UsbDeviceConnection connection;
     private UsbSerialDevice serial;
 
+    private UsageStatistics bandWidthUsage = new UsageStatistics(1000, 60);
+    /*
+    private UsageStatistics.UsageStatisticsListener bandWidthLogWriter = new UsageStatistics.UsageStatisticsListener() {
+        @Override
+        public void onInterval(int count, UsageStatistics statistics) {
+            Log.d(LOG_TAG, "Bandwidth: " + count + "bps / Avg: " + Math.round(bandWidthUsage.getAverage()) + "bps (" + Math.round(bandWidthUsage.getAverageReliability() * 100f) + "%) / Usage: " + Math.round(100f / 11520 * count) + "%");
+        }
+    };
+    */
+
     private ArrayList<SerialConnectionListener> listeners = new ArrayList<>();
 
     private UsbSerialInterface.UsbReadCallback readCallback = new UsbSerialInterface.UsbReadCallback() {
         @Override
         public void onReceivedData(byte[] bytes) {
+            bandWidthUsage.count(bytes.length);
             for (SerialConnectionListener listener : listeners) {
                 listener.onReceiveData(bytes);
             }
@@ -42,6 +53,7 @@ public class SerialConnectionManager {
 
     public SerialConnectionManager(Context context) {
         this.context = context;
+        //this.bandWidthUsage.addListener(this.bandWidthLogWriter);
     }
 
     /**
@@ -148,11 +160,19 @@ public class SerialConnectionManager {
         return false;
     }
 
-    public void addListener(SerialConnectionListener listener) {
+    public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.bandWidthUsage.addListener(listener);
+    }
+
+    public void removeBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.bandWidthUsage.removeListener(listener);
+    }
+
+    public void addConnectionListener(SerialConnectionListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(SerialConnectionListener listener) {
+    public void removeConnectionListener(SerialConnectionListener listener) {
         this.listeners.remove(listener);
     }
 

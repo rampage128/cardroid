@@ -10,7 +10,7 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
     private static final String LOG_TAG = "SerialReader";
 
     private ArrayList<SerialPacketListener> packetListeners = new ArrayList<>();
-
+    private UsageStatistics packetUsage = new UsageStatistics(1000, 60);
 
     @Override
     public void onReceiveData(byte[] data) {
@@ -54,6 +54,8 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
                     }
                 }
 
+                // Count every packet, even unsuccessfull ones
+                packetUsage.count();
                 ByteArrayInputStream packetStream = new ByteArrayInputStream(Arrays.copyOfRange(data, i - 2, i + length + 1));
                 try {
                     SerialPacket packet = SerialPacketFactory.getPacketFromData(packetStream);
@@ -103,5 +105,13 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
 
     public interface SerialPacketListener {
         void onReceivePackets(ArrayList<SerialPacket> packets);
+    }
+
+    public void addPacketStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.packetUsage.addListener(listener);
+    }
+
+    public void removePacketStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.packetUsage.removeListener(listener);
     }
 }

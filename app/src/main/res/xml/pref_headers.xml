@@ -2,8 +2,14 @@
 
     <header
         android:fragment="de.jlab.cardroid.SettingsActivity$OverlayPreferenceFragment"
-        android:icon="@drawable/ic_info_black_24dp"
+        android:icon="@drawable/ic_pref_overlay"
         android:title="@string/pref_header_overlay"
         android:summary="@string/pref_header_description_overlay" />
+
+    <header
+        android:fragment="de.jlab.cardroid.SettingsActivity$UsbPreferenceFragment"
+        android:icon="@drawable/ic_pref_usb"
+        android:title="@string/pref_header_usb"
+        android:summary="@string/pref_header_description_usb" />
 
 </preference-headers>
