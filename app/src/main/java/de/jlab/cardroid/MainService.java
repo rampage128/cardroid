@@ -47,6 +47,22 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         public void removePacketStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
             MainService.this.serialReader.removePacketStatisticListener(listener);
         }
+
+        public void addSerialPacketListener(SerialReader.SerialPacketListener listener) {
+            MainService.this.serialReader.addListener(listener);
+        }
+
+        public void removeSerialPacketListener(SerialReader.SerialPacketListener listener) {
+            MainService.this.serialReader.removeListener(listener);
+        }
+
+        public void startCanSniffer() {
+            MainService.this.connectionManager.sendPacket(new SerialCommandPacket((byte)0x0a, null));
+        }
+
+        public void stopCanSniffer() {
+            MainService.this.connectionManager.sendPacket(new SerialCommandPacket((byte)0x0b, null));
+        }
     };
 
     private final IBinder binder = new MainServiceBinder();

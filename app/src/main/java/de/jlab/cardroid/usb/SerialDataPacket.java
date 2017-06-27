@@ -27,6 +27,14 @@ public class SerialDataPacket extends SerialPacket {
         return (this.payload[index] & (1<<bitNum)) != 0;
     }
 
+    public long readDWord(int index) {
+        return ((this.payload[index+3] & 0xff) << 24) | ((this.payload[index+2] & 0xff) << 16) | ((this.payload[index+1] & 0xff) << 8) | (this.payload[index] & 0xff);
+    }
+
+    public int readWord(int index) {
+        return ((this.payload[index+1] & 0xff) << 8) | (this.payload[index] & 0xff);
+    }
+
     public byte readByte(int index) {
         return this.payload[index];
     }

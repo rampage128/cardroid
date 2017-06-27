@@ -4,6 +4,9 @@
 
     <string name="cc_off">OFF</string>
 
+    <!-- Cansniffer -->
+    <string name="cansniffer_line"><b>%1$s</b> : %2$s</string>
+
     <!-- Strings related to Settings -->
     <string name="title_activity_settings">CarDroid Settings</string>
 
@@ -26,4 +29,7 @@
 
     <string name="usb_stats_bandwidth">Current: %1$dbps / Avg: %2$dbps (%3$d%%) / Usage: %4$d%%</string>
     <string name="usb_stats_packets">Current: %1$dpps / Avg: %2$dpps (%3$d%%)</string>
+
+    <string name="pref_title_can_sniffer">CAN Sniffer</string>
+    <string name="pref_description_can_sniffer">Directly read CAN packets from the car</string>
 </resources>

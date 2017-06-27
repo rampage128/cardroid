@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `CanSnifferActivity` to directly sniff the can bus
 - Permanent `MainService` to manage global state
 - `SerialConnectionManager` to maintain serial connection
 - `SerialReader` along with `SerialPacket` (and descendants) to manage serial-data

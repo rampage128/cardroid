@@ -12,4 +12,12 @@
         android:summary="@string/pref_description_usb_packets"
         android:title="@string/pref_title_usb_packets" />
 
+    <Preference
+        android:key="car_can_sniffer"
+        android:title="@string/pref_title_can_sniffer"
+        android:summary="@string/pref_description_can_sniffer">
+        <intent android:targetPackage="de.jlab.cardroid"
+            android:targetClass="de.jlab.cardroid.cansniffer.CanSnifferActivity"/>
+    </Preference>
+
 </PreferenceScreen>

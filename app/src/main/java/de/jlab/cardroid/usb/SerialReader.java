@@ -103,6 +103,10 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
         this.packetListeners.add(packetListener);
     }
 
+    public void removeListener(SerialPacketListener packetListener) {
+        this.packetListeners.remove(packetListener);
+    }
+
     public interface SerialPacketListener {
         void onReceivePackets(ArrayList<SerialPacket> packets);
     }
