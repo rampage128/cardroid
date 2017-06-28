@@ -38,7 +38,7 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
                 public void run() {
                     int averageValue = Math.round(statistics.getAverage());
                     int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
-                    int currentUsage = Math.round(100f / 11520 * count);
+                    int currentUsage = count > 0 ? Math.round(100f / (115200 * 0.125f) * count) : 0;
 
                     bandwidthStatText.setText(getString(R.string.usb_stats_bandwidth, count, averageValue, averageReliability, currentUsage));
                 }

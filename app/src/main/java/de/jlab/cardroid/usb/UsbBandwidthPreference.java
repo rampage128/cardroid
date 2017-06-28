@@ -23,7 +23,7 @@ public class UsbBandwidthPreference extends UsbStatsPreference {
     protected String getString(int currentValue, UsageStatistics statistics) {
         int averageValue = Math.round(statistics.getAverage());
         int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
-        int currentUsage = Math.round(100f / 11520 * currentValue);
+        int currentUsage = currentValue > 0 ? Math.round(100f / (115200 * 0.125f) * currentValue) : 0;
 
         Resources res = getContext().getResources();
         return res.getString(R.string.usb_stats_bandwidth, currentValue, averageValue, averageReliability, currentUsage);
