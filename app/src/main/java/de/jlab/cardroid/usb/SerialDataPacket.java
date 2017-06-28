@@ -3,48 +3,60 @@ package de.jlab.cardroid.usb;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class SerialDataPacket extends SerialPacket {
-    private byte[] payload;
+    protected ByteBuffer payload;
 
     public SerialDataPacket(ByteArrayInputStream stream) throws IOException {
         super(stream);
         int payloadLength = stream.read();
-        this.payload = new byte[payloadLength];
-        stream.read(this.payload);
+        if (payloadLength > -1) {
+            byte[] payload = new byte[payloadLength];
+            stream.read(payload);
+            this.payload = ByteBuffer.wrap(payload);
+        }
+        else {
+            this.payload = null;
+        }
     }
 
     public SerialDataPacket(byte id, byte[] payload) {
         super(id);
-        this.payload = payload;
-    }
-
-    public byte[] getPayload() {
-        return this.payload;
+        if (payload != null) {
+            this.payload = ByteBuffer.wrap(payload);
+        }
     }
 
     public boolean readFlag(int index, int bitNum) {
-        return (this.payload[index] & (1<<bitNum)) != 0;
+        return (this.payload.get(index) & (1<<bitNum)) != 0;
     }
 
     public long readDWord(int index) {
-        return ((this.payload[index+3] & 0xff) << 24) | ((this.payload[index+2] & 0xff) << 16) | ((this.payload[index+1] & 0xff) << 8) | (this.payload[index] & 0xff);
+        return this.payload.getInt(index);
     }
 
     public int readWord(int index) {
-        return ((this.payload[index+1] & 0xff) << 8) | (this.payload[index] & 0xff);
+        return this.payload.getShort(index);
     }
 
     public byte readByte(int index) {
-        return this.payload[index];
+        return this.payload.get(index);
     }
 
     public void serialize(ByteArrayOutputStream stream) throws IOException {
         super.serialize(stream);
 
-        if (this.payload != null && this.payload.length > 0) {
-            stream.write(this.payload.length);
-            stream.write(this.payload);
+        if (this.payload != null && this.payload.capacity() > 0) {
+            stream.write(this.payload.capacity());
+            byte[] payload = new byte[this.payload.capacity()];
+            this.payload.rewind();
+            this.payload.get(payload);
+            stream.write(payload);
         }
+    }
+
+    public boolean payloadEquals(SerialDataPacket otherPacket) {
+        return this.payload.rewind().equals(otherPacket.payload.rewind());
     }
 }

@@ -28,6 +28,6 @@ public class SniffedCanPacket {
     @Override
     public boolean equals(Object obj) {
         return  obj instanceof SniffedCanPacket &&
-                Arrays.equals(((SniffedCanPacket)obj).packet.getPayload(), this.packet.getPayload());
+                this.packet.payloadEquals(((SniffedCanPacket)obj).packet);
     }
 }

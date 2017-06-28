@@ -18,8 +18,10 @@ public class SerialCanPacket extends SerialDataPacket {
     }
 
     public byte[] getDataRaw() {
-        byte[] data = this.getPayload();
-        return Arrays.copyOfRange(data, 4, data.length);
+        this.payload.position(4);
+        byte[] data = new byte[this.payload.remaining()];
+        this.payload.get(data);
+        return data;
     }
 
     private final char[] hexArray = "0123456789ABCDEF".toCharArray();
