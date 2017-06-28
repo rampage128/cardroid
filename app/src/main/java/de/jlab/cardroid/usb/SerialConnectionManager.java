@@ -14,6 +14,7 @@ import com.felhr.usbserial.UsbSerialInterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -158,6 +159,16 @@ public class SerialConnectionManager {
         }
 
         return false;
+    }
+
+    public void requestBaudRate(int baudRate) {
+        Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
+        byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
+        this.sendPacket(new SerialCommandPacket((byte)0x0d, payload));
+    }
+
+    public void setBaudRate(int baudRate) {
+        this.serial.setBaudRate(baudRate);
     }
 
     public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {

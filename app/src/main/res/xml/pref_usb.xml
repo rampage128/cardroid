@@ -12,6 +12,14 @@
         android:summary="@string/pref_description_usb_packets"
         android:title="@string/pref_title_usb_packets" />
 
+    <ListPreference
+        android:defaultValue="115200"
+        android:key="usb_baud_rate"
+        android:title="@string/pref_title_usb_baud_rate"
+        android:entries="@array/usb_baud_rates"
+        android:entryValues="@array/usb_baud_rates"
+        />
+
     <Preference
         android:key="car_can_sniffer"
         android:title="@string/pref_title_can_sniffer"

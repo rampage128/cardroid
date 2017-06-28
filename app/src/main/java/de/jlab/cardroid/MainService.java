@@ -16,6 +16,7 @@ import de.jlab.cardroid.car.ClimateControl;
 import de.jlab.cardroid.car.ManageableCarSystem;
 import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.usb.MetaSerialPacket;
 import de.jlab.cardroid.usb.SerialCommandPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.SerialPacket;
@@ -63,6 +64,10 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         public void stopCanSniffer() {
             MainService.this.connectionManager.sendPacket(new SerialCommandPacket((byte)0x0b, null));
         }
+
+        public void requestBaudRate(int baudRate) {
+            MainService.this.connectionManager.requestBaudRate(baudRate);
+        }
     };
 
     private final IBinder binder = new MainServiceBinder();
@@ -71,6 +76,19 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         @Override
         public void onReceivePackets(ArrayList<SerialPacket> packets) {
             for (final SerialPacket packet : packets) {
+                if (packet instanceof MetaSerialPacket) {
+                    MetaSerialPacket metaPacket = (MetaSerialPacket)packet;
+                    if (packet.getId() == 0x01) {
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainService.this);
+                        int baudRate = Integer.valueOf(prefs.getString("usb_baud_rate", "115200"));
+                        MainService.this.connectionManager.requestBaudRate(baudRate);
+                    }
+                    else if (packet.getId() == 0x02) {
+                        int baudRate = (int)metaPacket.readDWord(0);
+                        Log.d(LOG_TAG, "Adapting baudRate to " + baudRate);
+                        MainService.this.connectionManager.setBaudRate(baudRate);
+                    }
+                }
                 try {
                     car.updateFromSerialPacket(packet);
                 } catch (UnknownCarSystemException e) {

@@ -276,7 +276,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     /**
-     * This fragment shows overlay preferences only. It is used when the
+     * This fragment shows usb preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -292,6 +292,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             this.bandwidthStats = (UsbStatsPreference) findPreference("usb_stats_bandwidth");
             this.packetStats = (UsbStatsPreference) findPreference("usb_stats_packets");
+            ListPreference baudRate = (ListPreference)findPreference("usb_baud_rate");
+            baudRate.setSummary(baudRate.getValue());
+            findPreference("usb_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    mainService.requestBaudRate(Integer.valueOf((String)newValue));
+                    return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
+                }
+            });
         }
 
         @Override
