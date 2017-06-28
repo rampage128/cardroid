@@ -27,6 +27,7 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
     private TextView packetStatText;
     private TextView packetListView;
 
+    private TreeMap<Long, SniffedCanPacket> changedPacketList = new TreeMap<>();
     private TreeMap<Long, SniffedCanPacket> packetList = new TreeMap<>();
 
     private UsageStatistics.UsageStatisticsListener bandWidthStatListener = new UsageStatistics.UsageStatisticsListener() {
@@ -79,13 +80,17 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
     public void onReceivePackets(ArrayList<SerialPacket> packets) {
         for (SerialPacket packet : packets) {
             if (packet instanceof SerialCanPacket) {
-                SerialCanPacket canPacket = (SerialCanPacket)packet;
-                this.packetList.put(canPacket.getCanId(), new SniffedCanPacket(canPacket));
+                SniffedCanPacket sniffedPacket = new SniffedCanPacket((SerialCanPacket)packet);
+                long canId = sniffedPacket.getCanId();
+                if (!this.packetList.containsKey(canId) || !this.packetList.get(canId).equals(sniffedPacket)) {
+                    this.changedPacketList.put(canId, sniffedPacket);
+                }
+                this.packetList.put(canId, sniffedPacket);
             }
         }
 
         final StringBuilder packetTextBuilder = new StringBuilder();
-        for(Iterator<Map.Entry<Long, SniffedCanPacket>> it = this.packetList.entrySet().iterator(); it.hasNext(); ) {
+        for(Iterator<Map.Entry<Long, SniffedCanPacket>> it = this.changedPacketList.entrySet().iterator(); it.hasNext(); ) {
             SniffedCanPacket canPacket = it.next().getValue();
             if(canPacket.isExpired(3000)) {
                 it.remove();

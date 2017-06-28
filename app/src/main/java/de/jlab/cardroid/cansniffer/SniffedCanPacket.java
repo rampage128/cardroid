@@ -1,5 +1,7 @@
 package de.jlab.cardroid.cansniffer;
 
+import java.util.Arrays;
+
 import de.jlab.cardroid.usb.SerialCanPacket;
 
 public class SniffedCanPacket {
@@ -21,5 +23,11 @@ public class SniffedCanPacket {
 
     public String getDataHex() {
         return this.packet.getDataHex();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return  obj instanceof SniffedCanPacket &&
+                Arrays.equals(((SniffedCanPacket)obj).packet.getPayload(), this.packet.getPayload());
     }
 }
