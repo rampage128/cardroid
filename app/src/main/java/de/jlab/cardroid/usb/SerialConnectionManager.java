@@ -129,7 +129,6 @@ public class SerialConnectionManager {
             SerialPacketFactory.serialize(packet, outputStream);
             outputStream.write(SerialPacketStructure.FOOTER);
             byte[] data = outputStream.toByteArray();
-            Log.d(LOG_TAG, "Sending " + packet.getClass().getSimpleName() + ": " + new String(data));
             this.serial.write(data);
             return true;
         }
@@ -164,7 +163,7 @@ public class SerialConnectionManager {
     public void requestBaudRate(int baudRate) {
         Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
         byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
-        this.sendPacket(new SerialCommandPacket((byte)0x0d, payload));
+        this.sendPacket(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload));
     }
 
     public void setBaudRate(int baudRate) {

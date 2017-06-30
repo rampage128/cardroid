@@ -1,6 +1,6 @@
 package de.jlab.cardroid.car;
 
-import de.jlab.cardroid.usb.SerialCommandPacket;
+import de.jlab.cardroid.usb.SerialCarButtonEventPacket;
 
 enum CarSystemEvent {
     CC_OFF_BUTTON(0x01),
@@ -19,8 +19,8 @@ enum CarSystemEvent {
         this.command = (byte)command;
     }
 
-    public static SerialCommandPacket serialize(CarSystemEvent event, byte[] payload) {
-        return new SerialCommandPacket(event.command, payload);
+    public static SerialCarButtonEventPacket serialize(CarSystemEvent event, byte[] payload) {
+        return new SerialCarButtonEventPacket(event.command, payload);
     }
 
 }

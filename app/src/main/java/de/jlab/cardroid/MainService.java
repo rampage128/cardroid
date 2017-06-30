@@ -16,8 +16,9 @@ import de.jlab.cardroid.car.ClimateControl;
 import de.jlab.cardroid.car.ManageableCarSystem;
 import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.usb.MetaEvent;
 import de.jlab.cardroid.usb.MetaSerialPacket;
-import de.jlab.cardroid.usb.SerialCommandPacket;
+import de.jlab.cardroid.usb.SerialCarButtonEventPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.SerialPacket;
 import de.jlab.cardroid.usb.SerialReader;
@@ -58,11 +59,11 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         }
 
         public void startCanSniffer() {
-            MainService.this.connectionManager.sendPacket(new SerialCommandPacket((byte)0x0a, null));
+            MainService.this.connectionManager.sendPacket(MetaEvent.serialize(MetaEvent.START_SNIFFING, null));
         }
 
         public void stopCanSniffer() {
-            MainService.this.connectionManager.sendPacket(new SerialCommandPacket((byte)0x0b, null));
+            MainService.this.connectionManager.sendPacket(MetaEvent.serialize(MetaEvent.STOP_SNIFFING, null));
         }
 
         public void requestBaudRate(int baudRate) {
@@ -170,7 +171,7 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     }
 
     @Override
-    public void onTrigger(SerialCommandPacket packet) {
+    public void onTrigger(SerialCarButtonEventPacket packet) {
         this.connectionManager.sendPacket(packet);
     }
 }

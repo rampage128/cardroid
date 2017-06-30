@@ -2,7 +2,7 @@ package de.jlab.cardroid.car;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.usb.SerialCommandPacket;
+import de.jlab.cardroid.usb.SerialCarButtonEventPacket;
 
 public abstract class ManageableCarSystem extends CarSystem {
 
@@ -23,7 +23,7 @@ public abstract class ManageableCarSystem extends CarSystem {
     }
 
     public interface CarSystemEventListener {
-        void onTrigger(SerialCommandPacket packet);
+        void onTrigger(SerialCarButtonEventPacket packet);
     }
 
 }

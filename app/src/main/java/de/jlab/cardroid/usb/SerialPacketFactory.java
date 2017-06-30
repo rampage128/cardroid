@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 enum SerialPacketFactory {
     META(0x61, MetaSerialPacket.class),
     CAN_BUS(0x62, SerialCanPacket.class),
-    COMMAND(0x63, SerialCommandPacket.class),
+    COMMAND(0x63, SerialCarButtonEventPacket.class),
     ERROR(0x65, SerialPacket.class),
     CAR_SYSTEM(0x73, CarSystemSerialPacket.class);
 
