@@ -3,17 +3,22 @@ package de.jlab.cardroid;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.speech.RecognizerIntent;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.util.ArrayList;
 
 import de.jlab.cardroid.car.Car;
+import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemFactory;
 import de.jlab.cardroid.car.ClimateControl;
 import de.jlab.cardroid.car.ManageableCarSystem;
+import de.jlab.cardroid.car.RemoteControl;
 import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.usb.MetaEvent;
@@ -32,6 +37,62 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     private SerialConnectionManager connectionManager;
     private SerialReader serialReader;
     private Car car;
+
+    private class RemoteControlChangeListener implements CarSystem.ChangeListener<RemoteControl> {
+        @Override
+        public void onChange(RemoteControl system) {
+            Log.d(LOG_TAG, "Button pressed " + system.getButtonId());
+            switch (system.getButtonId()) {
+                case 1: // SOURCE
+                    // TODO switch task
+                    break;
+                case 2: // SOURCE LONG
+                    // TODO open task switcher
+                    break;
+                case 10: // MENU UP
+                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
+                    break;
+                case 11: // MENU DOWN
+                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_NEXT);
+                    break;
+                case 12: // MENU ENTER
+                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+                    break;
+                case 13: // BACK
+                    // TODO send back button event to system
+                    break;
+                case 20: // VOL DOWN
+                    adjustVolume(AudioManager.ADJUST_LOWER);
+                    break;
+                case 21: // VOL UP
+                    adjustVolume(AudioManager.ADJUST_RAISE);
+                    break;
+                case 30: // PHONE
+                    // TODO find some action for phone key
+                    break;
+                case 42: // VOICE
+                    Intent voiceIntent =
+                            new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
+                    MainService.this.startActivity(voiceIntent);
+                    break;
+            }
+        }
+
+        private void adjustVolume(int direction) {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            audioManager.adjustVolume(direction, AudioManager.FLAG_SHOW_UI);
+        }
+
+        private void sendMediaEvent(int keyCode) {
+            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
+
+            KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+            audioManager.dispatchMediaKeyEvent(downEvent);
+
+            KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
+            audioManager.dispatchMediaKeyEvent(upEvent);
+        }
+    }
 
     public class MainServiceBinder extends Binder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
@@ -141,6 +202,9 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         }
 
         climateControl.addEventListener(this);
+
+        RemoteControl remoteControl = (RemoteControl)this.car.getCarSystem(CarSystemFactory.REMOTE_CONTROL);
+        remoteControl.addChangeListener(new RemoteControlChangeListener());
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {

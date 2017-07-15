@@ -40,6 +40,10 @@ public class SerialDataPacket extends SerialPacket {
         return this.payload.getShort(index);
     }
 
+    public int readUnsignedByte(int index) {
+        return this.payload.get(index) & 0xFF;
+    }
+
     public byte readByte(int index) {
         return this.payload.get(index);
     }
