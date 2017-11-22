@@ -16,6 +16,21 @@
             android:exported="false"
             android:launchMode="singleTop" />
 
+        <receiver android:name=".usb.UsbConnectionReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"
+                android:resource="@xml/device_filter" />
+        </receiver>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings">
@@ -24,13 +39,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/device_filter" />
         </activity>
         <activity android:name=".cansniffer.CanSnifferActivity" android:launchMode="singleTop" android:label="@string/pref_title_can_sniffer">
             <intent-filter>

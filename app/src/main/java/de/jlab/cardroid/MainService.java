@@ -4,7 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
@@ -220,9 +223,9 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                     this.overlayWindow.destroy();
                 }
             }
-        }
 
-        this.connectionManager.connect();
+            this.connectionManager.connect((UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
+        }
 
         return START_STICKY;
     }
