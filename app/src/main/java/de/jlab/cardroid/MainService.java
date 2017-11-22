@@ -76,6 +76,7 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                 case 42: // VOICE
                     Intent voiceIntent =
                             new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
+                    voiceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     MainService.this.startActivity(voiceIntent);
                     break;
             }
