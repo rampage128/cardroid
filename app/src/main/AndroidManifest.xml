@@ -31,6 +31,13 @@
                 android:resource="@xml/device_filter" />
         </receiver>
 
+        <receiver android:name=".PowerManagementReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings">
