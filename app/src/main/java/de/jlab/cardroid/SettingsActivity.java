@@ -358,7 +358,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 Intent permissionIntent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
                                 permissionIntent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                                permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivityForResult(permissionIntent, CODE_TOGGLE_DISPLAY);
                             }
                             return false;
