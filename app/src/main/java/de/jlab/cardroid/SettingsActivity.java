@@ -182,7 +182,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || OverlayPreferenceFragment.class.getName().equals(fragmentName)
-                || UsbPreferenceFragment.class.getName().equals(fragmentName);
+                || UsbPreferenceFragment.class.getName().equals(fragmentName)
+                || PowerPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -326,6 +327,96 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 return true;
             }
             return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * This fragment shows power preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class PowerPreferenceFragment extends PreferenceFragment {
+        private static final int CODE_TOGGLE_DISPLAY = 2084;
+
+        SwitchPreference toggleScreenPreference;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_power);
+            setHasOptionsMenu(true);
+
+            toggleScreenPreference = (SwitchPreference)findPreference("power_toggle_screen");
+
+            toggleScreenPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    if (((Boolean)newValue)) {
+                        if (canChangeSettings()) {
+                            return true;
+                        } else {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                Intent permissionIntent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                                permissionIntent.setData(Uri.parse("package:" + getContext().getPackageName()));
+                                permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivityForResult(permissionIntent, CODE_TOGGLE_DISPLAY);
+                            }
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        public void onResume(){
+            super.onResume();
+
+            if (!canChangeSettings() && toggleScreenPreference.isChecked()) {
+                toggleScreenPreference.setChecked(false);
+            }
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            if (requestCode == CODE_TOGGLE_DISPLAY) {
+                //Check if the permission is granted or not.
+                if (canChangeSettings()) {
+                    if (!toggleScreenPreference.isChecked()) {
+                        toggleScreenPreference.setChecked(true);
+                    }
+                }
+                //Permission is not available
+                else {
+                    Toast.makeText(getActivity(), R.string.write_settings_permission_missing,
+                            Toast.LENGTH_LONG).show();
+                    if (toggleScreenPreference.isChecked()) {
+                        toggleScreenPreference.setChecked(false);
+                    }
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
+            }
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+
+        private boolean canChangeSettings() {
+            return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(getContext());
         }
     }
 }

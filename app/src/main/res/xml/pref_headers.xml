@@ -12,4 +12,10 @@
         android:title="@string/pref_header_usb"
         android:summary="@string/pref_header_description_usb" />
 
+    <header
+        android:fragment="de.jlab.cardroid.SettingsActivity$PowerPreferenceFragment"
+        android:icon="@drawable/ic_pref_power"
+        android:title="@string/pref_header_power"
+        android:summary="@string/pref_header_description_power" />
+
 </preference-headers>

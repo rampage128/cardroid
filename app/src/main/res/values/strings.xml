@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">CarDroid</string>
     <string name="overlay_permission_missing">Permission to display overlay is missing. Overlay is disabled.</string>
+    <string name="write_settings_permission_missing">Permission to write system settings is missing. Screen control is disabled.</string>
 
     <string name="cc_off">OFF</string>
 
@@ -9,6 +10,18 @@
 
     <!-- Strings related to Settings -->
     <string name="title_activity_settings">CarDroid Settings</string>
+
+    <!-- Power settings -->
+    <string name="pref_header_power">Power Management</string>
+    <string name="pref_header_description_power">Manage charger related settings</string>
+
+    <string name="pref_title_power_toggle_screen">Toggle Screen</string>
+    <string name="pref_description_power_toggle_screen_on">Automatically turn on/off screen when device is charging or disconnected</string>
+    <string name="pref_description_power_toggle_screen_off">Do not manage screen status when device is charging or disconnected</string>
+
+    <string name="pref_title_power_resume_music">Resume music</string>
+    <string name="pref_description_power_resume_music_on">Resume music playback when connected to charger (if it was playing before)</string>
+    <string name="pref_description_power_resume_music_off">Never resume music playback when connected to charger</string>
 
     <!-- Overlay settings -->
     <string name="pref_header_overlay">Overlay</string>
