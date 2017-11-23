@@ -1,13 +1,16 @@
 package de.jlab.cardroid;
 
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.media.AudioManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.media.AudioManager;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
@@ -15,6 +18,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.jlab.cardroid.car.Car;
 import de.jlab.cardroid.car.CarSystem;
@@ -33,6 +38,7 @@ import de.jlab.cardroid.usb.SerialReader;
 import de.jlab.cardroid.usb.UsageStatistics;
 
 public class MainService extends Service implements ManageableCarSystem.CarSystemEventListener {
+    private static final String ACTION_USB_PERMISSION  = "de.jlab.cardroid.USB_PERMISSION";
     private static final String LOG_TAG = "MainService";
 
     private OverlayWindow overlayWindow;
@@ -176,6 +182,27 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         }
     };
 
+    private final BroadcastReceiver permissionReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if(device != null){
+                            MainService.this.connectionManager.connect(device);
+                        }
+                    }
+                    else {
+                        Log.d(LOG_TAG, "permission denied for device " + device);
+                        MainService.this.stopSelf();
+                    }
+                }
+            }
+        }
+    };
+
     public MainService() {
     }
 
@@ -225,7 +252,29 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                 }
             }
 
-            this.connectionManager.connect((UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
+            UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
+            UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            if (device == null) {
+                device = findDevice(usbManager);
+            }
+
+            if (device == null) {
+                Log.w(LOG_TAG, "No USB device");
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+
+            if (usbManager.hasPermission(device)) {
+                this.connectionManager.connect(device);
+            }
+            else {
+                PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+                this.getApplicationContext().registerReceiver(this.permissionReceiver, filter);
+                usbManager.requestPermission(device, permissionIntent);
+            }
+
+
         }
 
         return START_STICKY;
@@ -241,5 +290,34 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     @Override
     public void onTrigger(SerialCarButtonEventPacket packet) {
         this.connectionManager.sendPacket(packet);
+    }
+
+    private UsbDevice findDevice(UsbManager manager) {
+        UsbDevice device = null;
+
+        HashMap<String, UsbDevice> usbDevices = new HashMap<>();
+        try {
+            usbDevices = manager.getDeviceList();
+        } catch (Exception e) {
+            // Usually there will only be an exception on emulators.
+            // But maybe weird device implementations exist aswell?
+            Log.e(LOG_TAG, "USB not supported", e);
+            return null;
+        }
+
+        if (usbDevices.isEmpty()) {
+            return null;
+        }
+
+        for(Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+            UsbDevice deviceEntry = device = entry.getValue();
+            int deviceVID = device.getVendorId();
+            int devicePID = device.getProductId();
+            if (deviceVID == 0x1a86 && devicePID == 0x7523) {
+                device = deviceEntry;
+            }
+        }
+
+        return device;
     }
 }

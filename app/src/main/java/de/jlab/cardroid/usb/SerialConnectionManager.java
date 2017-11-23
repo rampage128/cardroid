@@ -1,9 +1,6 @@
 package de.jlab.cardroid.usb;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -16,13 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SerialConnectionManager {
     private static final String LOG_TAG = "SerialConnection";
-
-    private static String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
     private Context context;
 
@@ -52,6 +45,9 @@ public class SerialConnectionManager {
         }
     };
 
+    private static final String ACTION_USB_PERMISSION =
+            "de.jlab.cardroid.USB_PERMISSION";
+
     public SerialConnectionManager(Context context) {
         this.context = context;
         //this.bandWidthUsage.addListener(this.bandWidthLogWriter);
@@ -59,38 +55,18 @@ public class SerialConnectionManager {
 
     /**
      * Connects to the carduino USB-Device
-     * @return true if connection was established or false if not
      */
-    public boolean connect(UsbDevice device) {
-        UsbManager manager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
-        if (manager == null) {
-            return false;
+    public void connect(UsbDevice device) {
+        if (isConnected()) {
+            this.disconnect();
         }
 
         this.device = device;
-        if (this.device == null) {
-            this.device = findDevice(manager);
-            if (this.device == null) {
-                return false;
-            }
-        }
 
-        Log.d(LOG_TAG, this.device.toString());
-
-        if (!manager.hasPermission(this.device)) {
-            PendingIntent mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(
-                    ACTION_USB_PERMISSION), 0);
-            IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-
-            manager.requestPermission(this.device, mPermissionIntent);
-            if (!manager.hasPermission(this.device)) {
-                return false;
-            }
-        }
-
-        connection = manager.openDevice(this.device);
+        UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
+        connection = usbManager.openDevice(this.device);
         if (connection == null) {
-            return false;
+            return;
         }
 
         createSerialDevice();
@@ -98,36 +74,6 @@ public class SerialConnectionManager {
         for (SerialConnectionListener listener : listeners) {
             listener.onConnect();
         }
-        return true;
-    }
-
-    private UsbDevice findDevice(UsbManager manager) {
-        UsbDevice device = null;
-
-        HashMap<String, UsbDevice> usbDevices = new HashMap<>();
-        try {
-            usbDevices = manager.getDeviceList();
-        } catch (Exception e) {
-            // Usually there will only be an exception on emulators.
-            // But maybe weird device implementations exist aswell?
-            Log.e(LOG_TAG, "USB not supported", e);
-            return null;
-        }
-
-        if (usbDevices.isEmpty()) {
-            return null;
-        }
-
-        for(Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
-            UsbDevice deviceEntry = device = entry.getValue();
-            int deviceVID = device.getVendorId();
-            int devicePID = device.getProductId();
-            if (deviceVID == 0x1a86 && devicePID == 0x7523) {
-                device = deviceEntry;
-            }
-        }
-
-        return device;
     }
 
     public void disconnect() {
