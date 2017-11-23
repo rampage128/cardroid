@@ -9,6 +9,13 @@
 
     <SwitchPreference
         android:defaultValue="false"
+        android:key="power_toggle_wifi"
+        android:summaryOff="@string/pref_description_power_toggle_wifi_off"
+        android:summaryOn="@string/pref_description_power_toggle_wifi_on"
+        android:title="@string/pref_title_power_toggle_wifi"/>
+
+    <SwitchPreference
+        android:defaultValue="false"
         android:key="power_resume_music"
         android:summaryOff="@string/pref_description_power_resume_music_off"
         android:summaryOn="@string/pref_description_power_resume_music_on"

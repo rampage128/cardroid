@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.PowerManager;
 import android.preference.PreferenceActivity;
@@ -21,6 +22,7 @@ public class PowerManagementReceiver extends BroadcastReceiver {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean toggleScreen = prefs.getBoolean("power_toggle_screen", false);
+        boolean toggleWifi = prefs.getBoolean("power_toggle_wifi", false);
         boolean resumeMusic = prefs.getBoolean("power_resume_music", false);
 
         String action = intent.getAction();
@@ -31,14 +33,24 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             if (toggleScreen) {
                 toggleScreen(true, powerPrefs, context);
             }
+            if (toggleWifi && powerPrefs.getBoolean("was_wifi_on", false)) {
+                WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                wifiManager.setWifiEnabled(true);
+            }
         }
         else if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
             AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
             powerPrefs.edit().putBoolean("was_playing_music", audioManager.isMusicActive()).apply();
 
+
             sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PAUSE, context);
             if (toggleScreen) {
                 toggleScreen(false, powerPrefs, context);
+            }
+            if (toggleWifi) {
+                WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                powerPrefs.edit().putBoolean("was_wifi_on", wifiManager.isWifiEnabled()).apply();
+                wifiManager.setWifiEnabled(false);
             }
         }
     }

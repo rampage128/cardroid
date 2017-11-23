@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <application
         android:allowBackup="true"
