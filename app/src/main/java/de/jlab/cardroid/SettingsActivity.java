@@ -126,7 +126,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (this.mainService != null) {
+        if (mainService != null) {
             unbindService(this.mainServiceConnection);
         }
     }
