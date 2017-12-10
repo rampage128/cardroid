@@ -5,6 +5,11 @@
 
     <string name="cc_off">OFF</string>
 
+    <!-- Status display -->
+    <string name="usb_status_preparing">Loading…</string>
+    <string name="usb_status_connecting">Connecting to car…</string>
+    <string name="usb_status_disconnecting">Disconnecting from car…</string>
+
     <!-- Cansniffer -->
     <string name="cansniffer_line"><b>%1$s</b> : %2$s</string>
 

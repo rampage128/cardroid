@@ -1,11 +1,8 @@
 package de.jlab.cardroid;
 
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -182,27 +179,6 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         }
     };
 
-    private final BroadcastReceiver permissionReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (ACTION_USB_PERMISSION.equals(action)) {
-                synchronized (this) {
-                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        if(device != null){
-                            MainService.this.connectionManager.connect(device);
-                        }
-                    }
-                    else {
-                        Log.d(LOG_TAG, "permission denied for device " + device);
-                        MainService.this.stopSelf();
-                    }
-                }
-            }
-        }
-    };
-
     public MainService() {
     }
 
@@ -227,11 +203,6 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
         this.overlayWindow = new OverlayWindow(this, climateControl);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("overlay_active", false)) {
-            this.overlayWindow.create();
-        }
-
         climateControl.addEventListener(this);
 
         RemoteControl remoteControl = (RemoteControl)this.car.getCarSystem(CarSystemFactory.REMOTE_CONTROL);
@@ -239,6 +210,7 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(LOG_TAG, "Starting main service.");
 
         if (intent != null) {
             String command = intent.getStringExtra("command");
@@ -252,9 +224,9 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                 }
             }
 
-            UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
             UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if (device == null) {
+                UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
                 device = findDevice(usbManager);
             }
 
@@ -263,20 +235,13 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                 stopSelf();
                 return START_NOT_STICKY;
             }
-
-            if (usbManager.hasPermission(device)) {
-                this.connectionManager.connect(device);
-            }
-            else {
-                PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-                this.getApplicationContext().registerReceiver(this.permissionReceiver, filter);
-                usbManager.requestPermission(device, permissionIntent);
-            }
-
-
+            this.connectionManager.connect(device);
         }
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainService.this);
+        if (prefs.getBoolean("overlay_active", false)) {
+            this.overlayWindow.create();
+        }
         return START_STICKY;
     }
 

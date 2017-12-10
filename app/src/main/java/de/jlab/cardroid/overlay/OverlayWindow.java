@@ -92,6 +92,10 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     }
 
     public void create() {
+        if (viewHolder.rootView != null) {
+            this.destroy();
+        }
+
         this.uiHandler = new Handler();
 
         this.windowManager = (WindowManager) this.context.getSystemService(Context.WINDOW_SERVICE);
