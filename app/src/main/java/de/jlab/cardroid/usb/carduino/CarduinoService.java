@@ -1,11 +1,8 @@
-package de.jlab.cardroid;
+package de.jlab.cardroid.usb.carduino;
 
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.IBinder;
@@ -14,9 +11,8 @@ import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.jlab.cardroid.car.Car;
 import de.jlab.cardroid.car.CarSystem;
@@ -26,17 +22,12 @@ import de.jlab.cardroid.car.ManageableCarSystem;
 import de.jlab.cardroid.car.RemoteControl;
 import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
-import de.jlab.cardroid.usb.MetaEvent;
-import de.jlab.cardroid.usb.MetaSerialPacket;
-import de.jlab.cardroid.usb.SerialCarButtonEventPacket;
 import de.jlab.cardroid.usb.SerialConnectionManager;
-import de.jlab.cardroid.usb.SerialPacket;
-import de.jlab.cardroid.usb.SerialReader;
 import de.jlab.cardroid.usb.UsageStatistics;
+import de.jlab.cardroid.usb.UsbService;
 
-public class MainService extends Service implements ManageableCarSystem.CarSystemEventListener {
-    private static final String ACTION_USB_PERMISSION  = "de.jlab.cardroid.USB_PERMISSION";
-    private static final String LOG_TAG = "MainService";
+public class CarduinoService extends UsbService implements ManageableCarSystem.CarSystemEventListener {
+    private static final String LOG_TAG = "CarduinoService";
 
     private OverlayWindow overlayWindow;
 
@@ -80,64 +71,69 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                     Intent voiceIntent =
                             new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
                     voiceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    MainService.this.startActivity(voiceIntent);
+                    CarduinoService.this.startActivity(voiceIntent);
                     break;
             }
         }
 
         private void adjustVolume(int direction) {
             AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
-            audioManager.adjustVolume(direction, AudioManager.FLAG_SHOW_UI);
+
+            if (audioManager != null) {
+                audioManager.adjustVolume(direction, AudioManager.FLAG_SHOW_UI);
+            }
         }
 
         private void sendMediaEvent(int keyCode) {
             AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
 
-            KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-            audioManager.dispatchMediaKeyEvent(downEvent);
+            if (audioManager != null) {
+                KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+                audioManager.dispatchMediaKeyEvent(downEvent);
 
-            KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
-            audioManager.dispatchMediaKeyEvent(upEvent);
+                KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
+                audioManager.dispatchMediaKeyEvent(upEvent);
+            }
         }
     }
 
     public class MainServiceBinder extends Binder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
-            MainService.this.connectionManager.addBandwidthStatisticsListener(listener);
+            CarduinoService.this.connectionManager.addBandwidthStatisticsListener(listener);
         }
 
         public void removeBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
-            MainService.this.connectionManager.removeBandwidthStatisticsListener(listener);
+            CarduinoService.this.connectionManager.removeBandwidthStatisticsListener(listener);
         }
 
         public void addPacketStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
-            MainService.this.serialReader.addPacketStatisticListener(listener);
+            CarduinoService.this.serialReader.addPacketStatisticListener(listener);
         }
 
         public void removePacketStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
-            MainService.this.serialReader.removePacketStatisticListener(listener);
+            CarduinoService.this.serialReader.removePacketStatisticListener(listener);
         }
 
         public void addSerialPacketListener(SerialReader.SerialPacketListener listener) {
-            MainService.this.serialReader.addListener(listener);
+            CarduinoService.this.serialReader.addListener(listener);
         }
 
         public void removeSerialPacketListener(SerialReader.SerialPacketListener listener) {
-            MainService.this.serialReader.removeListener(listener);
+            CarduinoService.this.serialReader.removeListener(listener);
         }
 
         public void startCanSniffer() {
-            MainService.this.connectionManager.sendPacket(MetaEvent.serialize(MetaEvent.START_SNIFFING, null));
+            CarduinoService.this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.START_SNIFFING, null)));
         }
 
         public void stopCanSniffer() {
-            MainService.this.connectionManager.sendPacket(MetaEvent.serialize(MetaEvent.STOP_SNIFFING, null));
+            CarduinoService.this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.STOP_SNIFFING, null)));
         }
 
         public void requestBaudRate(int baudRate) {
-            MainService.this.connectionManager.requestBaudRate(baudRate);
+            CarduinoService.this.requestCarduinoBaudRate(baudRate);
         }
-    };
+    }
 
     private final IBinder binder = new MainServiceBinder();
 
@@ -148,14 +144,14 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
                 if (packet instanceof MetaSerialPacket) {
                     MetaSerialPacket metaPacket = (MetaSerialPacket)packet;
                     if (packet.getId() == 0x01) {
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainService.this);
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
                         int baudRate = Integer.valueOf(prefs.getString("usb_baud_rate", "115200"));
-                        MainService.this.connectionManager.requestBaudRate(baudRate);
+                        CarduinoService.this.requestCarduinoBaudRate(baudRate);
                     }
                     else if (packet.getId() == 0x02) {
                         int baudRate = (int)metaPacket.readDWord(0);
                         Log.d(LOG_TAG, "Adapting baudRate to " + baudRate);
-                        MainService.this.connectionManager.setBaudRate(baudRate);
+                        CarduinoService.this.connectionManager.setBaudRate(baudRate);
                     }
                 }
                 try {
@@ -179,7 +175,10 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
         }
     };
 
-    public MainService() {
+    public void requestCarduinoBaudRate(int baudRate) {
+        Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
+        byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
+        this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload)));
     }
 
     @Override
@@ -191,14 +190,9 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     public void onCreate() {
         super.onCreate();
 
-        Log.d(LOG_TAG, "Creating main service.");
+        Log.d(LOG_TAG, "Creating Carduino service.");
 
         this.car = new Car();
-
-        this.connectionManager = new SerialConnectionManager(this);
-        this.serialReader = new SerialReader();
-        this.serialReader.addListener(this.listener);
-        this.connectionManager.addConnectionListener(this.serialReader);
 
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
         this.overlayWindow = new OverlayWindow(this, climateControl);
@@ -210,79 +204,48 @@ public class MainService extends Service implements ManageableCarSystem.CarSyste
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(LOG_TAG, "Starting main service.");
+        int result = super.onStartCommand(intent, flags, startId);
 
-        if (intent != null) {
-            String command = intent.getStringExtra("command");
-            if (command != null) {
-                if (command.equals("show_overlay")) {
-                    Log.d(LOG_TAG, "Showing overlay.");
-                    this.overlayWindow.create();
-                } else if (command.equals("hide_overlay")) {
-                    Log.d(LOG_TAG, "Hiding overlay.");
-                    this.overlayWindow.destroy();
+        if (result == START_STICKY) {
+            if (intent != null) {
+                String command = intent.getStringExtra("command");
+                if (command != null) {
+                    if (command.equals("show_overlay")) {
+                        Log.d(LOG_TAG, "Showing overlay.");
+                        this.overlayWindow.create();
+                    } else if (command.equals("hide_overlay")) {
+                        Log.d(LOG_TAG, "Hiding overlay.");
+                        this.overlayWindow.destroy();
+                    }
                 }
             }
-
-            UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            if (device == null) {
-                UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
-                device = findDevice(usbManager);
-            }
-
-            if (device == null) {
-                Log.w(LOG_TAG, "No USB device");
-                stopSelf();
-                return START_NOT_STICKY;
-            }
-            this.connectionManager.connect(device);
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainService.this);
+        return result;
+    }
+
+    protected boolean connectDevice(UsbDevice device) {
+        this.serialReader = new SerialReader();
+        this.serialReader.addListener(this.listener);
+        this.connectionManager = new SerialConnectionManager(this);
+        this.connectionManager.addConnectionListener(this.serialReader);
+        this.connectionManager.connect(device, 115200);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
         if (prefs.getBoolean("overlay_active", false)) {
             this.overlayWindow.create();
         }
-        return START_STICKY;
+        return true;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+    protected void disconnectDevice() {
+        if (this.connectionManager != null) {
+            this.connectionManager.disconnect();
+        }
         this.overlayWindow.destroy();
-        this.connectionManager.disconnect();
     }
 
     @Override
     public void onTrigger(SerialCarButtonEventPacket packet) {
-        this.connectionManager.sendPacket(packet);
-    }
-
-    private UsbDevice findDevice(UsbManager manager) {
-        UsbDevice device = null;
-
-        HashMap<String, UsbDevice> usbDevices = new HashMap<>();
-        try {
-            usbDevices = manager.getDeviceList();
-        } catch (Exception e) {
-            // Usually there will only be an exception on emulators.
-            // But maybe weird device implementations exist aswell?
-            Log.e(LOG_TAG, "USB not supported", e);
-            return null;
-        }
-
-        if (usbDevices.isEmpty()) {
-            return null;
-        }
-
-        for(Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
-            UsbDevice deviceEntry = device = entry.getValue();
-            int deviceVID = device.getVendorId();
-            int devicePID = device.getProductId();
-            if (deviceVID == 0x1a86 && devicePID == 0x7523) {
-                device = deviceEntry;
-            }
-        }
-
-        return device;
+        this.connectionManager.send(SerialPacketFactory.serialize(packet));
     }
 }

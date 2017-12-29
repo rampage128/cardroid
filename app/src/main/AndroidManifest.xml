@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="de.jlab.cardroid">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -7,6 +8,10 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation"/>
 
     <uses-feature android:name="android.hardware.usb.host"/>
 
@@ -18,9 +23,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".MainService"
+            android:name=".usb.carduino.CarduinoService"
             android:exported="false"
-            android:launchMode="singleTop"/>
+            android:launchMode="singleInstance"/>
+        <service
+            android:name=".usb.gps.GpsService"
+            android:exported="false"
+            android:launchMode="singleInstance"/>
 
         <receiver
             android:name=".PowerManagementReceiver"
@@ -30,15 +39,16 @@
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
             </intent-filter>
         </receiver>
-
-        <receiver android:name=".usb.CarDiscconectedReceiver" android:exported="true">
+        <receiver
+            android:name=".usb.CarDiscconectedReceiver"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"/>
             </intent-filter>
 
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"
-                android:resource="@xml/device_filter" />
+                android:resource="@xml/device_filter"/>
         </receiver>
 
         <activity
@@ -60,8 +70,11 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-
-        <activity android:name=".usb.UsbStatusActivity" android:theme="@style/Theme.UserDialog" android:excludeFromRecents="true" android:launchMode="singleInstance">
+        <activity
+            android:name=".usb.UsbStatusActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.UserDialog">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
             </intent-filter>
@@ -69,6 +82,8 @@
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter"/>
+        </activity>
+        <activity android:name=".usb.gps.GpsMonitorActivity">
         </activity>
     </application>
 

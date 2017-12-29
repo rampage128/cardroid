@@ -13,6 +13,12 @@
         android:summary="@string/pref_header_description_usb" />
 
     <header
+        android:fragment="de.jlab.cardroid.SettingsActivity$GpsPreferenceFragment"
+        android:icon="@drawable/ic_pref_gps"
+        android:title="@string/pref_header_gps"
+        android:summary="@string/pref_header_description_gps" />
+
+    <header
         android:fragment="de.jlab.cardroid.SettingsActivity$PowerPreferenceFragment"
         android:icon="@drawable/ic_pref_power"
         android:title="@string/pref_header_power"

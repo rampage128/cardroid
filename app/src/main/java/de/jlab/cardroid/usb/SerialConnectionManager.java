@@ -4,14 +4,11 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.util.Log;
+import android.os.Handler;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class SerialConnectionManager {
@@ -22,16 +19,11 @@ public class SerialConnectionManager {
     private UsbDevice device;
     private UsbDeviceConnection connection;
     private UsbSerialDevice serial;
+    private int baudRate = 0;
+
+    private boolean isConnected = false;
 
     private UsageStatistics bandWidthUsage = new UsageStatistics(1000, 60);
-    /*
-    private UsageStatistics.UsageStatisticsListener bandWidthLogWriter = new UsageStatistics.UsageStatisticsListener() {
-        @Override
-        public void onInterval(int count, UsageStatistics statistics) {
-            Log.d(LOG_TAG, "Bandwidth: " + count + "bps / Avg: " + Math.round(bandWidthUsage.getAverage()) + "bps (" + Math.round(bandWidthUsage.getAverageReliability() * 100f) + "%) / Usage: " + Math.round(100f / 11520 * count) + "%");
-        }
-    };
-    */
 
     private ArrayList<SerialConnectionListener> listeners = new ArrayList<>();
 
@@ -45,38 +37,70 @@ public class SerialConnectionManager {
         }
     };
 
-    private static final String ACTION_USB_PERMISSION =
-            "de.jlab.cardroid.USB_PERMISSION";
-
     public SerialConnectionManager(Context context) {
         this.context = context;
-        //this.bandWidthUsage.addListener(this.bandWidthLogWriter);
     }
 
     /**
-     * Connects to the carduino USB-Device
+     * Connects to an USB-Device
      */
-    public void connect(UsbDevice device) {
-        if (isConnected()) {
+    public void connect(UsbDevice device, int baudRate) {
+        if (this.isConnected()) {
             this.disconnect();
         }
 
         this.device = device;
+        this.baudRate = baudRate;
+
+        if (this.device == null) {
+            return;
+        }
 
         UsbManager usbManager = (UsbManager) this.context.getSystemService(Context.USB_SERVICE);
+
+        if (usbManager == null) {
+            return;
+        }
+
         connection = usbManager.openDevice(this.device);
         if (connection == null) {
             return;
         }
 
-        createSerialDevice();
+        this.serial = UsbSerialDevice.createUsbSerialDevice(device, connection);
+        // SERIALPORT WILL BE NULL IF NO DRIVER IS FOUND
+        if(this.serial != null) {
+            // SERIALPORT WILL NOT OPEN IF THERE IS AN I/O ERROR OR THE WRONG DRIVER WAS CHOSEN
+            if (this.serial.open()) {
+                this.serial.setBaudRate(baudRate);
+                this.serial.setDataBits(UsbSerialInterface.DATA_BITS_8);
+                this.serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
+                this.serial.setParity(UsbSerialInterface.PARITY_NONE);
+                this.serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+                this.serial.read(readCallback);
+            }
+        }
+
+        this.isConnected = true;
 
         for (SerialConnectionListener listener : listeners) {
             listener.onConnect();
         }
     }
 
+    public void reconnect() {
+        UsbDevice device = this.device;
+        int baudRate = this.baudRate;
+
+        this.disconnect();
+        this.connect(device, baudRate);
+    }
+
     public void disconnect() {
+        if (!this.isConnected) {
+            return;
+        }
+
         if (this.serial != null) {
             this.serial.close();
             this.serial = null;
@@ -87,64 +111,23 @@ public class SerialConnectionManager {
         }
         this.device = null;
 
+        this.isConnected = false;
+
         for (SerialConnectionListener listener : listeners) {
             listener.onDisconnect();
         }
     }
 
     public boolean isConnected() {
-        return this.connection != null && this.serial != null && this.device != null;
+        return this.isConnected;
     }
 
-    public boolean sendPacket(SerialPacket packet) {
+    public boolean send(byte[] data) {
         if (!this.isConnected()) {
             return false;
         }
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            outputStream.write(SerialPacketStructure.HEADER);
-            SerialPacketFactory.serialize(packet, outputStream);
-            outputStream.write(SerialPacketStructure.FOOTER);
-            byte[] data = outputStream.toByteArray();
-            this.serial.write(data);
-            return true;
-        }
-        catch (IOException e) {
-            Log.e(LOG_TAG, "Error serializing packet " + packet.getClass().getSimpleName(), e);
-            return false;
-        } catch (UnknownPacketTypeException e) {
-            throw new UnsupportedOperationException("Packet " + packet.getClass().getCanonicalName() + " cannot be sent.", e);
-        }
-    }
-
-    private boolean createSerialDevice() {
-        if (this.device == null || this.connection == null) {
-            return false;
-        }
-
-        this.serial = UsbSerialDevice.createUsbSerialDevice(device, connection);
-        // SERIALPORT WILL BE NULL IF NO DRIVER IS FOUND
-        if(this.serial != null) {
-            // SERIALPORT WILL NOT OPEN IF THERE IS AN I/O ERROR OR THE WRONG DRIVER WAS CHOSEN
-            if (this.serial.open()) {
-                this.serial.setBaudRate(115200);
-                this.serial.setDataBits(UsbSerialInterface.DATA_BITS_8);
-                this.serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
-                this.serial.setParity(UsbSerialInterface.PARITY_NONE);
-                this.serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                this.serial.read(readCallback);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void requestBaudRate(int baudRate) {
-        Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
-        byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
-        this.sendPacket(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload));
+        this.serial.write(data);
+        return true;
     }
 
     public void setBaudRate(int baudRate) {

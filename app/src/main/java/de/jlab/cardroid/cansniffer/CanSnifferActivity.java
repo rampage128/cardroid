@@ -14,11 +14,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import de.jlab.cardroid.MainService;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.usb.SerialCanPacket;
-import de.jlab.cardroid.usb.SerialPacket;
-import de.jlab.cardroid.usb.SerialReader;
+import de.jlab.cardroid.usb.carduino.SerialCanPacket;
+import de.jlab.cardroid.usb.carduino.SerialPacket;
+import de.jlab.cardroid.usb.carduino.SerialReader;
 import de.jlab.cardroid.usb.UsageStatistics;
 
 public class CanSnifferActivity extends AppCompatActivity implements SerialReader.SerialPacketListener {
@@ -60,11 +60,11 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
         }
     };
 
-    private static MainService.MainServiceBinder mainService;
+    private static CarduinoService.MainServiceBinder mainService;
 
     private ServiceConnection mainServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            mainService = (MainService.MainServiceBinder)service;
+            mainService = (CarduinoService.MainServiceBinder)service;
             mainService.startCanSniffer();
             mainService.addBandwidthStatisticsListener(bandWidthStatListener);
             mainService.addPacketStatisticsListener(packetStatListener);
@@ -137,6 +137,6 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, MainService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
     }
 }

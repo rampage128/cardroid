@@ -1,0 +1,19 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="4800"
+        android:key="gps_baud_rate"
+        android:title="@string/pref_title_gps_baud_rate"
+        android:entries="@array/gps_baud_rates"
+        android:entryValues="@array/gps_baud_rates"
+        />
+
+    <Preference
+        android:key="gps_monitor"
+        android:title="@string/pref_title_gps_monitor"
+        android:summary="@string/pref_description_gps_monitor">
+        <intent android:targetPackage="de.jlab.cardroid"
+            android:targetClass="de.jlab.cardroid.usb.gps.GpsMonitorActivity"/>
+    </Preference>
+
+</PreferenceScreen>

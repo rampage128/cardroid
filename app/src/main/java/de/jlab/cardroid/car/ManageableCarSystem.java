@@ -2,7 +2,7 @@ package de.jlab.cardroid.car;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.usb.SerialCarButtonEventPacket;
+import de.jlab.cardroid.usb.carduino.SerialCarButtonEventPacket;
 
 public abstract class ManageableCarSystem extends CarSystem {
 

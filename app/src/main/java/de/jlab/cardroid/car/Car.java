@@ -3,7 +3,7 @@ package de.jlab.cardroid.car;
 import java.util.HashMap;
 
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
-import de.jlab.cardroid.usb.SerialPacket;
+import de.jlab.cardroid.usb.carduino.SerialPacket;
 
 public class Car {
 

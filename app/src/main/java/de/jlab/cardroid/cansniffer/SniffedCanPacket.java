@@ -1,8 +1,6 @@
 package de.jlab.cardroid.cansniffer;
 
-import java.util.Arrays;
-
-import de.jlab.cardroid.usb.SerialCanPacket;
+import de.jlab.cardroid.usb.carduino.SerialCanPacket;
 
 public class SniffedCanPacket {
     private long timestamp;

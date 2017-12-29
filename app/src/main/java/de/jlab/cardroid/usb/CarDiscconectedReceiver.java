@@ -20,16 +20,10 @@ public final class CarDiscconectedReceiver extends BroadcastReceiver {
     }
 
     private void disconnectDevice(UsbDevice device, Context context) {
-        int deviceVID = device.getVendorId();
-        int devicePID = device.getProductId();
-
-        // carduino
-        if (deviceVID == 0x1a86 && devicePID == 0x7523) {
-            Intent intent = new Intent(context, UsbStatusActivity.class);
-            intent.putExtra(UsbManager.EXTRA_DEVICE, device);
-            intent.setAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        }
+        Intent intent = new Intent(context, UsbStatusActivity.class);
+        intent.putExtra(UsbManager.EXTRA_DEVICE, device);
+        intent.setAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 }

@@ -2,13 +2,15 @@
     <string name="app_name">CarDroid</string>
     <string name="overlay_permission_missing">Permission to display overlay is missing. Overlay is disabled.</string>
     <string name="write_settings_permission_missing">Permission to write system settings is missing. Screen control is disabled.</string>
+    <string name="gps_permission_title">Permission to update GPS position missing</string>
+    <string name="gps_permission_message">Please set CarDroid as mock location provider in debug options.</string>
 
     <string name="cc_off">OFF</string>
 
     <!-- Status display -->
     <string name="usb_status_preparing">Loading…</string>
-    <string name="usb_status_connecting">Connecting to car…</string>
-    <string name="usb_status_disconnecting">Disconnecting from car…</string>
+    <string name="usb_status_connecting">Connecting to device…</string>
+    <string name="usb_status_disconnecting">Disconnecting from device…</string>
 
     <!-- Cansniffer -->
     <string name="cansniffer_line"><b>%1$s</b> : %2$s</string>
@@ -62,7 +64,7 @@
         <item>230400</item>
         <item>460800</item>
         <item>921600</item>
-<!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
+        <!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
         <item>250000</item>
         <item>500000</item>
         <item>1000000</item>
@@ -72,4 +74,18 @@
 
     <string name="pref_title_can_sniffer">CAN Sniffer</string>
     <string name="pref_description_can_sniffer">Directly read CAN packets from the car</string>
+
+    <!-- GPS settings -->
+    <string name="pref_header_gps">GPS</string>
+    <string name="pref_header_description_gps">Configure an external GPS device</string>
+
+    <string name="pref_title_gps_baud_rate">GPS baud rate</string>
+    <string-array name="gps_baud_rates">
+        <item>4800</item>
+        <item>9600</item>
+    </string-array>
+
+    <string name="pref_title_gps_monitor">GPS Monitor</string>
+    <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
+
 </resources>

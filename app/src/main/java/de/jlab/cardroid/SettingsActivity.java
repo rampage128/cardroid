@@ -25,6 +25,7 @@ import android.widget.Toast;
 import java.util.List;
 
 import de.jlab.cardroid.usb.UsbStatsPreference;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -38,11 +39,11 @@ import de.jlab.cardroid.usb.UsbStatsPreference;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    private static MainService.MainServiceBinder mainService;
+    private static CarduinoService.MainServiceBinder mainService;
 
     private ServiceConnection mainServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            mainService = (MainService.MainServiceBinder)service;
+            mainService = (CarduinoService.MainServiceBinder)service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -120,14 +121,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onResume() {
         super.onResume();
         startMainService();
-        bindService(new Intent(this, MainService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+        getApplicationContext().bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         if (mainService != null) {
-            unbindService(this.mainServiceConnection);
+            getApplicationContext().unbindService(this.mainServiceConnection);
         }
     }
 
@@ -143,17 +144,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     private void startMainService() {
-        startService(new Intent(SettingsActivity.this, MainService.class));
+        startService(new Intent(SettingsActivity.this, CarduinoService.class));
     }
 
     private void showOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, MainService.class);
+        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
         overlayIntent.putExtra("command", "show_overlay");
         startService(overlayIntent);
     }
 
     private void hideOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, MainService.class);
+        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
         overlayIntent.putExtra("command", "hide_overlay");
         startService(overlayIntent);
     }
@@ -183,6 +184,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || OverlayPreferenceFragment.class.getName().equals(fragmentName)
                 || UsbPreferenceFragment.class.getName().equals(fragmentName)
+                || GpsPreferenceFragment.class.getName().equals(fragmentName)
                 || PowerPreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -317,6 +319,31 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onPause();
             mainService.removeBandwidthStatisticsListener(bandwidthStats);
             mainService.removePacketStatisticsListener(this.packetStats);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * This fragment shows gps preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class GpsPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_gps);
+            setHasOptionsMenu(true);
+            bindPreferenceSummaryToValue(findPreference("gps_baud_rate"));
         }
 
         @Override

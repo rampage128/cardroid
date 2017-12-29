@@ -30,6 +30,8 @@ import de.jlab.cardroid.car.ClimateControl;
 public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private static final String LOG_TAG = "OverlayWindow";
 
+    private boolean isAttached = false;
+
     private Handler uiHandler;
     private Context context;
 
@@ -143,6 +145,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 WindowManager.LayoutParams.WRAP_CONTENT
         );
         this.windowManager.addView(viewHolder.rootView, params);
+        this.isAttached = true;
 
         // Make overlay toggleable
         viewHolder.toggleButton.setOnClickListener(new View.OnClickListener() {
@@ -313,8 +316,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     }
 
     public void destroy() {
-        if (this.viewHolder.rootView != null) {
+        if (this.isAttached) {
             this.windowManager.removeView(this.viewHolder.rootView);
+            this.isAttached = false;
         }
         this.climateControl.removeChangeListener(this);
     }
