@@ -224,6 +224,11 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         return result;
     }
 
+    @Override
+    protected boolean isConnected() {
+        return this.connectionManager != null && this.connectionManager.isConnected();
+    }
+
     protected boolean connectDevice(UsbDevice device) {
         this.serialReader = new SerialReader();
         this.serialReader.addListener(this.listener);

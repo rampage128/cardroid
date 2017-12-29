@@ -1,25 +1,20 @@
 package de.jlab.cardroid.usb.gps;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.hardware.usb.UsbDevice;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.WindowManager;
 
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsbService;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class GpsService extends UsbService {
     private static final String LOG_TAG = "GpsService";
@@ -30,8 +25,10 @@ public class GpsService extends UsbService {
     private GPSSerialReader.PositionListener positionListener = new GPSSerialReader.PositionListener() {
         @Override
         public void onUpdate(GpsPosition position) {
-            GpsService.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position);
-            GpsService.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
+            if (position.isValid()) {
+                GpsService.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position);
+                GpsService.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
+            }
         }
 
         @Override
@@ -48,6 +45,11 @@ public class GpsService extends UsbService {
         Log.d(LOG_TAG, "Creating gps service.");
 
         this.locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+    }
+
+    @Override
+    protected boolean isConnected() {
+        return this.gpsManager != null && this.gpsManager.isConnected();
     }
 
     protected boolean connectDevice(UsbDevice device) {

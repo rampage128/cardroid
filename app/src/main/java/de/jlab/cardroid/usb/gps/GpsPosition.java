@@ -2,6 +2,7 @@ package de.jlab.cardroid.usb.gps;
 
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.SystemClock;
 
 public class GpsPosition extends Location {
 
@@ -21,7 +22,7 @@ public class GpsPosition extends Location {
             this.setAccuracy(f);
         }
 
-        double d = (float)parser.getToken(NMEAParser.PROPERTY_ALTITUDE, this.getAltitude());
+        double d = (double)parser.getToken(NMEAParser.PROPERTY_ALTITUDE, this.getAltitude());
         if (d != this.getAltitude()) {
             dirty = true;
             this.setAltitude(d);
@@ -55,6 +56,7 @@ public class GpsPosition extends Location {
         if (l != this.getTime()) {
             dirty = true;
             this.setTime(l);
+            this.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
         }
 
         f = (float)parser.getToken(NMEAParser.PROPERTY_VELOCITY, this.getSpeed());
@@ -66,6 +68,13 @@ public class GpsPosition extends Location {
         this.fixed = quality > 0;
 
         return dirty;
+    }
+
+    public boolean isValid() {
+        if (!hasAccuracy()) return false;
+        if (getTime() == 0) return false;
+        if (getElapsedRealtimeNanos() == 0) return false;
+        return true;
     }
 
 }
