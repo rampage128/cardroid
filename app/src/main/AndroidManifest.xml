@@ -25,11 +25,11 @@
         <service
             android:name=".usb.carduino.CarduinoService"
             android:exported="false"
-            android:launchMode="singleInstance"/>
+            android:launchMode="singleTop"/>
         <service
             android:name=".usb.gps.GpsService"
             android:exported="false"
-            android:launchMode="singleInstance"/>
+            android:launchMode="singleTop"/>
 
         <receiver
             android:name=".PowerManagementReceiver"
