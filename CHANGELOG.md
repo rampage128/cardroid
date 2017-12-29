@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `PowerManagementReceiver` to control power management functions
+- `UsbStatusActivity` to handle device connections and permissions
+- Permanent `GpsService` to support external USB gps receivers
 - `CanSnifferActivity` to directly sniff the can bus
-- Permanent `MainService` to manage global state
+- Permanent `CarduinoService` to manage carduino connection
 - `SerialConnectionManager` to maintain serial connection
 - `SerialReader` along with `SerialPacket` (and descendants) to manage serial-data
 - `OverlayWindow` to show climate control status
