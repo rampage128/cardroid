@@ -47,10 +47,11 @@ public abstract class NMEAParser {
             calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(value.substring(0, 2)));
             calendar.set(Calendar.MINUTE, Integer.parseInt(value.substring(2, 4)));
             calendar.set(Calendar.SECOND, Integer.parseInt(value.substring(4, 6)));
-            calendar.set(Calendar.MILLISECOND, Integer.parseInt(value.substring(8, value.length() - 1)));
+            calendar.set(Calendar.MILLISECOND, Integer.parseInt(value.substring(7, value.length())));
             this.tokenMap.put(key, calendar.getTimeInMillis());
         }
         catch (NumberFormatException ex) { /* Intentionally left blank */ }
+        catch (StringIndexOutOfBoundsException ex) { /* Intentionally left blank */ }
     }
 
     protected void parseLatitude(String key, String lat, String ns) {
