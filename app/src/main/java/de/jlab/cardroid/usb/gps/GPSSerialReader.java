@@ -24,7 +24,6 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
 
         if (!initialized) {
             if (data[0] != 0x24) {
-                Log.d("GPS", this.bytesToHex(data) + ": " + new String(data));
                 for (PositionListener listener : positionListeners) {
                     listener.onError();
                 }
@@ -35,25 +34,20 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
         }
 
         for (int i = 0; i < data.length; i++) {
-            byte dataByte = data[0];
-            if (dataByte == 0x0D) {
-                this.newLine = true;
+            byte dataByte = data[i];
+            if (dataByte == 0x0D || dataByte == 0x0A) {
+                continue;
             }
-            else if (dataByte == 0x0A) {
-                if (this.newLine) {
-                    if (this.parse(this.dataLine.toString())) {
-                        for (PositionListener listener : positionListeners) {
-                            listener.onUpdate(this.position);
-                        }
-                        Log.d("GPS", this.position.toString());
+            else if (dataByte == 0x24) {
+                String rawData = this.dataLine.toString();
+                if (this.parse(rawData)) {
+                    for (PositionListener listener : positionListeners) {
+                        listener.onUpdate(this.position, rawData);
                     }
-                    this.dataLine.setLength(0);
-                    this.newLine = false;
                 }
+                this.dataLine.setLength(0);
             }
-            else {
-                this.dataLine.append((char)dataByte);
-            }
+            this.dataLine.append((char)dataByte);
         }
     }
 
@@ -80,8 +74,8 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
             return false;
         }
 
-        parser.parseSentence(tokens);
-        return this.position.update(parser);
+        parser.parseSentence(tokens, this.position);
+        return true;
     }
 
     @Override
@@ -105,7 +99,7 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
     }
 
     public interface PositionListener {
-        void onUpdate(GpsPosition position);
+        void onUpdate(GpsPosition position, String rawData);
         void onError();
     }
 }

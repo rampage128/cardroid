@@ -83,7 +83,7 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter"/>
         </activity>
-        <activity android:name=".usb.gps.GpsMonitorActivity">
+        <activity android:name=".usb.gps.GpsMonitorActivity" android:label="@string/pref_title_gps_monitor">
         </activity>
     </application>
 

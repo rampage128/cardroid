@@ -1,60 +1,56 @@
 package de.jlab.cardroid.usb.gps;
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import java.util.Calendar;
 import java.util.HashMap;
 
 public abstract class NMEAParser {
 
-    public static final String PROPERTY_ACCURACY    = "accuracy";
-    public static final String PROPERTY_ALTITUDE    = "alt";
-    public static final String PROPERTY_DIRECTION   = "dir";
-    public static final String PROPERTY_LATITUDE    = "lat";
-    public static final String PROPERTY_LONGITUDE   = "long";
-    public static final String PROPERTY_QUALITY     = "quality";
-    public static final String PROPERTY_TIME        = "time";
-    public static final String PROPERTY_VELOCITY    = "velocity";
-
     private static HashMap<String, NMEAParser> parsers = new HashMap<>();
-
-    private HashMap<String, Object> tokenMap = new HashMap<>();
-
     private Calendar calendar = Calendar.getInstance();
+    private GpsPosition position = new GpsPosition();
 
-    protected void parseDouble(String key, String value, double factor) {
+    protected double parseDouble(String value, double defaultValue) {
         try {
-            this.tokenMap.put(key, Double.parseDouble(value) * factor);
+            return Double.parseDouble(value);
         }
         catch (NumberFormatException ex) { /* Intentionally left blank */ }
+        return defaultValue;
     }
 
-    protected void parseFloat(String key, String value, float factor) {
+    protected float parseFloat(String value, float defaultValue) {
         try {
-            this.tokenMap.put(key, Float.parseFloat(value) * factor);
+            return Float.parseFloat(value);
         }
         catch (NumberFormatException ex) { /* Intentionally left blank */ }
+        return defaultValue;
     }
 
-    protected void parseInt(String key, String value) {
+    protected int parseInt(String value, int defaultValue) {
         try {
-            this.tokenMap.put(key, Integer.parseInt(value));
+            return Integer.parseInt(value);
         }
         catch (NumberFormatException ex) { /* Intentionally left blank */ }
+        return defaultValue;
     }
 
-    protected void parseTime(String key, String value) {
+    protected long parseTime(String value) {
         try {
             this.calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(value.substring(0, 2)));
             calendar.set(Calendar.MINUTE, Integer.parseInt(value.substring(2, 4)));
             calendar.set(Calendar.SECOND, Integer.parseInt(value.substring(4, 6)));
             calendar.set(Calendar.MILLISECOND, Integer.parseInt(value.substring(7, value.length())));
-            this.tokenMap.put(key, calendar.getTimeInMillis());
+            return calendar.getTimeInMillis();
         }
         catch (NumberFormatException ex) { /* Intentionally left blank */ }
         catch (StringIndexOutOfBoundsException ex) { /* Intentionally left blank */ }
+        return System.currentTimeMillis();
     }
 
-    protected void parseLatitude(String key, String lat, String ns) {
+    protected double parseLatitude(String lat, String ns) {
         double d = Double.NaN;
         if (!lat.isEmpty()) {
             try {
@@ -65,10 +61,10 @@ public abstract class NMEAParser {
             }
             catch (Exception e) { /* Intentionally left blank */ }
         }
-        this.tokenMap.put(key, d);
+        return d;
     }
 
-    protected void parseLongitude(String key, String lon, String we) {
+    protected double parseLongitude(String lon, String we) {
         double d = Double.NaN;
         if (!lon.isEmpty()) {
             try {
@@ -79,15 +75,10 @@ public abstract class NMEAParser {
             }
             catch (Exception e) { /* Intentionally left blank */ }
         }
-        this.tokenMap.put(key, d);
+        return d;
     }
 
-    protected Object getToken(String key, Object defaultValue) {
-        Object value = this.tokenMap.get(key);
-        return value != null ? value : defaultValue;
-    }
-
-    abstract void parseSentence(String[] tokens);
+    public abstract void parseSentence(String[] tokens, GpsPosition position);
 
     public static NMEAParser createFrom(String type) {
         NMEAParser parser = parsers.get(type);
@@ -102,14 +93,11 @@ public abstract class NMEAParser {
                 case "GPGSA":
                     parser = new GpgsaParser();
                     break;
-                case "GPGGL":
-                    parser = new GpgglParser();
-                    break;
                 case "GPRMC":
                     parser = new GprmcParser();
                     break;
-                case "GPRMZ":
-                    parser = new GprmzParser();
+                case "GPGSV":
+                    parser = new GpgsvParser();
                     break;
             }
             parsers.put(type, parser);
@@ -120,72 +108,79 @@ public abstract class NMEAParser {
 
     static class GpgllParser extends NMEAParser {
         @Override
-        public void parseSentence(String[] tokens) {
-            if (tokens.length < 5) {
+        public void parseSentence(String[] tokens, GpsPosition position) {
+            if (tokens.length < 6) {
                 return;
             }
-            parseLatitude(NMEAParser.PROPERTY_LATITUDE, tokens[1], tokens[2]);
-            parseLongitude(NMEAParser.PROPERTY_LONGITUDE, tokens[3], tokens[4]);
+            position.updateCoordinates(parseLatitude(tokens[1], tokens[2]), parseLongitude(tokens[3], tokens[4]));
+            position.updateTime(parseTime(tokens[5]));
         }
     }
 
     static class GpggaParser extends NMEAParser {
         @Override
-        public void parseSentence(String[] tokens) {
-            if (tokens.length < 10) {
+        public void parseSentence(String[] tokens, GpsPosition position) {
+            if (tokens.length < 12) {
                 return;
             }
-            parseTime(NMEAParser.PROPERTY_TIME, tokens[1]);
-            parseLatitude(NMEAParser.PROPERTY_LATITUDE, tokens[2], tokens[3]);
-            parseLongitude(NMEAParser.PROPERTY_LONGITUDE, tokens[4], tokens[5]);
-            parseInt(NMEAParser.PROPERTY_QUALITY, tokens[6]);
-            parseDouble(NMEAParser.PROPERTY_ALTITUDE, tokens[9], 1f);
+            position.updateTime(parseTime(tokens[1]));
+            position.updateCoordinates(parseLatitude(tokens[2], tokens[3]), parseLongitude(tokens[4], tokens[5]));
+            //parseInt(NMEAParser.PROPERTY_QUALITY, tokens[6]);
+            position.updateAltitude(parseDouble(tokens[11], 0d));
         }
     }
 
     static class GpgsaParser extends NMEAParser {
         @Override
-        public void parseSentence(String[] tokens) {
-            if (tokens.length < 17) {
+        public void parseSentence(String[] tokens, GpsPosition position) {
+            if (tokens.length < 18) {
                 return;
             }
-            parseFloat(NMEAParser.PROPERTY_ACCURACY, tokens[16], 1f);
-        }
-    }
-
-    static class GpgglParser extends NMEAParser {
-        @Override
-        public void parseSentence(String[] tokens) {
-            if (tokens.length < 6) {
-                return;
-            }
-            parseLatitude(NMEAParser.PROPERTY_LATITUDE, tokens[1], tokens[2]);
-            parseLongitude(NMEAParser.PROPERTY_LONGITUDE, tokens[3], tokens[4]);
-            parseTime(NMEAParser.PROPERTY_TIME, tokens[5]);
+            position.updateAccuracy(
+                    parseInt(tokens[2], GpsPosition.FIX_NONE),
+                    parseFloat(tokens[15], GpsPosition.MAX_DOP),
+                    parseFloat(tokens[16], GpsPosition.MAX_DOP),
+                    parseFloat(tokens[17], GpsPosition.MAX_DOP)
+            );
+            // TODO update fix per satellite (3-14 = IDs of SVs used in position fix)
         }
     }
 
     static class GprmcParser extends NMEAParser {
         @Override
-        void parseSentence(String[] tokens) {
+        public void parseSentence(String[] tokens, GpsPosition position) {
             if (tokens.length < 9) {
                 return;
             }
-            parseTime(NMEAParser.PROPERTY_TIME, tokens[1]);
-            parseLatitude(NMEAParser.PROPERTY_LATITUDE, tokens[3], tokens[4]);
-            parseLongitude(NMEAParser.PROPERTY_LONGITUDE, tokens[5], tokens[6]);
-            parseFloat(NMEAParser.PROPERTY_VELOCITY, tokens[7], 0.514444f);
-            parseFloat(NMEAParser.PROPERTY_DIRECTION, tokens[8], 1f);
+            position.updateTime(parseTime(tokens[1]));
+            position.updateCoordinates(parseLatitude(tokens[3], tokens[4]), parseLongitude(tokens[5], tokens[6]));
+            position.updateMotion(parseFloat(tokens[7], 0), parseFloat(tokens[8], 0));
         }
     }
 
-    static class GprmzParser extends NMEAParser {
+    static class GpgsvParser extends NMEAParser {
         @Override
-        void parseSentence(String[] tokens) {
-            if (tokens.length < 2) {
+        public void parseSentence(String[] tokens, GpsPosition position) {
+            if (tokens.length < 8) {
                 return;
             }
-            parseDouble(NMEAParser.PROPERTY_ALTITUDE, tokens[1], 1f);
+
+            for (int i = 1; i <= 4; i++) {
+                if (tokens.length >= 4 * i + 3) {
+                    String snrValue = tokens[4 * i];
+                    if (!TextUtils.isEmpty(snrValue)) {
+                        position.updateSatellite(
+                                parseInt(snrValue, 0),
+                                parseFloat(tokens[4 * i + 1], 0),
+                                parseFloat(tokens[4 * i + 2], 90),
+                                parseInt(tokens[4 * i + 3], -1)
+                        );
+                    }
+                }
+            }
+            if (parseInt(tokens[1], -1) == parseInt(tokens[2], -2)) {
+                position.flushSatellites();
+            }
         }
     }
 

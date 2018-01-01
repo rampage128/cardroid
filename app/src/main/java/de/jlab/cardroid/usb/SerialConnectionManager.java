@@ -4,7 +4,6 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.os.Handler;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
@@ -12,8 +11,6 @@ import com.felhr.usbserial.UsbSerialInterface;
 import java.util.ArrayList;
 
 public class SerialConnectionManager {
-    private static final String LOG_TAG = "SerialConnection";
-
     private Context context;
 
     private UsbDevice device;
@@ -148,6 +145,10 @@ public class SerialConnectionManager {
 
     public void removeConnectionListener(SerialConnectionListener listener) {
         this.listeners.remove(listener);
+    }
+
+    public int getBaudRate() {
+        return this.baudRate;
     }
 
     public interface SerialConnectionListener {

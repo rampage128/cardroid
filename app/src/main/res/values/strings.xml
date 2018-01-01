@@ -88,4 +88,29 @@
     <string name="pref_title_gps_monitor">GPS Monitor</string>
     <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
 
+    <!-- GPS Monitor -->
+    <string name="gps_status">Status</string>
+    <string name="gps_raw_data">Raw data</string>
+
+    <string name="gps_status_connection">Connection</string>
+    <string name="gps_status_connected">Connected</string>
+    <string name="gps_status_disconnected">Disconnected</string>
+    <string name="gps_status_time">Time</string>
+    <string name="gps_status_fix">GPS fix</string>
+    <string name="gps_status_fix_1">No fix</string>
+    <string name="gps_status_fix_2">2D fix</string>
+    <string name="gps_status_fix_3">3D fix</string>
+    <string name="gps_status_latitude">Latitude</string>
+    <string name="gps_status_longitude">Longitude</string>
+    <string name="gps_status_speed">Speed</string>
+    <string name="gps_status_bearing">Bearing</string>
+    <string name="gps_status_altitude">Altitude</string>
+    <string name="gps_status_accuracy">Accuracy</string>
+    <string name="gps_status_satellite_count">Number of satellites</string>
+    <string name="gps_status_bps">Serial bps</string>
+    <string name="gps_status_usage">Serial usage</string>
+    <string name="gps_status_usage_value">%1$d%%</string>
+    <string name="gps_status_sps">Sentences per second</string>
+    <string name="gps_status_unavailable">N/A</string>
+
 </resources>

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.WindowManager;
 
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
 
 public class GpsService extends UsbService {
@@ -21,12 +23,13 @@ public class GpsService extends UsbService {
 
     private LocationManager locationManager;
     private SerialConnectionManager gpsManager;
+    private GPSSerialReader gpsReader;
 
     private GPSSerialReader.PositionListener positionListener = new GPSSerialReader.PositionListener() {
         @Override
-        public void onUpdate(GpsPosition position) {
-            if (position.isValid()) {
-                GpsService.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position);
+        public void onUpdate(GpsPosition position, String rawData) {
+            if (position.hasValidLocation()) {
+                GpsService.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position.getLocation());
                 GpsService.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
             }
         }
@@ -44,6 +47,8 @@ public class GpsService extends UsbService {
 
         Log.d(LOG_TAG, "Creating gps service.");
 
+        this.gpsManager = new SerialConnectionManager(this);
+        this.gpsReader = new GPSSerialReader();
         this.locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
     }
 
@@ -60,9 +65,7 @@ public class GpsService extends UsbService {
 
                 this.locationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, false, false, false, true, true, true, 0, 0);
                 this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-                GPSSerialReader gpsReader = new GPSSerialReader();
-                gpsReader.addPositionListener(this.positionListener);
-                this.gpsManager = new SerialConnectionManager(this);
+                this.gpsReader.addPositionListener(this.positionListener);
                 this.gpsManager.addConnectionListener(gpsReader);
                 this.gpsManager.connect(device, baudRate);
                 return true;
@@ -82,9 +85,9 @@ public class GpsService extends UsbService {
     }
 
     protected void disconnectDevice() {
-        if (this.gpsManager != null) {
-            this.gpsManager.disconnect();
-        }
+        this.gpsReader.removePositionListener(this.positionListener);
+        this.gpsManager.removeConnectionListener(this.gpsReader);
+        this.gpsManager.disconnect();
         if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
             this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
             this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -93,8 +96,36 @@ public class GpsService extends UsbService {
         }
     }
 
+    public class GpsServiceBinder extends Binder {
+        public void addPositionListener(GPSSerialReader.PositionListener listener) {
+            GpsService.this.gpsReader.addPositionListener(listener);
+        }
+
+        public void removePositionListener(GPSSerialReader.PositionListener listener) {
+            GpsService.this.gpsReader.addPositionListener(listener);
+        }
+
+        public boolean isConnected() {
+            return GpsService.this.isConnected();
+        }
+
+        public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            GpsService.this.gpsManager.addBandwidthStatisticsListener(listener);
+        }
+
+        public void removeBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            GpsService.this.gpsManager.removeBandwidthStatisticsListener(listener);
+        }
+
+        public int getBaudRate() {
+            return GpsService.this.gpsManager.getBaudRate();
+        }
+    }
+
+    private final IBinder binder = new GpsServiceBinder();
+
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return this.binder;
     }
 }
