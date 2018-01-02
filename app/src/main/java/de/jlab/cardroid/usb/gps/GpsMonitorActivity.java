@@ -107,9 +107,7 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                GpsMonitorActivity.this.rawDataTextView.append(rawData);
-                GpsMonitorActivity.this.rawDataTextView.append("\n");
-                GpsMonitorActivity.this.rawDataScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                GpsMonitorActivity.this.updateRawText(rawData);
                 GpsMonitorActivity.this.updateStatusGrid(position);
                 GpsMonitorActivity.this.updateSatelliteView(position);
             }
@@ -128,14 +126,10 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
         bindService(new Intent(this, GpsService.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    public void onError() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GpsMonitorActivity.this.updateStatusGrid(null);
-            }
-        });
+    public void updateRawText(String rawData) {
+        GpsMonitorActivity.this.rawDataTextView.append(rawData);
+        GpsMonitorActivity.this.rawDataTextView.append("\n");
+        GpsMonitorActivity.this.rawDataScrollView.fullScroll(ScrollView.FOCUS_DOWN);
     }
 
     public void updateRawGrid() {

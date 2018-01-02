@@ -9,28 +9,13 @@ import de.jlab.cardroid.usb.SerialConnectionManager;
 public class GPSSerialReader implements SerialConnectionManager.SerialConnectionListener {
 
     private GpsPosition position = new GpsPosition();
-
     private StringBuilder dataLine = new StringBuilder();
-    private boolean newLine = false;
-    private boolean initialized = false;
-
     private ArrayList<PositionListener> positionListeners = new ArrayList<>();
 
     @Override
     public void onReceiveData(byte[] data) {
         if (data.length == 0) {
             return;
-        }
-
-        if (!initialized) {
-            if (data[0] != 0x24) {
-                for (PositionListener listener : positionListeners) {
-                    listener.onError();
-                }
-            }
-            else {
-                this.initialized = true;
-            }
         }
 
         for (int i = 0; i < data.length; i++) {
@@ -51,18 +36,6 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
         }
     }
 
-    private final char[] hexArray = "0123456789ABCDEF".toCharArray();
-    private String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 3];
-        for ( int j = 0; j < bytes.length; j++ ) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 3] = hexArray[v >>> 4];
-            hexChars[j * 3 + 1] = hexArray[v & 0x0F];
-            hexChars[j * 3 + 2] = ' ';
-        }
-        return new String(hexChars);
-    }
-
     private boolean parse(String line) {
         if (!line.startsWith("$")) {
             return false;
@@ -80,13 +53,11 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
 
     @Override
     public void onConnect() {
-        initialized = false;
         Log.d("GPS", "connected");
     }
 
     @Override
     public void onDisconnect() {
-        initialized = false;
         Log.d("GPS", "disconnected");
     }
 
@@ -100,6 +71,5 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
 
     public interface PositionListener {
         void onUpdate(GpsPosition position, String rawData);
-        void onError();
     }
 }

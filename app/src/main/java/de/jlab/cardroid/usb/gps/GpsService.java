@@ -10,7 +10,6 @@ import android.location.LocationProvider;
 import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.WindowManager;
 
 import de.jlab.cardroid.R;
@@ -19,8 +18,6 @@ import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
 
 public class GpsService extends UsbService {
-    private static final String LOG_TAG = "GpsService";
-
     private LocationManager locationManager;
     private SerialConnectionManager gpsManager;
     private GPSSerialReader gpsReader;
@@ -33,19 +30,11 @@ public class GpsService extends UsbService {
                 GpsService.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
             }
         }
-
-        @Override
-        public void onError() {
-            Log.e(LOG_TAG, "GPS ERROR");
-            //gpsManager.reconnect();
-        }
     };
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        Log.d(LOG_TAG, "Creating gps service.");
 
         this.gpsManager = new SerialConnectionManager(this);
         this.gpsReader = new GPSSerialReader();
@@ -85,9 +74,9 @@ public class GpsService extends UsbService {
     }
 
     protected void disconnectDevice() {
+        this.gpsManager.disconnect();
         this.gpsReader.removePositionListener(this.positionListener);
         this.gpsManager.removeConnectionListener(this.gpsReader);
-        this.gpsManager.disconnect();
         if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
             this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
             this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
