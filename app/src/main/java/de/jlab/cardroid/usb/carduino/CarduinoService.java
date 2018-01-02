@@ -190,8 +190,8 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     public void onCreate() {
         super.onCreate();
 
-        Log.d(LOG_TAG, "Creating Carduino service.");
-
+        this.serialReader = new SerialReader();
+        this.connectionManager = new SerialConnectionManager(this);
         this.car = new Car();
 
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
@@ -230,9 +230,7 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     }
 
     protected boolean connectDevice(UsbDevice device) {
-        this.serialReader = new SerialReader();
         this.serialReader.addListener(this.listener);
-        this.connectionManager = new SerialConnectionManager(this);
         this.connectionManager.addConnectionListener(this.serialReader);
         this.connectionManager.connect(device, 115200);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
@@ -243,9 +241,8 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     }
 
     protected void disconnectDevice() {
-        if (this.connectionManager != null) {
-            this.connectionManager.disconnect();
-        }
+        this.connectionManager.removeConnectionListener(this.serialReader);
+        this.connectionManager.disconnect();
         this.overlayWindow.destroy();
     }
 
