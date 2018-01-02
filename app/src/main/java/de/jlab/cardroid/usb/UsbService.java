@@ -4,10 +4,21 @@ import android.app.Service;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Binder;
 
 import java.util.Objects;
 
 public abstract class UsbService extends Service {
+
+    public class UsbServiceBinder extends Binder {
+        public boolean isConnected() {
+            return UsbService.this.isConnected();
+        }
+
+        public void disconnect() {
+            UsbService.this.disconnectDevice();
+        }
+    }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         synchronized (this) {

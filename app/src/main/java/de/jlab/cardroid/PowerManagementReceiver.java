@@ -37,6 +37,7 @@ public class PowerManagementReceiver extends BroadcastReceiver {
                 WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 wifiManager.setWifiEnabled(true);
             }
+            context.startService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
         else if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
             AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
@@ -52,6 +53,7 @@ public class PowerManagementReceiver extends BroadcastReceiver {
                 powerPrefs.edit().putBoolean("was_wifi_on", wifiManager.isWifiEnabled()).apply();
                 wifiManager.setWifiEnabled(false);
             }
+            context.stopService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
     }
 
@@ -60,13 +62,9 @@ public class PowerManagementReceiver extends BroadcastReceiver {
         int defaultScreenTimeout = Settings.System.getInt(context.getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 60000);
 
         if (canChangeSettings) {
-            PowerManager powerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-
             if (state) {
                 int screenTimeout = powerPrefs.getInt(Settings.System.SCREEN_OFF_TIMEOUT, defaultScreenTimeout);
                 Settings.System.putInt(context.getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, screenTimeout);
-                PowerManager.WakeLock wl = powerManager.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | PowerManager.ACQUIRE_CAUSES_WAKEUP, "Cardroid");
-                wl.acquire();
             }
             else {
                 powerPrefs.edit().putInt(Settings.System.SCREEN_OFF_TIMEOUT, defaultScreenTimeout).apply();

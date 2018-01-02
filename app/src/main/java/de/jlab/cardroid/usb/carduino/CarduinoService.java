@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.media.AudioManager;
-import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
@@ -65,7 +64,7 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
                     adjustVolume(AudioManager.ADJUST_RAISE);
                     break;
                 case 30: // PHONE
-                    // TODO find some action for phone key
+                    // TODO find some action for phone key (maybe mute?!)
                     break;
                 case 42: // VOICE
                     Intent voiceIntent =
@@ -97,7 +96,7 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         }
     }
 
-    public class MainServiceBinder extends Binder {
+    public class MainServiceBinder extends UsbServiceBinder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
             CarduinoService.this.connectionManager.addBandwidthStatisticsListener(listener);
         }
@@ -161,18 +160,6 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
                 }
             }
         }
-
-        private final char[] hexArray = "0123456789ABCDEF".toCharArray();
-        private String bytesToHex(byte[] bytes) {
-            char[] hexChars = new char[bytes.length * 3];
-            for ( int j = 0; j < bytes.length; j++ ) {
-                int v = bytes[j] & 0xFF;
-                hexChars[j * 3] = hexArray[v >>> 4];
-                hexChars[j * 3 + 1] = hexArray[v & 0x0F];
-                hexChars[j * 3 + 2] = ' ';
-            }
-            return new String(hexChars);
-        }
     };
 
     public void requestCarduinoBaudRate(int baudRate) {
@@ -190,17 +177,29 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     public void onCreate() {
         super.onCreate();
 
-        this.serialReader = new SerialReader();
-        this.connectionManager = new SerialConnectionManager(this);
         this.car = new Car();
 
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
-        this.overlayWindow = new OverlayWindow(this, climateControl);
-
         climateControl.addEventListener(this);
 
         RemoteControl remoteControl = (RemoteControl)this.car.getCarSystem(CarSystemFactory.REMOTE_CONTROL);
         remoteControl.addChangeListener(new RemoteControlChangeListener());
+
+        this.overlayWindow = new OverlayWindow(this, climateControl);
+
+        this.serialReader = new SerialReader();
+        this.serialReader.addListener(this.listener);
+
+        this.connectionManager = new SerialConnectionManager(this);
+        this.connectionManager.addConnectionListener(this.serialReader);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        this.serialReader.removeListener(this.listener);
+        this.connectionManager.removeConnectionListener(this.serialReader);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -230,8 +229,6 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     }
 
     protected boolean connectDevice(UsbDevice device) {
-        this.serialReader.addListener(this.listener);
-        this.connectionManager.addConnectionListener(this.serialReader);
         this.connectionManager.connect(device, 115200);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
         if (prefs.getBoolean("overlay_active", false)) {
@@ -241,7 +238,6 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     }
 
     protected void disconnectDevice() {
-        this.connectionManager.removeConnectionListener(this.serialReader);
         this.connectionManager.disconnect();
         this.overlayWindow.destroy();
     }

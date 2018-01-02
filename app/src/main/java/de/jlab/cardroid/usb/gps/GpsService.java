@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.view.WindowManager;
@@ -36,9 +35,21 @@ public class GpsService extends UsbService {
     public void onCreate() {
         super.onCreate();
 
-        this.gpsManager = new SerialConnectionManager(this);
-        this.gpsReader = new GPSSerialReader();
         this.locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        this.gpsReader = new GPSSerialReader();
+        this.gpsReader.addPositionListener(this.positionListener);
+
+        this.gpsManager = new SerialConnectionManager(this);
+        this.gpsManager.addConnectionListener(gpsReader);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        this.gpsReader.removePositionListener(this.positionListener);
+        this.gpsManager.removeConnectionListener(this.gpsReader);
     }
 
     @Override
@@ -51,11 +62,8 @@ public class GpsService extends UsbService {
             try {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                 int baudRate = Integer.valueOf(prefs.getString("gps_baud_rate", "4800"));
-
                 this.locationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, false, false, false, true, true, true, 0, 0);
                 this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-                this.gpsReader.addPositionListener(this.positionListener);
-                this.gpsManager.addConnectionListener(gpsReader);
                 this.gpsManager.connect(device, baudRate);
                 return true;
             } catch (SecurityException e3) {
@@ -75,8 +83,6 @@ public class GpsService extends UsbService {
 
     protected void disconnectDevice() {
         this.gpsManager.disconnect();
-        this.gpsReader.removePositionListener(this.positionListener);
-        this.gpsManager.removeConnectionListener(this.gpsReader);
         if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
             this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
             this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -85,17 +91,13 @@ public class GpsService extends UsbService {
         }
     }
 
-    public class GpsServiceBinder extends Binder {
+    public class GpsServiceBinder extends UsbServiceBinder {
         public void addPositionListener(GPSSerialReader.PositionListener listener) {
             GpsService.this.gpsReader.addPositionListener(listener);
         }
 
         public void removePositionListener(GPSSerialReader.PositionListener listener) {
             GpsService.this.gpsReader.addPositionListener(listener);
-        }
-
-        public boolean isConnected() {
-            return GpsService.this.isConnected();
         }
 
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {

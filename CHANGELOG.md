@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- Permanent `WatchDogService` to monitor and recover critical features and services
 - `PowerManagementReceiver` to control power management functions
 - `UsbStatusActivity` to handle device connections and permissions
 - Permanent `GpsService` to support external USB gps receivers
