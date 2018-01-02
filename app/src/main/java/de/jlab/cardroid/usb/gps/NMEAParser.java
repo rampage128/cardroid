@@ -166,7 +166,7 @@ public abstract class NMEAParser {
             }
 
             for (int i = 1; i <= 4; i++) {
-                if (tokens.length >= 4 * i + 3) {
+                if (tokens.length > 4 * i + 3) {
                     String snrValue = tokens[4 * i];
                     if (!TextUtils.isEmpty(snrValue)) {
                         position.updateSatellite(
