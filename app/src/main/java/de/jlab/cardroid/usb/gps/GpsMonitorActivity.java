@@ -32,6 +32,9 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
     private GpsSatView satView;
     private GpsSatellite[] satellites = new GpsSatellite[0];
 
+    private int sentenceCounter = 0;
+    private StringBuilder rawText = new StringBuilder();
+
     private ServiceConnection gpsServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             gpsService = (GpsService.GpsServiceBinder)service;
@@ -136,11 +139,21 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
 
     @Override
     public void onUpdate(final GpsPosition position, final String rawData) {
+        this.sentenceCounter++;
+
+        if (this.sentenceCounter > 1) {
+            this.rawText.append("\n");
+        }
+        this.rawText.append(rawData);
+        if (this.sentenceCounter >= 100) {
+            this.rawText.replace(0, this.rawText.indexOf("\n") + 1, "");
+        }
+
         position.flushSatellites();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                GpsMonitorActivity.this.updateRawText(rawData);
+                GpsMonitorActivity.this.updateRawText(rawText.toString());
                 GpsMonitorActivity.this.updateStatusGrid(position);
                 GpsMonitorActivity.this.updateSatelliteView(position);
             }
@@ -160,9 +173,8 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
     }
 
     public void updateRawText(String rawData) {
-        GpsMonitorActivity.this.rawDataTextView.append(rawData);
-        GpsMonitorActivity.this.rawDataTextView.append("\n");
-        GpsMonitorActivity.this.rawDataScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+        this.rawDataTextView.setText(rawData);
+        this.rawDataScrollView.fullScroll(ScrollView.FOCUS_DOWN);
     }
 
     public void updateRawGrid() {
