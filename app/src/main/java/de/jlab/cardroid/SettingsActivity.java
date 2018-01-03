@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import de.jlab.cardroid.usb.UsbStatsPreference;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 /**
@@ -183,7 +182,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || OverlayPreferenceFragment.class.getName().equals(fragmentName)
-                || UsbPreferenceFragment.class.getName().equals(fragmentName)
+                || CarPreferenceFragment.class.getName().equals(fragmentName)
                 || GpsPreferenceFragment.class.getName().equals(fragmentName)
                 || PowerPreferenceFragment.class.getName().equals(fragmentName);
     }
@@ -283,42 +282,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * activity is showing a two-pane settings UI.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class UsbPreferenceFragment extends PreferenceFragment {
-        private UsbStatsPreference bandwidthStats;
-        private UsbStatsPreference packetStats;
-
+    public static class CarPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_usb);
+            addPreferencesFromResource(R.xml.pref_car);
             setHasOptionsMenu(true);
 
-            this.bandwidthStats = (UsbStatsPreference) findPreference("usb_stats_bandwidth");
-            this.packetStats = (UsbStatsPreference) findPreference("usb_stats_packets");
-            ListPreference baudRate = (ListPreference)findPreference("usb_baud_rate");
+            ListPreference baudRate = (ListPreference)findPreference("car_baud_rate");
             baudRate.setSummary(baudRate.getValue());
-            findPreference("usb_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            findPreference("car_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     mainService.requestBaudRate(Integer.valueOf((String)newValue));
                     return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
                 }
             });
-        }
-
-        @Override
-        public void onResume(){
-            super.onResume();
-
-            mainService.addBandwidthStatisticsListener(bandwidthStats);
-            mainService.addPacketStatisticsListener(this.packetStats);
-        }
-
-        @Override
-        public void onPause() {
-            super.onPause();
-            mainService.removeBandwidthStatisticsListener(bandwidthStats);
-            mainService.removePacketStatisticsListener(this.packetStats);
         }
 
         @Override

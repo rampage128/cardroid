@@ -40,7 +40,7 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
                     int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
                     int currentUsage = count > 0 ? Math.round(100f / (115200 * 0.125f) * count) : 0;
 
-                    bandwidthStatText.setText(getString(R.string.usb_stats_bandwidth, count, averageValue, averageReliability, currentUsage));
+                    bandwidthStatText.setText(getString(R.string.car_stats_bandwidth, count, averageValue, averageReliability, currentUsage));
                 }
             });
         }
@@ -54,7 +54,7 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
                     int averageValue = Math.round(statistics.getAverage());
                     int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
 
-                    packetStatText.setText(getString(R.string.usb_stats_packets, count, averageValue, averageReliability));
+                    packetStatText.setText(getString(R.string.car_stats_packets, count, averageValue, averageReliability));
                 }
             });
         }
@@ -118,8 +118,8 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
         this.packetListView = (TextView)findViewById(R.id.packetList);
 
         this.packetListView.setText("");
-        this.bandwidthStatText.setText(R.string.pref_title_usb_bandwidth);
-        this.packetStatText.setText(R.string.pref_title_usb_packets);
+        this.bandwidthStatText.setText(R.string.pref_title_car_bandwidth);
+        this.packetStatText.setText(R.string.pref_title_car_packets);
     }
 
     @Override

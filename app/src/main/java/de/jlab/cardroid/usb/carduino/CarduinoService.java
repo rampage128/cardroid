@@ -144,7 +144,7 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
                     MetaSerialPacket metaPacket = (MetaSerialPacket)packet;
                     if (packet.getId() == 0x01) {
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
-                        int baudRate = Integer.valueOf(prefs.getString("usb_baud_rate", "115200"));
+                        int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
                         CarduinoService.this.requestCarduinoBaudRate(baudRate);
                     }
                     else if (packet.getId() == 0x02) {

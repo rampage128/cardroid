@@ -40,14 +40,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="@string/usb_stats_bandwidth" />
+            android:text="@string/car_stats_bandwidth" />
 
         <TextView
             android:id="@+id/packetText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="@string/usb_stats_packets" />
+            android:text="@string/car_stats_packets" />
     </LinearLayout>
 
 </LinearLayout>

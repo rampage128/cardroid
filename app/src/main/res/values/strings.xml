@@ -46,21 +46,18 @@
     <string name="pref_title_overlay_toggle">Show Overlay</string>
     <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 
-    <!-- USB settings -->
-    <string name="pref_header_usb">USB Connection</string>
-    <string name="pref_header_description_usb">Manage the USB connection to your car</string>
+    <!-- Car settings -->
+    <string name="pref_header_car">Car connection</string>
+    <string name="pref_header_description_car">Manage the USB connection to your car</string>
 
-    <string name="pref_title_usb_bandwidth">USB Bandwidth</string>
-    <string name="pref_description_usb_bandwidth">Shows USB bandwidth information</string>
+    <string name="pref_title_car_bandwidth">Bandwidth</string>
+    <string name="pref_title_car_packets">Packets</string>
 
-    <string name="pref_title_usb_packets">USB Packets</string>
-    <string name="pref_description_usb_packets">Shows received USB packet information</string>
+    <string name="car_stats_bandwidth">Current: %1$dbps / Avg: %2$dbps (%3$d%%) / Usage: %4$d%%</string>
+    <string name="car_stats_packets">Current: %1$dpps / Avg: %2$dpps (%3$d%%)</string>
 
-    <string name="usb_stats_bandwidth">Current: %1$dbps / Avg: %2$dbps (%3$d%%) / Usage: %4$d%%</string>
-    <string name="usb_stats_packets">Current: %1$dpps / Avg: %2$dpps (%3$d%%)</string>
-
-    <string name="pref_title_usb_baud_rate">USB baud rate</string>
-    <string-array name="usb_baud_rates">
+    <string name="pref_title_car_baud_rate">USB baud rate</string>
+    <string-array name="car_baud_rates">
         <item>9600</item>
         <item>19200</item>
         <item>38400</item>

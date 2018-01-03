@@ -94,6 +94,9 @@
             android:exported="false"
             android:launchMode="singleInstance">
         </service>
+
+        <activity android:name=".usb.carduino.CarduinoMonitorActivity">
+        </activity>
     </application>
 
 </manifest>

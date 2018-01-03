@@ -1,0 +1,19 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="115200"
+        android:key="car_baud_rate"
+        android:title="@string/pref_title_car_baud_rate"
+        android:entries="@array/car_baud_rates"
+        android:entryValues="@array/car_baud_rates"
+        />
+
+    <Preference
+        android:key="car_can_sniffer"
+        android:title="@string/pref_title_can_sniffer"
+        android:summary="@string/pref_description_can_sniffer">
+        <intent android:targetPackage="de.jlab.cardroid"
+            android:targetClass="de.jlab.cardroid.cansniffer.CanSnifferActivity"/>
+    </Preference>
+
+</PreferenceScreen>

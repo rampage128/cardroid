@@ -7,10 +7,10 @@
         android:summary="@string/pref_header_description_overlay" />
 
     <header
-        android:fragment="de.jlab.cardroid.SettingsActivity$UsbPreferenceFragment"
-        android:icon="@drawable/ic_pref_usb"
-        android:title="@string/pref_header_usb"
-        android:summary="@string/pref_header_description_usb" />
+        android:fragment="de.jlab.cardroid.SettingsActivity$CarPreferenceFragment"
+        android:icon="@drawable/ic_pref_car"
+        android:title="@string/pref_header_car"
+        android:summary="@string/pref_header_description_car" />
 
     <header
         android:fragment="de.jlab.cardroid.SettingsActivity$GpsPreferenceFragment"
