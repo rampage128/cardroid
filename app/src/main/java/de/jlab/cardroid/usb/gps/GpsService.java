@@ -108,6 +108,14 @@ public class GpsService extends UsbService {
             GpsService.this.gpsManager.removeBandwidthStatisticsListener(listener);
         }
 
+        public void addSentenceStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            GpsService.this.gpsReader.addSentenceStatisticListener(listener);
+        }
+
+        public void removeSentenceStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
+            GpsService.this.gpsReader.removeSentenceStatisticListener(listener);
+        }
+
         public int getBaudRate() {
             return GpsService.this.gpsManager.getBaudRate();
         }

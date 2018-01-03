@@ -7,6 +7,11 @@
 
     <string name="cc_off">OFF</string>
 
+    <string name="unit_bytes_per_second">bps</string>
+    <string name="unit_sentences_per_second">sps</string>
+    <string name="unit_packets_per_second">pps</string>
+    <string name="unit_percent">%</string>
+
     <!-- Status display -->
     <string name="usb_status_preparing">Loading…</string>
     <string name="usb_status_connecting">Connecting to device…</string>
@@ -110,6 +115,7 @@
     <string name="gps_status_bps">Serial bps</string>
     <string name="gps_status_usage">Serial usage</string>
     <string name="gps_status_usage_value">%1$d%%</string>
+    <string name="gps_status_statistics_value">%1$d%2$s (avg %3$d%2$s)</string>
     <string name="gps_status_sps">Sentences per second</string>
     <string name="gps_status_unavailable">N/A</string>
 

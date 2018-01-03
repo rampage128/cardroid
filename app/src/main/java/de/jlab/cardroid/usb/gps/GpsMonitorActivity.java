@@ -20,7 +20,7 @@ import android.widget.TextView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.UsageStatistics;
 
-public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialReader.PositionListener, UsageStatistics.UsageStatisticsListener {
+public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialReader.PositionListener {
 
     private ScrollView rawDataScrollView;
     private TextView rawDataTextView;
@@ -40,13 +40,57 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
             GpsMonitorActivity.this.updateRawGrid();
             GpsMonitorActivity.this.updateSatelliteView(null);
             gpsService.addPositionListener(GpsMonitorActivity.this);
-            gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this);
+            gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
+            gpsService.addSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
         }
 
         public void onServiceDisconnected(ComponentName className) {
             gpsService.removePositionListener(GpsMonitorActivity.this);
-            gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this);
+            gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
+            gpsService.removeSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
             gpsService = null;
+        }
+    };
+
+    private UsageStatistics.UsageStatisticsListener bandwidthStatisticsListener = new UsageStatistics.UsageStatisticsListener() {
+        @Override
+        public void onInterval(final int count, final UsageStatistics statistics) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    GpsMonitorActivity.this.rawGridAdapter.updateStatistics(
+                            R.string.gps_status_bps,
+                            count,
+                            Math.round(statistics.getAverage()),
+                            R.string.unit_bytes_per_second
+                    );
+                    GpsMonitorActivity.this.rawGridAdapter.updateStatistics(
+                            R.string.gps_status_usage,
+                            Math.round(100f / (GpsMonitorActivity.this.gpsService.getBaudRate() * 0.125f) * count),
+                            Math.round(100f / (GpsMonitorActivity.this.gpsService.getBaudRate() * 0.125f) * statistics.getAverage()),
+                            R.string.unit_percent
+                    );
+                    GpsMonitorActivity.this.rawGridAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+    };
+
+    private UsageStatistics.UsageStatisticsListener sentenceStatisticsListener = new UsageStatistics.UsageStatisticsListener() {
+        @Override
+        public void onInterval(final int count, final UsageStatistics statistics) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    GpsMonitorActivity.this.rawGridAdapter.updateStatistics(
+                            R.string.gps_status_sps,
+                            count,
+                            Math.round(statistics.getAverage()),
+                            R.string.unit_sentences_per_second
+                    );
+                    GpsMonitorActivity.this.rawGridAdapter.notifyDataSetChanged();
+                }
+            });
         }
     };
 
@@ -88,17 +132,6 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
 
         this.rawGridAdapter = new GpsStatusGridAdapter(this);
         this.rawDataScrollView.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onInterval(final int count, final UsageStatistics statistics) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                GpsMonitorActivity.this.rawGridAdapter.update(R.string.gps_status_bps, Integer.toString(Math.round(statistics.getAverage())));
-                GpsMonitorActivity.this.rawGridAdapter.update(R.string.gps_status_usage, getString(R.string.gps_status_usage_value, Math.round(100f / (GpsMonitorActivity.this.gpsService.getBaudRate() * 0.125f) * count)));
-            }
-        });
     }
 
     @Override

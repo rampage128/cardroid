@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import java.util.LinkedHashMap;
 
+import de.jlab.cardroid.R;
+
 public class GpsStatusGridAdapter extends BaseAdapter {
 
     private Context context;
@@ -63,5 +65,17 @@ public class GpsStatusGridAdapter extends BaseAdapter {
     public void update(int key, String value) {
         this.dataMap.put(key, value);
         this.indexList = this.dataMap.keySet().toArray(this.indexList.length == this.dataMap.size() ? this.indexList : new Integer[this.dataMap.size()]);
+    }
+
+    public void updateStatistics(int key, int count, int average, int unit) {
+        this.update(
+                key,
+                this.context.getString(
+                        R.string.gps_status_statistics_value,
+                        count,
+                        this.context.getString(unit),
+                        average
+            )
+        );
     }
 }

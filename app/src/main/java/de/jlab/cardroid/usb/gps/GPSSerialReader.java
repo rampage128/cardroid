@@ -5,12 +5,14 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.UsageStatistics;
 
 public class GPSSerialReader implements SerialConnectionManager.SerialConnectionListener {
 
     private GpsPosition position = new GpsPosition();
     private StringBuilder dataLine = new StringBuilder();
     private ArrayList<PositionListener> positionListeners = new ArrayList<>();
+    private UsageStatistics sentenceStatistics = new UsageStatistics(1000, 60);
 
     @Override
     public void onReceiveData(byte[] data) {
@@ -18,21 +20,20 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
             return;
         }
 
-        for (int i = 0; i < data.length; i++) {
-            byte dataByte = data[i];
+        for (byte dataByte : data) {
             if (dataByte == 0x0D || dataByte == 0x0A) {
                 continue;
-            }
-            else if (dataByte == 0x24) {
+            } else if (dataByte == 0x24) {
                 String rawData = this.dataLine.toString();
                 if (this.parse(rawData)) {
                     for (PositionListener listener : positionListeners) {
                         listener.onUpdate(this.position, rawData);
                     }
                 }
+                sentenceStatistics.count();
                 this.dataLine.setLength(0);
             }
-            this.dataLine.append((char)dataByte);
+            this.dataLine.append((char) dataByte);
         }
     }
 
@@ -67,6 +68,14 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
 
     public void removePositionListener(PositionListener listener) {
         this.positionListeners.remove(listener);
+    }
+
+    public void addSentenceStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.sentenceStatistics.addListener(listener);
+    }
+
+    public void removeSentenceStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.sentenceStatistics.removeListener(listener);
     }
 
     public interface PositionListener {
