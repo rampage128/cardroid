@@ -74,6 +74,9 @@
 -->
     </string-array>
 
+    <string name="pref_title_car_monitor">Car monitor</string>
+    <string name="pref_description_car_monitor">View status of Carduino connection</string>
+
     <string name="pref_title_can_sniffer">CAN Sniffer</string>
     <string name="pref_description_can_sniffer">Directly read CAN packets from the car</string>
 
@@ -87,16 +90,23 @@
         <item>9600</item>
     </string-array>
 
-    <string name="pref_title_gps_monitor">GPS Monitor</string>
+    <string name="pref_title_gps_monitor">GPS monitor</string>
     <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
+
+    <!-- status grids -->
+    <string name="status_unavailable">N/A</string>
+    <string name="status_connection">Connection</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_disconnected">Disconnected</string>
+    <string name="status_bps">Serial bps</string>
+    <string name="status_usage">Serial usage</string>
+    <string name="status_usage_value">%1$d%%</string>
+    <string name="status_statistics_value">%1$d%2$s (avg %3$d%2$s)</string>
 
     <!-- GPS Monitor -->
     <string name="gps_status">Status</string>
     <string name="gps_raw_data">Raw data</string>
 
-    <string name="gps_status_connection">Connection</string>
-    <string name="gps_status_connected">Connected</string>
-    <string name="gps_status_disconnected">Disconnected</string>
     <string name="gps_status_time">Time</string>
     <string name="gps_status_fix">GPS fix</string>
     <string name="gps_status_fix_1">No fix</string>
@@ -109,11 +119,12 @@
     <string name="gps_status_altitude">Altitude</string>
     <string name="gps_status_accuracy">Accuracy</string>
     <string name="gps_status_satellite_count">Number of satellites</string>
-    <string name="gps_status_bps">Serial bps</string>
-    <string name="gps_status_usage">Serial usage</string>
-    <string name="gps_status_usage_value">%1$d%%</string>
-    <string name="gps_status_statistics_value">%1$d%2$s (avg %3$d%2$s)</string>
     <string name="gps_status_sps">Sentences per second</string>
-    <string name="gps_status_unavailable">N/A</string>
 
+    <!-- Carduino Monitor -->
+    <string name="car_status">Status</string>
+    <string name="car_connection">Connection</string>
+
+    <string name="car_status_packets">Packets per second</string>
+    <string name="car_status_systems">Registered car systems</string>
 </resources>

@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.gps;
+package de.jlab.cardroid;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,9 +9,7 @@ import android.widget.TextView;
 
 import java.util.LinkedHashMap;
 
-import de.jlab.cardroid.R;
-
-public class GpsStatusGridAdapter extends BaseAdapter {
+public class StatusGridAdapter extends BaseAdapter {
 
     private Context context;
     private LinkedHashMap<Integer, String> dataMap = new LinkedHashMap<>();
@@ -22,7 +20,7 @@ public class GpsStatusGridAdapter extends BaseAdapter {
         TextView line2;
     }
 
-    public GpsStatusGridAdapter(Context context) {
+    public StatusGridAdapter(Context context) {
         this.context = context;
     }
 
@@ -71,7 +69,7 @@ public class GpsStatusGridAdapter extends BaseAdapter {
         this.update(
                 key,
                 this.context.getString(
-                        R.string.gps_status_statistics_value,
+                        R.string.status_statistics_value,
                         count,
                         this.context.getString(unit),
                         average

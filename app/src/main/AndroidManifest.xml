@@ -95,7 +95,8 @@
             android:launchMode="singleInstance">
         </service>
 
-        <activity android:name=".usb.carduino.CarduinoMonitorActivity">
+        <activity android:name=".usb.carduino.CarduinoMonitorActivity"
+                  android:label="@string/pref_title_car_monitor">
         </activity>
     </application>
 

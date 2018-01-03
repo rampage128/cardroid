@@ -129,8 +129,16 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
             CarduinoService.this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.STOP_SNIFFING, null)));
         }
 
+        public int getBaudRate() {
+            return CarduinoService.this.connectionManager.getBaudRate();
+        }
+
         public void requestBaudRate(int baudRate) {
             CarduinoService.this.requestCarduinoBaudRate(baudRate);
+        }
+
+        public Car getCar() {
+            return CarduinoService.this.car;
         }
     }
 

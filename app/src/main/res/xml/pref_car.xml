@@ -9,6 +9,14 @@
         />
 
     <Preference
+        android:key="gps_monitor"
+        android:title="@string/pref_title_car_monitor"
+        android:summary="@string/pref_description_car_monitor">
+        <intent android:targetPackage="de.jlab.cardroid"
+                android:targetClass="de.jlab.cardroid.usb.carduino.CarduinoMonitorActivity"/>
+    </Preference>
+
+    <Preference
         android:key="car_can_sniffer"
         android:title="@string/pref_title_can_sniffer"
         android:summary="@string/pref_description_can_sniffer">

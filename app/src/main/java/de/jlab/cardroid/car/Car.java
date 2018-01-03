@@ -30,4 +30,8 @@ public class Car {
         return system;
     }
 
+    public int getCarSystemCount() {
+        return this.systemLookup.size();
+    }
+
 }

@@ -17,6 +17,7 @@ import android.widget.GridView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.UsageStatistics;
 
@@ -27,8 +28,8 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
     private GpsService.GpsServiceBinder gpsService;
 
     private GridView statusGridView;
-    private GpsStatusGridAdapter statusGridAdapter;
-    private GpsStatusGridAdapter rawGridAdapter;
+    private StatusGridAdapter statusGridAdapter;
+    private StatusGridAdapter rawGridAdapter;
     private GpsSatView satView;
     private GpsSatellite[] satellites = new GpsSatellite[0];
 
@@ -62,13 +63,13 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
                 @Override
                 public void run() {
                     GpsMonitorActivity.this.rawGridAdapter.updateStatistics(
-                            R.string.gps_status_bps,
+                            R.string.status_bps,
                             count,
                             Math.round(statistics.getAverage()),
                             R.string.unit_bytes_per_second
                     );
                     GpsMonitorActivity.this.rawGridAdapter.updateStatistics(
-                            R.string.gps_status_usage,
+                            R.string.status_usage,
                             Math.round(100f / (GpsMonitorActivity.this.gpsService.getBaudRate() * 0.125f) * count),
                             Math.round(100f / (GpsMonitorActivity.this.gpsService.getBaudRate() * 0.125f) * statistics.getAverage()),
                             R.string.unit_percent
@@ -129,11 +130,11 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
                     }
                 });
 
-        this.statusGridAdapter = new GpsStatusGridAdapter(this);
+        this.statusGridAdapter = new StatusGridAdapter(this);
         this.statusGridView = (GridView) findViewById(R.id.statusGrid);
         this.statusGridView.setAdapter(this.statusGridAdapter);
 
-        this.rawGridAdapter = new GpsStatusGridAdapter(this);
+        this.rawGridAdapter = new StatusGridAdapter(this);
         this.rawDataScrollView.setVisibility(View.GONE);
     }
 
@@ -178,16 +179,16 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
     }
 
     public void updateRawGrid() {
-        String na = this.getString(R.string.gps_status_unavailable);
+        String na = this.getString(R.string.status_unavailable);
         if (this.gpsService.isConnected()) {
-            this.rawGridAdapter.update(R.string.gps_status_connection, this.getString(R.string.gps_status_connected));
+            this.rawGridAdapter.update(R.string.status_connection, this.getString(R.string.status_connected));
         }
         else {
-            this.rawGridAdapter.update(R.string.gps_status_connection, this.getString(R.string.gps_status_disconnected));
+            this.rawGridAdapter.update(R.string.status_connection, this.getString(R.string.status_disconnected));
         }
         this.rawGridAdapter.update(R.string.gps_status_sps, na);
-        this.rawGridAdapter.update(R.string.gps_status_bps, na);
-        this.rawGridAdapter.update(R.string.gps_status_usage, na);
+        this.rawGridAdapter.update(R.string.status_bps, na);
+        this.rawGridAdapter.update(R.string.status_usage, na);
         this.rawGridAdapter.notifyDataSetChanged();
     }
 
@@ -204,8 +205,8 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
 
     public void updateStatusGrid(GpsPosition position) {
         if (position == null) {
-            String na = this.getString(R.string.gps_status_unavailable);
-            this.statusGridAdapter.update(R.string.gps_status_connection, this.getString(R.string.gps_status_disconnected));
+            String na = this.getString(R.string.status_unavailable);
+            this.statusGridAdapter.update(R.string.status_connection, this.getString(R.string.status_disconnected));
             this.statusGridAdapter.update(R.string.gps_status_fix, na);
             this.statusGridAdapter.update(R.string.gps_status_latitude, na);
             this.statusGridAdapter.update(R.string.gps_status_longitude, na);
@@ -220,7 +221,7 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
             String translationString = "gps_status_fix_" + position.getFix();
             int fixId = getResources().getIdentifier(translationString, "string", getPackageName());
 
-            this.statusGridAdapter.update(R.string.gps_status_connection, this.getString(R.string.gps_status_connected));
+            this.statusGridAdapter.update(R.string.status_connection, this.getString(R.string.status_connected));
             this.statusGridAdapter.update(R.string.gps_status_fix, fixId > 0 ? this.getString(fixId) : translationString);
             this.statusGridAdapter.update(R.string.gps_status_latitude, Double.toString(position.getLocation().getLatitude()));
             this.statusGridAdapter.update(R.string.gps_status_longitude, Double.toString(position.getLocation().getLongitude()));
