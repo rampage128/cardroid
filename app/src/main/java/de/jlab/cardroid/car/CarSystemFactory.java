@@ -17,6 +17,10 @@ public enum CarSystemFactory {
         this.carSystemClass   = carSystemClass;
     }
 
+    public int getIdentifier() {
+        return this.identifier;
+    }
+
     public static CarSystemFactory getType(CarSystemSerialPacket packet) throws UnknownCarSystemException {
         byte identifier = packet.getId();
         for (CarSystemFactory carSystemType : CarSystemFactory.values()) {
@@ -26,6 +30,16 @@ public enum CarSystemFactory {
         }
 
         throw new UnknownCarSystemException(identifier);
+    }
+
+    public static CarSystemFactory getType(CarSystem carSystem) throws UnknownCarSystemException {
+        for (CarSystemFactory carSystemType : CarSystemFactory.values()) {
+            if (carSystem.getClass() == carSystemType.carSystemClass) {
+                return carSystemType;
+            }
+        }
+
+        throw new UnknownCarSystemException(carSystem);
     }
 
     public static CarSystem getCarSystem(CarSystemFactory systemType) {

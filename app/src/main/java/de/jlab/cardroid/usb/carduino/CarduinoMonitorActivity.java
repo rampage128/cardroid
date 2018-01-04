@@ -11,12 +11,15 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.car.CarSystemFactory;
+import de.jlab.cardroid.usb.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.StatusGridAdapter;
 
@@ -24,8 +27,9 @@ public class CarduinoMonitorActivity extends AppCompatActivity implements Serial
 
     private GridView statusGridView;
 
-    private ListView carSystemListView;
+    private ExpandableListView carSystemListView;
     private StatusGridAdapter carSystemGridAdapter;
+    private CarSystemTreeAdapter carSystemListAdapter;
 
     private ListView packetListView;
     private PacketListAdapter packetListAdapter;
@@ -98,6 +102,12 @@ public class CarduinoMonitorActivity extends AppCompatActivity implements Serial
     public void onReceivePackets(ArrayList<SerialPacket> packets) {
         for (SerialPacket packet : packets) {
             this.packetListAdapter.updatePacket(packet);
+            if (packet instanceof CarSystemSerialPacket) {
+                try {
+                    this.carSystemListAdapter.updateCarSystem(this.serviceBinder.getCar().getCarSystem(CarSystemFactory.getType((CarSystemSerialPacket) packet)));
+                }
+                catch (Exception e) { /* Intentionally left blank */ }
+            }
         }
 
         this.carSystemGridAdapter.update(R.string.car_status_systems, Integer.toString(this.serviceBinder.getCar().getCarSystemCount()));
@@ -109,6 +119,7 @@ public class CarduinoMonitorActivity extends AppCompatActivity implements Serial
             public void run() {
                 CarduinoMonitorActivity.this.packetListAdapter.notifyDataSetChanged();
                 CarduinoMonitorActivity.this.carSystemGridAdapter.notifyDataSetChanged();
+                CarduinoMonitorActivity.this.carSystemListAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -118,7 +129,7 @@ public class CarduinoMonitorActivity extends AppCompatActivity implements Serial
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_carduino_monitor);
 
-        this.carSystemListView = (ListView) findViewById(R.id.carSystemListView);
+        this.carSystemListView = (ExpandableListView) findViewById(R.id.carSystemListView);
         this.packetListView = (ListView) findViewById(R.id.packetListView);
 
         final BottomNavigationView bottomBar = (BottomNavigationView)this.findViewById(R.id.bottom_navigation);
@@ -151,6 +162,9 @@ public class CarduinoMonitorActivity extends AppCompatActivity implements Serial
         this.packetListView.setVisibility(View.GONE);
         this.packetListAdapter = new PacketListAdapter(this);
         this.packetListView.setAdapter(this.packetListAdapter);
+
+        this.carSystemListAdapter = new CarSystemTreeAdapter(this);
+        this.carSystemListView.setAdapter(this.carSystemListAdapter);
     }
 
     @Override

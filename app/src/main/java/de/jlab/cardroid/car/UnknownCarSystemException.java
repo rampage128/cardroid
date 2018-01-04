@@ -1,6 +1,11 @@
 package de.jlab.cardroid.car;
 
 public class UnknownCarSystemException extends Exception {
+
+    UnknownCarSystemException(CarSystem carSystem) {
+        super("Unknown car system type " + carSystem.getClass().getSimpleName());
+    }
+
     UnknownCarSystemException(byte identifier) {
         super("Unknown car system type 0x" + byteToHexString(identifier));
     }
