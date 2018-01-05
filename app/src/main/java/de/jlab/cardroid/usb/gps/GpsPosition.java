@@ -5,6 +5,8 @@ import android.location.LocationManager;
 import android.os.SystemClock;
 import android.util.SparseArray;
 
+import java.util.Objects;
+
 public class GpsPosition {
 
     private static double NANOS_TO_MILLIS   = 1000000d;
@@ -76,8 +78,8 @@ public class GpsPosition {
     }
 
     public boolean hasValidLocation() {
-        if (this.location.getLatitude() == Double.NaN) return false;
-        if (this.location.getLongitude() == Double.NaN) return false;
+        if (Objects.equals(this.location.getLatitude(), Double.NaN)) return false;
+        if (Objects.equals(this.location.getLongitude(), Double.NaN)) return false;
         if (!this.location.hasAccuracy()) return false;
         if (this.location.getTime() == 0) return false;
         if (this.location.getElapsedRealtimeNanos() == 0) return false;
