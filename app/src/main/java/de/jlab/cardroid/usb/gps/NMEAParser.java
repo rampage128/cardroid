@@ -10,7 +10,6 @@ public abstract class NMEAParser {
 
     private static HashMap<String, NMEAParser> parsers = new HashMap<>();
     private Calendar calendar = Calendar.getInstance();
-    private GpsPosition position = new GpsPosition();
 
     protected double parseDouble(String value, double defaultValue) {
         try {
