@@ -36,7 +36,7 @@ public class GpsPosition {
         this.hDop = hDop;
         this.vDop = vDop;
 
-        this.location.setAccuracy(hDop * 2.5f);
+        this.location.setAccuracy(hDop * 5f);
     }
 
     public void updateAltitude(double altitude) {
