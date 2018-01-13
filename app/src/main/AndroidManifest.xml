@@ -63,6 +63,7 @@
         <activity
             android:name=".cansniffer.CanSnifferActivity"
             android:label="@string/pref_title_can_sniffer"
+            android:hardwareAccelerated="true"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="your.action.string"/>
