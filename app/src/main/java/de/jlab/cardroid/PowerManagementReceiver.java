@@ -82,10 +82,12 @@ public class PowerManagementReceiver extends BroadcastReceiver {
     private void sendMediaEvent(int keyCode, Context context) {
         AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
 
-        KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-        audioManager.dispatchMediaKeyEvent(downEvent);
+        if (audioManager != null) {
+            KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+            audioManager.dispatchMediaKeyEvent(downEvent);
 
-        KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
-        audioManager.dispatchMediaKeyEvent(upEvent);
+            KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
+            audioManager.dispatchMediaKeyEvent(upEvent);
+        }
     }
 }
