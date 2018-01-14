@@ -1,5 +1,6 @@
 package de.jlab.cardroid;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -32,9 +33,6 @@ public class WatchDogService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        this.watchDogs.add(new GpsWatchDog(this));
-        this.watchDogs.add(new CarduinoWatchDog(this));
-
         this.timerAsync = new Timer();
         this.timerTaskAsync = new TimerTask() {
             @Override
@@ -50,13 +48,21 @@ public class WatchDogService extends Service {
         };
     }
 
+    @SuppressLint("WakelockTimeout")
     public int onStartCommand(Intent intent, int flags, int startId) {
-        this.timerAsync.schedule(this.timerTaskAsync, 10000, 5000);
+        this.timerAsync.schedule(this.timerTaskAsync, 3000, 5000);
         Log.i(LOG_TAG, this.watchDogs.size() + " watchdogs are watching now.");
 
+        this.watchDogs.clear();
+        this.watchDogs.add(new GpsWatchDog(this));
+        this.watchDogs.add(new CarduinoWatchDog(this));
+        this.watchDogs.add(new WifiWatchDog(this));
+
         PowerManager powerManager = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
-        this.screenLock = powerManager.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | PowerManager.ACQUIRE_CAUSES_WAKEUP, "Cardroid");
-        this.screenLock.acquire();
+        if (powerManager != null) {
+            this.screenLock = powerManager.newWakeLock(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | PowerManager.ACQUIRE_CAUSES_WAKEUP, "Cardroid");
+            this.screenLock.acquire();
+        }
 
         return START_STICKY;
     }
@@ -78,6 +84,10 @@ public class WatchDogService extends Service {
 
     public interface WatchDog {
         String ACTION_IGNORE = "IGNORE";
+        String ACTION_TRIGGER = "TRIGGER";
+
+        Intent INTENT_TRIGGER = new Intent(WatchDogService.WatchDog.ACTION_TRIGGER);
+        Intent INTENT_IGNORE = new Intent(WatchDogService.WatchDog.ACTION_IGNORE);
 
         Intent watch();
         void trigger(Intent intent);
