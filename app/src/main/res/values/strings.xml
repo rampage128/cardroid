@@ -10,6 +10,7 @@
     <string name="unit_bytes_per_second">bps</string>
     <string name="unit_sentences_per_second">sps</string>
     <string name="unit_packets_per_second">pps</string>
+    <string name="unit_hertz">Hz</string>
     <string name="unit_percent">%</string>
 
     <!-- Status display -->
@@ -120,6 +121,7 @@
     <string name="gps_status_accuracy">Accuracy</string>
     <string name="gps_status_satellite_count">Number of satellites</string>
     <string name="gps_status_sps">Sentences per second</string>
+    <string name="gps_status_frequency">Frequency</string>
 
     <!-- Carduino Monitor -->
     <string name="car_status">Status</string>

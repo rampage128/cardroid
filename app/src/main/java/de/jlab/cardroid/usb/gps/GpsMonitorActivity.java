@@ -46,12 +46,14 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
             gpsService.addPositionListener(GpsMonitorActivity.this);
             gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
             gpsService.addSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
+            gpsService.addUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
         }
 
         public void onServiceDisconnected(ComponentName className) {
             gpsService.removePositionListener(GpsMonitorActivity.this);
             gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
             gpsService.removeSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
+            gpsService.removeUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
             gpsService = null;
         }
     };
@@ -93,6 +95,24 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
                             R.string.unit_sentences_per_second
                     );
                     GpsMonitorActivity.this.rawGridAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+    };
+
+    private UsageStatistics.UsageStatisticsListener updateStatisticsListener = new UsageStatistics.UsageStatisticsListener() {
+        @Override
+        public void onInterval(final int count, final UsageStatistics statistics) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    GpsMonitorActivity.this.statusGridAdapter.updateStatistics(
+                            R.string.gps_status_frequency,
+                            count,
+                            Math.round(statistics.getAverage()),
+                            R.string.unit_hertz
+                    );
+                    GpsMonitorActivity.this.statusGridAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -204,8 +224,8 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
     }
 
     public void updateStatusGrid(GpsPosition position) {
+        String na = this.getString(R.string.status_unavailable);
         if (position == null) {
-            String na = this.getString(R.string.status_unavailable);
             this.statusGridAdapter.update(R.string.status_connection, this.getString(R.string.status_disconnected));
             this.statusGridAdapter.update(R.string.gps_status_fix, na);
             this.statusGridAdapter.update(R.string.gps_status_latitude, na);
@@ -215,6 +235,7 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
             this.statusGridAdapter.update(R.string.gps_status_bearing, na);
             this.statusGridAdapter.update(R.string.gps_status_time, na);
             this.statusGridAdapter.update(R.string.gps_status_accuracy, na);
+            this.statusGridAdapter.update(R.string.gps_status_frequency, na);
             this.statusGridAdapter.update(R.string.gps_status_satellite_count, na);
         }
         else {
@@ -230,6 +251,7 @@ public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialRe
             this.statusGridAdapter.update(R.string.gps_status_bearing, Float.toString(position.getLocation().getBearing()));
             this.statusGridAdapter.update(R.string.gps_status_time, DateUtils.formatDateTime(this, position.getLocation().getTime(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_ABBREV_ALL));
             this.statusGridAdapter.update(R.string.gps_status_accuracy, Float.toString(position.getLocation().getAccuracy()));
+            this.statusGridAdapter.update(R.string.gps_status_frequency, na);
             this.statusGridAdapter.update(R.string.gps_status_satellite_count, Integer.toString(position.getGpsSatelliteCount()));
         }
         this.statusGridAdapter.notifyDataSetChanged();
