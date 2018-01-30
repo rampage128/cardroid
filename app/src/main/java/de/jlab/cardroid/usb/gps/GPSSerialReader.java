@@ -9,10 +9,12 @@ import de.jlab.cardroid.usb.UsageStatistics;
 
 public class GPSSerialReader implements SerialConnectionManager.SerialConnectionListener {
 
+    private long lastPositionTime = 0;
     private GpsPosition position = new GpsPosition();
     private StringBuilder dataLine = new StringBuilder();
     private ArrayList<PositionListener> positionListeners = new ArrayList<>();
     private UsageStatistics sentenceStatistics = new UsageStatistics(1000, 60);
+    private UsageStatistics updateStatistics = new UsageStatistics(1000, 60);
 
     @Override
     public void onReceiveData(byte[] data) {
@@ -29,6 +31,7 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
                     for (PositionListener listener : positionListeners) {
                         listener.onUpdate(this.position, rawData);
                     }
+                    updateStatistics.count();
                 }
                 sentenceStatistics.count();
                 this.dataLine.setLength(0);
@@ -49,7 +52,14 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
         }
 
         parser.parseSentence(tokens, this.position);
-        return true;
+
+        long newPositionTime = this.position.getLocation().getTime();
+        if (newPositionTime > this.lastPositionTime) {
+            this.lastPositionTime = newPositionTime;
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -76,6 +86,14 @@ public class GPSSerialReader implements SerialConnectionManager.SerialConnection
 
     public void removeSentenceStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
         this.sentenceStatistics.removeListener(listener);
+    }
+
+    public void addUpdateStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.updateStatistics.addListener(listener);
+    }
+
+    public void removeUpdateStatisticListener(UsageStatistics.UsageStatisticsListener listener) {
+        this.updateStatistics.removeListener(listener);
     }
 
     public interface PositionListener {
