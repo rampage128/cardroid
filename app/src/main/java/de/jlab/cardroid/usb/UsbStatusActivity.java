@@ -123,7 +123,7 @@ public class UsbStatusActivity extends AppCompatActivity {
         int deviceVID = device.getVendorId();
         int devicePID = device.getProductId();
         // carduino
-        if (deviceVID == 0x1a86 && devicePID == 0x7523) {
+        if (deviceVID == 0x1a86 && devicePID == 0x7523 || deviceVID == 0x16C0 && devicePID == 0x0487) {
             return CarduinoService.class;
         }
         // GPS
