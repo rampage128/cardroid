@@ -47,6 +47,16 @@
     <string name="pref_title_overlay_toggle">Show Overlay</string>
     <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 
+    <string name="pref_title_overlay_temperature_range">Temperature range</string>
+    <string name="pref_title_overlay_temperature_min">Temperature minimum</string>
+    <string name="pref_description_overlay_temperature_min">Minimum allowed value of temperature adjustment</string>
+    <string name="pref_title_overlay_temperature_max">Temperature maximum</string>
+    <string name="pref_description_overlay_temperature_max">Maximum allowed value of temperature adjustment</string>
+
+    <string name="pref_title_overlay_fan_range">Fan range</string>
+    <string name="pref_title_overlay_fan_max">Fan maximum</string>
+    <string name="pref_description_overlay_fan_max">Maximum level of blower fan adjustment</string>
+
     <!-- Car settings -->
     <string name="pref_header_car">Car connection</string>
     <string name="pref_header_description_car">Manage the USB connection to your car</string>

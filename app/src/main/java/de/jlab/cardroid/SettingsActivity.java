@@ -203,6 +203,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_overlay);
             setHasOptionsMenu(true);
 
+            bindPreferenceSummaryToValue(findPreference("overlay_temperature_max"));
+            bindPreferenceSummaryToValue(findPreference("overlay_temperature_min"));
+            bindPreferenceSummaryToValue(findPreference("overlay_fan_max"));
+
             overlayPermissionPreference = (SwitchPreference)findPreference("overlay_active");
 
             overlayPermissionPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
