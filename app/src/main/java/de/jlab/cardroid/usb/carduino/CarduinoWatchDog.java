@@ -13,7 +13,7 @@ public class CarduinoWatchDog extends UsbWatchDog {
 
     @Override
     protected boolean shouldWatchDevice(UsbDevice device) {
-        return device.getVendorId() != 0x067B && device.getProductId() != 0x2303;
+        return device.getVendorId() != 0x067B && device.getProductId() != 0x2303 || device.getVendorId() == 0x16C0 && device.getProductId() == 0x0487;
     }
 
     @Override
