@@ -50,8 +50,7 @@ public class GpsPosition {
 
     public void updateTime(long time) {
         this.location.setTime(time);
-        long bootTime = Math.round(System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() / NANOS_TO_MILLIS));
-        this.location.setElapsedRealtimeNanos((time - bootTime) * MILLIS_TO_NANOS);
+        this.location.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
     }
 
     public void updateCoordinates(double latitude, double longitude) {
