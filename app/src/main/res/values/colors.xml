@@ -14,4 +14,5 @@
 
     <color name="colorOverlayOn">#FFFFBE00</color>
     <color name="colorOverlayOff">#44EEEEEE</color>
+    <color name="colorOverlayItemBg">#FF424242</color>
 </resources>

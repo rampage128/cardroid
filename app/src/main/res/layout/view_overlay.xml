@@ -13,6 +13,7 @@
         android:layout_height="96dp"
         android:layout_gravity="center_horizontal"
         android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
         app:cardCornerRadius="48dp"
         app:cardElevation="6dp"
         tools:layout_editor_absoluteX="8dp"
@@ -79,6 +80,7 @@
                 android:layout_height="96dp"
                 android:layout_marginEnd="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
@@ -96,6 +98,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
@@ -113,6 +116,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
@@ -129,6 +133,7 @@
                 android:layout_height="96dp"
                 android:layout_marginStart="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
@@ -155,6 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
@@ -237,6 +243,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:elevation="6dp"
+                app:cardBackgroundColor="@color/colorOverlayItemBg"
                 app:cardCornerRadius="48dp"
                 app:cardElevation="6dp">
 
