@@ -212,6 +212,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int value = Math.max(progress, 1);
                 viewHolder.fanChangeText.setText(String.format(Locale.getDefault(), "%s", value));
+                if (progress < 1) {
+                    viewHolder.fanBar.setProgress(1);
+                }
             }
 
             @Override
