@@ -25,7 +25,7 @@
             android:layout_height="88dp"
             android:layout_gravity="center_vertical|center_horizontal"
             android:max="360"
-            android:progress="300"
+            android:progress="0"
             android:progressDrawable="@drawable/ic_overlay_progress"
             app:layout_constraintLeft_toRightOf="@+id/imageView2"
             app:layout_constraintTop_toTopOf="parent"/>
