@@ -354,9 +354,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 viewHolder.autoButton.setState(system.isAuto());
 
                 if (!trackingTemp) {
-                    viewHolder.temperatureText.setText(temperatureText);
                     viewHolder.temperatureBar.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
                 }
+                viewHolder.temperatureText.setText(temperatureText);
                 viewHolder.acButton.setState(system.isAcOn());
             }
         });
