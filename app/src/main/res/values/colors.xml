@@ -11,4 +11,7 @@
     <color name="colorGpsSatelliteTimeout">#99AAAAAA</color>
     <color name="colorGpsSatelliteNoFix">#ffEEDC82</color>
     <color name="colorGpsSatelliteFix">#55d456</color>
+
+    <color name="colorOverlayOn">#FFFFBE00</color>
+    <color name="colorOverlayOff">#44EEEEEE</color>
 </resources>

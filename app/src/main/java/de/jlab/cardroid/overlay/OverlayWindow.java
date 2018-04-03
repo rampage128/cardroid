@@ -9,19 +9,14 @@ import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.constraint.ConstraintLayout;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
-import java.lang.reflect.Field;
 import java.util.Locale;
 
 import de.jlab.cardroid.R;
@@ -44,6 +39,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private boolean trackingTemp = false;
 
     private int minTemp = 0;
+    private int maxFanLevel = 0;
 
     private Runnable stopFanInteraction = new Runnable() {
         @Override
@@ -66,7 +62,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         View toggleButton;
         TextView mainText;
-        ImageView mainFanIcon;
+        ProgressBar mainFanIcon;
 
         View detailView;
 
@@ -125,7 +121,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         viewHolder.toggleButton = viewHolder.rootView.findViewById(R.id.toggleButton);
         viewHolder.mainText = (TextView)viewHolder.rootView.findViewById(R.id.mainText);
-        viewHolder.mainFanIcon = (ImageView)viewHolder.rootView.findViewById(R.id.mainFanIcon);
+        viewHolder.mainFanIcon = (ProgressBar)viewHolder.rootView.findViewById(R.id.mainFanIcon);
 
         viewHolder.detailView = viewHolder.rootView.findViewById(R.id.detailContainer);
 
@@ -150,6 +146,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         viewHolder.temperatureBar.setMax((maxTemp - this.minTemp) * 2);
         viewHolder.fanBar.setMax(maxFan);
+        this.maxFanLevel = maxFan;
 
         // Add rootview to overlay window
         final WindowManager.LayoutParams params = getWindowLayout(
@@ -260,22 +257,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         this.climateControl.addChangeListener(this);
     }
 
-    private int getStatusImage(boolean status) {
-        return status ? R.mipmap.ic_shortcut_status_on : R.mipmap.ic_shortcut_status_off;
-    }
-
-    private int getLevelImage(int level) {
-        String name = "ic_shortcut_level_" + level;
-        try {
-            Field field = R.mipmap.class.getField(name);
-            return field.getInt(null);
-        }
-        catch (Exception e) {
-            Log.e(LOG_TAG, "Cannot find level image " + name);
-            return R.mipmap.ic_shortcut_level_0;
-        }
-    }
-
     public void toggle() {
         if (this.viewHolder.detailView != null) {
             if (this.viewHolder.detailView.getVisibility() == View.GONE) {
@@ -341,13 +322,12 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             @Override
             public void run() {
                 int fanLevel = system.getFanLevel();
-                int fanResourceId = getLevelImage(fanLevel);
                 float temperature = system.getTemperature();
                 boolean isOff = fanLevel == 0;
                 String temperatureText = String.format(Locale.getDefault(), "%s", temperature);
 
                 viewHolder.mainText.setText(temperatureText);
-                viewHolder.mainFanIcon.setImageResource(fanResourceId);
+                viewHolder.mainFanIcon.setProgress(Math.round(fanLevel / (float)OverlayWindow.this.maxFanLevel * 300));
 
                 viewHolder.offButton.setState(!isOff);
                 viewHolder.wshButton.setState(system.isWindshieldHeating());

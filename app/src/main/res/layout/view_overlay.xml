@@ -7,22 +7,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <android.support.v7.widget.CardView
         android:id="@+id/toggleButton"
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:layout_gravity="center_horizontal"
-        android:background="@mipmap/overlay_pill_large"
+        android:elevation="6dp"
+        app:cardCornerRadius="48dp"
+        app:cardElevation="6dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 
-        <android.support.v7.widget.AppCompatImageView
+        <ProgressBar
             android:id="@+id/mainFanIcon"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:max="360"
+            android:progress="300"
+            android:progressDrawable="@drawable/ic_overlay_progress"
             app:layout_constraintLeft_toRightOf="@+id/imageView2"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@mipmap/ic_shortcut_level_0" />
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:id="@+id/mainText"
@@ -36,8 +42,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </FrameLayout>
+            app:layout_constraintTop_toTopOf="parent"/>
+    </android.support.v7.widget.CardView>
 
     <LinearLayout
         android:id="@+id/detailContainer"
@@ -53,6 +59,7 @@
 
             <android.support.v7.widget.AppCompatImageView
                 android:id="@+id/imageView"
+                app:cardCornerRadius="40dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|center_horizontal"
@@ -63,59 +70,75 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-            <FrameLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:background="@mipmap/overlay_pill_large">
+                android:layout_marginEnd="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
                 <de.jlab.cardroid.overlay.OverlayToggleButton
                     android:id="@+id/offButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_off" />
-            </FrameLayout>
+                    overlaytogglebutton:src="@drawable/ic_cc_off"/>
+            </android.support.v7.widget.CardView>
 
-            <FrameLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:background="@mipmap/overlay_pill_large">
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
                 <de.jlab.cardroid.overlay.OverlayToggleButton
                     android:id="@+id/wshButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_wsh" />
-            </FrameLayout>
+                    overlaytogglebutton:src="@drawable/ic_cc_wsh"/>
+            </android.support.v7.widget.CardView>
 
-            <FrameLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:background="@mipmap/overlay_pill_large">
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
                 <de.jlab.cardroid.overlay.OverlayToggleButton
                     android:id="@+id/rwhButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_rwh" />
-            </FrameLayout>
+                    overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
+            </android.support.v7.widget.CardView>
 
-            <FrameLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:background="@mipmap/overlay_pill_large">
+                android:layout_marginStart="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
                 <de.jlab.cardroid.overlay.OverlayToggleButton
                     android:id="@+id/recirculationButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_recirculation" />
-            </FrameLayout>
+                    overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
+            </android.support.v7.widget.CardView>
 
         </LinearLayout>
 
@@ -123,142 +146,160 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:padding="8dp">
 
-            <LinearLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@mipmap/overlay_pill_large"
-                android:orientation="vertical">
+                android:layout_marginEnd="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
-                <FrameLayout
-                    android:id="@+id/modeButton"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_gravity="center_horizontal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="vertical">
 
                     <FrameLayout
-                        android:id="@+id/modeDisplay"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_gravity="center_horizontal|center_vertical">
+                        android:id="@+id/modeButton"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center_horizontal">
 
-                        <android.support.v7.widget.AppCompatImageView
-                            android:id="@+id/ductFace"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_cc_mode_face" />
+                        <FrameLayout
+                            android:id="@+id/modeDisplay"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:layout_gravity="center_horizontal|center_vertical">
 
-                        <android.support.v7.widget.AppCompatImageView
-                            android:id="@+id/ductFeet"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_cc_mode_feet" />
+                            <android.support.v7.widget.AppCompatImageView
+                                android:id="@+id/ductFace"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_cc_mode_face"/>
 
-                        <android.support.v7.widget.AppCompatImageView
-                            android:id="@+id/ductWindshield"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_cc_mode_ws" />
+                            <android.support.v7.widget.AppCompatImageView
+                                android:id="@+id/ductFeet"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_cc_mode_feet"/>
 
-                        <android.support.v7.widget.AppCompatImageView
-                            android:id="@+id/ductBackground"
-                            android:layout_width="wrap_content"
+                            <android.support.v7.widget.AppCompatImageView
+                                android:id="@+id/ductWindshield"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_cc_mode_ws"/>
+
+                            <android.support.v7.widget.AppCompatImageView
+                                android:id="@+id/ductBackground"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:srcCompat="@drawable/ic_cc_mode_bg"/>
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/fanChangeText"
+                            android:layout_width="64dp"
                             android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_cc_mode_bg" />
+                            android:layout_gravity="center_vertical|center_horizontal"
+                            android:textAlignment="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:visibility="invisible"/>
                     </FrameLayout>
 
-                    <TextView
-                        android:id="@+id/fanChangeText"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
+                    <SeekBar
+                        android:id="@+id/fanBar"
+                        android:layout_width="256dp"
+                        android:layout_height="256dp"
+                        android:layout_gravity="center_horizontal"
+                        android:max="6"
+                        android:progress="0"
+                        android:rotation="270"/>
+
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/autoButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="96dp"
                         android:layout_gravity="center_vertical|center_horizontal"
-                        android:textAlignment="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:visibility="invisible" />
-                </FrameLayout>
+                        overlaytogglebutton:src="@drawable/ic_cc_auto"/>
+                </LinearLayout>
 
-                <SeekBar
-                    android:id="@+id/fanBar"
-                    android:layout_width="192dp"
-                    android:layout_height="192dp"
-                    android:layout_gravity="center_horizontal"
-                    android:max="6"
-                    android:progress="0"
-                    android:rotation="270" />
+            </android.support.v7.widget.CardView>
 
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/autoButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_auto" />
-            </LinearLayout>
-
-            <LinearLayout
+            <android.support.v7.widget.CardView
                 android:layout_width="96dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@mipmap/overlay_pill_large"
-                android:orientation="vertical">
+                android:layout_marginStart="8dp"
+                android:elevation="6dp"
+                app:cardCornerRadius="48dp"
+                app:cardElevation="6dp">
 
-                <FrameLayout
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginTop="8dp"
-                    tools:layout_editor_absoluteX="8dp"
-                    tools:layout_editor_absoluteY="8dp">
-
-                    <TextView
-                        android:id="@+id/temperatureChangeText"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical|center_horizontal"
-                        android:textAlignment="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:visibility="invisible"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/temperatureText"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical|center_horizontal"
-                        android:textAlignment="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                </FrameLayout>
-
-                <SeekBar
-                    android:id="@+id/temperatureBar"
-                    android:layout_width="192dp"
-                    android:layout_height="192dp"
-                    android:layout_gravity="center_horizontal"
-                    android:max="28"
-                    android:rotation="270" />
-
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/acButton"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_ac" />
-            </LinearLayout>
+                    android:orientation="vertical">
+
+                    <FrameLayout
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center_horizontal"
+                        tools:layout_editor_absoluteX="8dp"
+                        tools:layout_editor_absoluteY="8dp">
+
+                        <TextView
+                            android:id="@+id/temperatureChangeText"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|center_horizontal"
+                            android:textAlignment="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:visibility="invisible"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintRight_toRightOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/temperatureText"
+                            android:layout_width="64dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|center_horizontal"
+                            android:textAlignment="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintRight_toRightOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
+                    </FrameLayout>
+
+                    <SeekBar
+                        android:id="@+id/temperatureBar"
+                        android:layout_width="256dp"
+                        android:layout_height="256dp"
+                        android:layout_gravity="center_horizontal"
+                        android:max="28"
+                        android:rotation="270"/>
+
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/acButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center_horizontal"
+                        overlaytogglebutton:src="@drawable/ic_cc_ac"/>
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
         </LinearLayout>
     </LinearLayout>
 
