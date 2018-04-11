@@ -9,12 +9,12 @@ import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.Locale;
@@ -76,11 +76,11 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         View modeFaceIcon;
         View modeFeetIcon;
         View modeWsIcon;
-        SeekBar fanBar;
+        SeekArc fanDial;
         TextView fanChangeText;
         OverlayToggleButton autoButton;
 
-        SeekBar temperatureBar;
+        SeekArc temperatureDial;
         TextView temperatureText;
         TextView temperatureChangeText;
         OverlayToggleButton acButton;
@@ -136,16 +136,16 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         viewHolder.modeFeetIcon = viewHolder.rootView.findViewById(R.id.ductFeet);
         viewHolder.modeWsIcon = viewHolder.rootView.findViewById(R.id.ductWindshield);
         viewHolder.fanChangeText = (TextView)viewHolder.rootView.findViewById(R.id.fanChangeText);
-        viewHolder.fanBar =(SeekBar)viewHolder.rootView.findViewById(R.id.fanBar);
+        viewHolder.fanDial = (SeekArc)viewHolder.rootView.findViewById(R.id.fanBar);
         viewHolder.autoButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.autoButton);
 
-        viewHolder.temperatureBar = (SeekBar)viewHolder.rootView.findViewById(R.id.temperatureBar);
+        viewHolder.temperatureDial = (SeekArc)viewHolder.rootView.findViewById(R.id.temperatureBar);
         viewHolder.temperatureText = (TextView)viewHolder.rootView.findViewById(R.id.temperatureText);
         viewHolder.temperatureChangeText = (TextView)viewHolder.rootView.findViewById(R.id.temperatureChangeText);
         viewHolder.acButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.acButton);
 
-        viewHolder.temperatureBar.setMax((maxTemp - this.minTemp) * 2);
-        viewHolder.fanBar.setMax(maxFan);
+        viewHolder.temperatureDial.setMax((maxTemp - this.minTemp) * 2);
+        viewHolder.fanDial.setMax(maxFan);
         this.maxFanLevel = maxFan;
 
         // Add rootview to overlay window
@@ -207,40 +207,42 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         viewHolder.acButton.setOnClickListener(buttonListener);
 
         // Init events
-        viewHolder.fanBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        viewHolder.fanDial.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int value = Math.max(progress, 1);
-                viewHolder.fanChangeText.setText(String.format(Locale.getDefault(), "%s", value));
-                if (progress < 1) {
-                    viewHolder.fanBar.setProgress(1);
+            public void onProgressChanged(SeekArc seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    int value = Math.max(progress, 1);
+                    viewHolder.fanChangeText.setText(String.format(Locale.getDefault(), "%s", value));
+                    if (progress < 1) {
+                        viewHolder.fanDial.setProgress(1);
+                    }
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                viewHolder.modeDisplay.setVisibility(View.INVISIBLE);
-                viewHolder.fanChangeText.setVisibility(View.VISIBLE);
+            public void onStartTrackingTouch(SeekArc seekBar) {
                 uiHandler.removeCallbacks(stopFanInteraction);
                 trackingFans = true;
             }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(SeekArc seekBar) {
                 climateControl.setFanLevel((byte)Math.max(seekBar.getProgress(), 1));
                 uiHandler.postDelayed(stopFanInteraction, 1000);
             }
         });
 
-        viewHolder.temperatureBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        viewHolder.temperatureDial.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float value = progress / 2f + OverlayWindow.this.minTemp;
-                viewHolder.temperatureChangeText.setText(String.format(Locale.getDefault(), "%s", value));
+            public void onProgressChanged(SeekArc seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    float value = progress / 2f + OverlayWindow.this.minTemp;
+                    viewHolder.temperatureChangeText.setText(String.format(Locale.getDefault(), "%s", value));
+                }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+            public void onStartTrackingTouch(SeekArc seekBar) {
                 viewHolder.temperatureText.setVisibility(View.INVISIBLE);
                 viewHolder.temperatureChangeText.setVisibility(View.VISIBLE);
                 uiHandler.removeCallbacks(stopTempInteraction);
@@ -248,7 +250,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(SeekArc seekBar) {
                 climateControl.setTemperature(seekBar.getProgress() / 2f + OverlayWindow.this.minTemp);
                 uiHandler.postDelayed(stopTempInteraction, 1000);
             }
@@ -261,8 +263,11 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     }
 
     public void toggle() {
+        float elevation = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, this.context.getResources().getDisplayMetrics());
         if (this.viewHolder.detailView != null) {
             if (this.viewHolder.detailView.getVisibility() == View.GONE) {
+                this.viewHolder.toggleButton.setElevation(0);
+                this.viewHolder.detailView.setElevation(elevation);
                 this.viewHolder.detailView.setVisibility(View.VISIBLE);
                 windowManager.updateViewLayout(
                         this.viewHolder.rootView,
@@ -274,6 +279,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             }
             else {
                 this.viewHolder.detailView.setVisibility(View.GONE);
+                this.viewHolder.detailView.setElevation(0);
+                this.viewHolder.toggleButton.setElevation(elevation);
                 windowManager.updateViewLayout(
                         this.viewHolder.rootView,
                         getWindowLayout(
@@ -327,7 +334,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 int fanLevel = system.getFanLevel();
                 float temperature = system.getTemperature();
                 boolean isOff = fanLevel == 0;
-                String temperatureText = String.format(Locale.getDefault(), "%s", temperature);
+                String temperatureText  = String.format(Locale.getDefault(), "%s", temperature);
+                String fanText          = String.format(Locale.getDefault(), "%s", fanLevel);
 
                 viewHolder.mainText.setText(temperatureText);
                 viewHolder.mainFanIcon.setProgress(Math.round(fanLevel / (float)OverlayWindow.this.maxFanLevel * 300));
@@ -339,22 +347,19 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
                 if (!trackingFans) {
                     if (isOff) {
-                        viewHolder.modeDisplay.setVisibility(View.INVISIBLE);
-                        viewHolder.fanChangeText.setVisibility(View.VISIBLE);
                         viewHolder.fanChangeText.setText(R.string.cc_off);
                     } else {
-                        viewHolder.modeDisplay.setVisibility(View.VISIBLE);
-                        viewHolder.fanChangeText.setVisibility(View.INVISIBLE);
                         viewHolder.modeFaceIcon.setVisibility(system.isDuctFaceActive() ? View.VISIBLE : View.INVISIBLE);
                         viewHolder.modeFeetIcon.setVisibility(system.isDuctFeetActive() ? View.VISIBLE : View.INVISIBLE);
                         viewHolder.modeWsIcon.setVisibility(system.isDuctWindshieldActive() ? View.VISIBLE : View.INVISIBLE);
+                        viewHolder.fanChangeText.setText(fanText);
                     }
-                    viewHolder.fanBar.setProgress(Math.max(0, fanLevel));
+                    viewHolder.fanDial.setProgress(Math.max(0, fanLevel));
                 }
                 viewHolder.autoButton.setState(system.isAuto());
 
                 if (!trackingTemp) {
-                    viewHolder.temperatureBar.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
+                    viewHolder.temperatureDial.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
                 }
                 viewHolder.temperatureText.setText(temperatureText);
                 viewHolder.acButton.setState(system.isAcOn());
