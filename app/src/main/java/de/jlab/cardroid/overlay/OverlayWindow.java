@@ -347,6 +347,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
                 if (!trackingFans) {
                     if (isOff) {
+                        viewHolder.modeFaceIcon.setVisibility(View.INVISIBLE);
+                        viewHolder.modeFeetIcon.setVisibility(View.INVISIBLE);
+                        viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
                         viewHolder.fanChangeText.setText(R.string.cc_off);
                     } else {
                         viewHolder.modeFaceIcon.setVisibility(system.isDuctFaceActive() ? View.VISIBLE : View.INVISIBLE);
