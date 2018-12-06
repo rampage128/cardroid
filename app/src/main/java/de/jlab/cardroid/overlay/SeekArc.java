@@ -69,6 +69,10 @@ public class SeekArc extends View {
      */
     private int mRotation = 0;
 
+    private int mSegments = 1;
+
+    private int mSegmentGap = 4;
+
     /**
      * Give the SeekArc rounded edges
      */
@@ -152,6 +156,11 @@ public class SeekArc extends View {
         init(context, attrs, defStyle);
     }
 
+    public SeekArc(Context context, AttributeSet attrs, int defStyle, int defStyleRes) {
+        super(context, attrs, defStyle, defStyleRes);
+        init(context, attrs, defStyle);
+    }
+
     private void init(Context context, AttributeSet attrs, int defStyle) {
 
         Log.d(TAG, "Initialising SeekArc");
@@ -166,7 +175,7 @@ public class SeekArc extends View {
         mThumb = res.getDrawable(R.drawable.seekarc_thumb); //
         // Convert progress width to pixels for current density
         mProgressWidth = (int) (mProgressWidth * density);
-
+        mSegmentGap = (int) (mSegmentGap * density);
 
         if (attrs != null) {
             // Attribute initialization
@@ -192,6 +201,8 @@ public class SeekArc extends View {
                     mArcWidth);
             mStartAngle = a.getInt(R.styleable.SeekArc_startAngle, mStartAngle);
             mSweepAngle = a.getInt(R.styleable.SeekArc_sweepAngle, mSweepAngle);
+            mSegments = a.getInt(R.styleable.SeekArc_segments, mSegments);
+            mSegmentGap = a.getInt(R.styleable.SeekArc_segmentGap, mSegmentGap);
             mRotation = a.getInt(R.styleable.SeekArc_rotation, mRotation);
             mRoundedEdges = a.getBoolean(R.styleable.SeekArc_roundEdges,
                     mRoundedEdges);
@@ -244,12 +255,19 @@ public class SeekArc extends View {
             canvas.scale(-1, 1, mArcRect.centerX(), mArcRect.centerY());
         }
 
+        final float segmentSize  = (float)(mSweepAngle - mSegmentGap * (mSegments - 1)) / mSegments;
+
         // Draw the arcs
-        final int arcStart = mStartAngle + mAngleOffset + mRotation;
-        final int arcSweep = mSweepAngle;
-        canvas.drawArc(mArcRect, arcStart, arcSweep, false, mArcPaint);
-        canvas.drawArc(mArcRect, arcStart, mProgressSweep, false,
-                mProgressPaint);
+        for (int i = 0; i < mSegments; i++) {
+            final float segmentOffset = (segmentSize * i) + (mSegmentGap * i);
+            final float arcStart = mStartAngle + mAngleOffset + mRotation + segmentOffset;
+
+            canvas.drawArc(mArcRect, arcStart, segmentSize, false, mArcPaint);
+            if ((float)mProgress / mMax * mSegments > i) {
+                canvas.drawArc(mArcRect, arcStart, mSegments > 1 ? segmentSize : mProgressSweep, false,
+                        mProgressPaint);
+            }
+        }
 
         if (mEnabled) {
             // Draw the thumb nail
@@ -459,6 +477,14 @@ public class SeekArc extends View {
     public void setArcWidth(int mArcWidth) {
         this.mArcWidth = mArcWidth;
         mArcPaint.setStrokeWidth(mArcWidth);
+    }
+
+    public int getSegments() {
+        return mSegments;
+    }
+
+    public void setSegments(int segments) {
+        this.mSegments = segments;
     }
 
     public int getArcRotation() {

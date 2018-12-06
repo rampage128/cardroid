@@ -14,6 +14,8 @@
         <attr name="rotation" format="integer" />
         <attr name="startAngle" format="integer" />
         <attr name="sweepAngle" format="integer" />
+        <attr name="segments" format="integer" />
+        <attr name="segmentGap" format="integer" />
         <attr name="arcColor" format="color" />
         <attr name="progressColor" format="color" />
         <attr name="roundEdges" format="boolean" />
