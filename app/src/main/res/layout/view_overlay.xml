@@ -190,8 +190,9 @@
                         android:padding="48dp"
                         seekarc:arcWidth="4dp"
                         seekarc:clockwise="false"
-                        seekarc:max="6"
+                        seekarc:max="7"
                         seekarc:progress="0"
+                        seekarc:segments="1"
                         seekarc:progressWidth="4dp"
                         seekarc:roundEdges="true"
                         seekarc:startAngle="100"
@@ -333,15 +334,23 @@
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 
-        <ProgressBar
+        <de.jlab.cardroid.overlay.SeekArc
             android:id="@+id/mainFanIcon"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_gravity="center_vertical|center_horizontal"
-            android:max="360"
-            android:progress="0"
-            android:progressDrawable="@drawable/ic_overlay_progress"/>
+            android:padding="4dp"
+            seekarc:arcWidth="4dp"
+            seekarc:clockwise="true"
+            seekarc:enabled="false"
+            seekarc:max="7"
+            seekarc:progress="0"
+            seekarc:progressWidth="2dp"
+            seekarc:roundEdges="true"
+            seekarc:segments="7"
+            seekarc:segmentGap="8"
+            seekarc:startAngle="195"
+            seekarc:sweepAngle="330"/>
 
         <TextView
             android:id="@+id/mainText"

@@ -62,7 +62,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         View toggleButton;
         TextView mainText;
-        ProgressBar mainFanIcon;
+        SeekArc mainFanIcon;
 
         View detailView;
 
@@ -121,7 +121,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         viewHolder.toggleButton = viewHolder.rootView.findViewById(R.id.toggleButton);
         viewHolder.mainText = (TextView)viewHolder.rootView.findViewById(R.id.mainText);
-        viewHolder.mainFanIcon = (ProgressBar)viewHolder.rootView.findViewById(R.id.mainFanIcon);
+        viewHolder.mainFanIcon = (SeekArc)viewHolder.rootView.findViewById(R.id.mainFanIcon);
 
         viewHolder.detailView = viewHolder.rootView.findViewById(R.id.detailContainer);
 
@@ -146,6 +146,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         viewHolder.temperatureDial.setMax((maxTemp - this.minTemp) * 2);
         viewHolder.fanDial.setMax(maxFan);
+        viewHolder.mainFanIcon.setMax(maxFan);
+        viewHolder.mainFanIcon.setSegments(maxFan);
         this.maxFanLevel = maxFan;
 
         // Add rootview to overlay window
@@ -331,14 +333,14 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                int fanLevel = system.getFanLevel();
+                int fanLevel = Math.max(0, Math.min(system.getFanLevel(), OverlayWindow.this.maxFanLevel));
                 float temperature = system.getTemperature();
                 boolean isOff = fanLevel == 0;
                 String temperatureText  = String.format(Locale.getDefault(), "%s", temperature);
                 String fanText          = String.format(Locale.getDefault(), "%s", fanLevel);
 
                 viewHolder.mainText.setText(temperatureText);
-                viewHolder.mainFanIcon.setProgress(Math.round(fanLevel / (float)OverlayWindow.this.maxFanLevel * 300));
+                viewHolder.mainFanIcon.setProgress(fanLevel);
 
                 viewHolder.offButton.setState(!isOff);
                 viewHolder.wshButton.setState(system.isWindshieldHeating());
