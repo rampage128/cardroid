@@ -348,9 +348,9 @@
             seekarc:progressWidth="2dp"
             seekarc:roundEdges="true"
             seekarc:segments="7"
-            seekarc:segmentGap="8"
-            seekarc:startAngle="195"
-            seekarc:sweepAngle="330"/>
+            seekarc:segmentGap="12"
+            seekarc:startAngle="210"
+            seekarc:sweepAngle="300"/>
 
         <TextView
             android:id="@+id/mainText"
