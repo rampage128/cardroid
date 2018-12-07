@@ -298,9 +298,7 @@ public class SeekArc extends View {
         left = width / 2 - (arcDiameter / 2);
         mArcRect.set(left, top, left + arcDiameter, top + arcDiameter);
 
-        int arcStart = (int) mProgressSweep + mStartAngle + mRotation + 90;
-        mThumbXPos = (int) (mArcRadius * Math.cos(Math.toRadians(arcStart)));
-        mThumbYPos = (int) (mArcRadius * Math.sin(Math.toRadians(arcStart)));
+        updateThumbPosition();
 
         setTouchInSide(mTouchInside);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -414,7 +412,15 @@ public class SeekArc extends View {
     }
 
     private void updateThumbPosition() {
-        int thumbAngle = (int) (mStartAngle + mProgressSweep + mRotation + 90);
+        int thumbAngle = 0;
+        if (this.mSegments > 1) {
+            final float segmentSize  = (float)(mSweepAngle - mSegmentGap * (mSegments - 1)) / mSegments;
+            final float segmentOffset = Math.max(0, (segmentSize * mProgress) + (mSegmentGap * (mProgress - 1)));
+            thumbAngle = (int) (mStartAngle +  mRotation + segmentOffset + 90);
+        }
+        else {
+            thumbAngle = (int) (mStartAngle + mProgressSweep + mRotation + 90);
+        }
         mThumbXPos = (int) (mArcRadius * Math.cos(Math.toRadians(thumbAngle)));
         mThumbYPos = (int) (mArcRadius * Math.sin(Math.toRadians(thumbAngle)));
     }
