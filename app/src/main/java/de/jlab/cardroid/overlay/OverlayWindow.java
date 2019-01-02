@@ -328,13 +328,24 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         int navigationBarOffset = usableSize.y - fullSize.y;
         */
 
+        int windowType = WindowManager.LayoutParams.TYPE_PHONE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            windowType = WindowManager.LayoutParams.TYPE_TOAST;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            windowType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+        {
+            windowType = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
+
         WindowManager.LayoutParams params =  new WindowManager.LayoutParams(
                 width,
                 height,
-                WindowManager.LayoutParams.TYPE_PHONE,
+                windowType,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN |
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
-                WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
