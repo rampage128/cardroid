@@ -72,7 +72,7 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
                 foundPacket = false;
                 packetId = 0x00;
                 packetType = 0x00;
-                i += length + 2;
+                i += length + 1;
             }
         }
 
