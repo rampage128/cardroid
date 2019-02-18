@@ -27,6 +27,7 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
 
     static class GroupViewHolder {
         TextView label;
+        TextView details;
     }
 
     static class ChildViewHolder {
@@ -79,15 +80,18 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             holder = new GroupViewHolder();
             final LayoutInflater layoutInflater = LayoutInflater.from(this.context);
-            convertView = layoutInflater.inflate(android.R.layout.simple_expandable_list_item_1, null);
+            convertView = layoutInflater.inflate(android.R.layout.simple_expandable_list_item_2, null);
             holder.label = (TextView) convertView.findViewById(android.R.id.text1);
+            holder.details = (TextView) convertView.findViewById(android.R.id.text2);
             convertView.setTag(holder);
         }
         else {
             holder = (GroupViewHolder)convertView.getTag();
         }
 
-        holder.label.setText(this.carSystemList.get(groupPosition).getClass().getSimpleName());
+        Class<? extends CarSystem> carSystemClass = this.carSystemList.get(groupPosition).getClass();
+        holder.label.setText(carSystemClass.getSimpleName());
+        holder.details.setText(carSystemClass.getCanonicalName());
 
         return convertView;
     }
@@ -114,7 +118,7 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
         try {
             holder.value.setText(Objects.toString(method.invoke(carSystem)));
         } catch (Exception e) {
-            this.context.getString(R.string.status_unavailable);
+            holder.value.setText(this.context.getString(R.string.status_unavailable));
         }
 
         return convertView;
