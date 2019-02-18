@@ -17,7 +17,7 @@ public class GearBox extends CarSystem {
 
     @Override
     public void updateDataFromPacket(CarSystemSerialPacket packet) {
-        this.isSynchroRev   = packet.readFlag(0, 0);
-        this.gear           = packet.readByte(1);
+        this.gear           = packet.readByte(0);
+        this.isSynchroRev   = packet.readFlag(1, 7);
     }
 }
