@@ -84,8 +84,10 @@ public class ActionDetailFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 ActionDefinition definition = (ActionDefinition)adapterView.getItemAtPosition(i);
-                ActionDetailFragment.this.actionEntity.className = definition.getActionType().getCanonicalName();
-                updateProperties(definition.getActionType(), ActionDetailFragment.this.actionEntity);
+                if (ActionDetailFragment.this.actionEntity != null) {
+                    ActionDetailFragment.this.actionEntity.className = definition.getActionType().getCanonicalName();
+                    updateProperties(definition.getActionType(), ActionDetailFragment.this.actionEntity);
+                }
             }
 
             @Override
