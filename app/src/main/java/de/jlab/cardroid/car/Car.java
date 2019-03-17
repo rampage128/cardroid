@@ -1,24 +1,32 @@
 package de.jlab.cardroid.car;
 
+import android.util.Log;
+
 import java.util.HashMap;
 
+import androidx.annotation.NonNull;
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.usb.carduino.SerialPacket;
 
-public class Car {
+public class Car implements CarduinoService.PacketHandler<CarSystemSerialPacket> {
 
     private HashMap<CarSystemFactory, CarSystem> systemLookup = new HashMap<>();
 
-    public void updateFromSerialPacket(SerialPacket packet) throws UnknownCarSystemException {
-        if (packet instanceof CarSystemSerialPacket) {
-            this.updateSystemFromPacket((CarSystemSerialPacket)packet);
+    @Override
+    public void handleSerialPacket(@NonNull CarSystemSerialPacket packet) {
+        try {
+            CarSystemFactory systemType = CarSystemFactory.getType(packet);
+            CarSystem system = getCarSystem(systemType);
+            system.updateFromPacket(packet);
+        } catch (UnknownCarSystemException e) {
+            Log.e("CarSystem", "Can not update car system!", e);
         }
     }
 
-    private void updateSystemFromPacket(CarSystemSerialPacket packet) throws UnknownCarSystemException {
-        CarSystemFactory systemType = CarSystemFactory.getType(packet);
-        CarSystem system = getCarSystem(systemType);
-        system.updateFromPacket(packet);
+    @Override
+    public boolean shouldHandlePacket(@NonNull SerialPacket packet) {
+        return packet instanceof CarSystemSerialPacket;
     }
 
     public CarSystem getCarSystem(CarSystemFactory systemType) {

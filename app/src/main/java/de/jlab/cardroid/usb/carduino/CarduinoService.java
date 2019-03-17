@@ -4,13 +4,10 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
-import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.speech.RecognizerIntent;
 import android.util.Log;
-import android.view.KeyEvent;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -18,27 +15,19 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import de.jlab.cardroid.car.Car;
-import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemFactory;
 import de.jlab.cardroid.car.ClimateControl;
 import de.jlab.cardroid.car.ManageableCarSystem;
-import de.jlab.cardroid.car.RemoteControl;
-import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
-import de.jlab.cardroid.rules.Event;
-import de.jlab.cardroid.rules.storage.EventEntity;
+import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
-import de.jlab.cardroid.rules.RuleHandler;
 
-public class CarduinoService extends UsbService implements ManageableCarSystem.CarSystemEventListener {
+public class CarduinoService extends UsbService implements ManageableCarSystem.CarSystemEventListener, SerialReader.SerialPacketListener {
     private static final String LOG_TAG = "CarduinoService";
 
     private OverlayWindow overlayWindow;
@@ -103,38 +92,6 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
 
     private final IBinder binder = new MainServiceBinder();
 
-    private SerialReader.SerialPacketListener listener = new SerialReader.SerialPacketListener() {
-        @Override
-        public void onReceivePackets(ArrayList<SerialPacket> packets) {
-            for (final SerialPacket packet : packets) {
-                if (packet instanceof MetaSerialPacket) {
-                    MetaSerialPacket metaPacket = (MetaSerialPacket)packet;
-                    if (packet.getId() == 0x01) {
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
-                        int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
-                        CarduinoService.this.requestCarduinoBaudRate(baudRate);
-                    }
-                    else if (packet.getId() == 0x02) {
-                        int baudRate = (int)metaPacket.readDWord(0);
-                        Log.d(LOG_TAG, "Adapting baudRate to " + baudRate);
-                        CarduinoService.this.connectionManager.setBaudRate(baudRate);
-                    }
-                }
-                try {
-                    car.updateFromSerialPacket(packet);
-                } catch (UnknownCarSystemException e) {
-                    Log.e(LOG_TAG, "Cannot update car system", e);
-                }
-
-                for (PacketHandler handler : packetHandlers) {
-                    if (handler.shouldHandlePacket(packet)) {
-                        handler.handleSerialPacket(packet);
-                    }
-                }
-            }
-        }
-    };
-
     public void requestCarduinoBaudRate(int baudRate) {
         Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
         byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
@@ -150,25 +107,37 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     public void onCreate() {
         super.onCreate();
 
-        this.car = new Car();
 
-        ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
-        climateControl.addEventListener(this);
-
-        this.overlayWindow = new OverlayWindow(this, climateControl);
-
+        // initialize serial connection
         this.serialReader = new SerialReader();
-        this.serialReader.addListener(this.listener);
+        this.serialReader.addListener(this);
 
         this.connectionManager = new SerialConnectionManager(this);
         this.connectionManager.addConnectionListener(this.serialReader);
 
+
+        // intitalize packet handlers
         this.packetHandlers.clear();
+
+        this.car = new Car();
+        this.packetHandlers.add(this.car);
+
+        MetaPacketHandler metaPacketHandler = new MetaPacketHandler(this);
+        this.packetHandlers.add(metaPacketHandler);
 
         try {
             this.ruleHandler = new getRulesTask(getApplication()).execute().get();
             this.packetHandlers.add(this.ruleHandler);
         } catch (ExecutionException e) {} catch (InterruptedException e) {}
+
+
+        // inititalize feedback mechanism for climate control.
+        // TODO this has to be fully decoupled from car systems.
+        ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
+        climateControl.addEventListener(this);
+
+        this.overlayWindow = new OverlayWindow(this, climateControl);
+
     }
 
     @Override
@@ -176,7 +145,7 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         super.onDestroy();
 
         this.packetHandlers.clear();
-        this.serialReader.removeListener(this.listener);
+        this.serialReader.removeListener(this);
         this.connectionManager.removeConnectionListener(this.serialReader);
     }
 
@@ -226,8 +195,47 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     }
 
     @Override
+    public void onReceivePackets(ArrayList<SerialPacket> packets) {
+        for (final SerialPacket packet : packets) {
+            for (PacketHandler handler : packetHandlers) {
+                if (handler.shouldHandlePacket(packet)) {
+                    handler.handleSerialPacket(packet);
+                }
+            }
+        }
+    }
+
+    @Override
     public void onTrigger(SerialCarButtonEventPacket packet) {
         this.connectionManager.send(SerialPacketFactory.serialize(packet));
+    }
+
+    private static class MetaPacketHandler implements PacketHandler<MetaSerialPacket> {
+
+        private CarduinoService service;
+
+        public MetaPacketHandler(CarduinoService service) {
+            this.service = service;
+        }
+
+        @Override
+        public void handleSerialPacket(@NonNull MetaSerialPacket packet) {
+            if (packet.getId() == 0x01) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
+                int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
+                service.requestCarduinoBaudRate(baudRate);
+            }
+            else if (packet.getId() == 0x02) {
+                int baudRate = (int)packet.readDWord(0);
+                Log.d(LOG_TAG, "Adapting baudRate to " + baudRate);
+                service.connectionManager.setBaudRate(baudRate);
+            }
+        }
+
+        @Override
+        public boolean shouldHandlePacket(@NonNull SerialPacket packet) {
+            return packet instanceof MetaSerialPacket;
+        }
     }
 
     public interface PacketHandler<T extends SerialPacket> {
