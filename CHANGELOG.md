@@ -15,6 +15,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `SerialConnectionManager` to maintain serial connection
 - `SerialReader` along with `SerialPacket` (and descendants) to manage serial-data
 - `OverlayWindow` to show climate control status
-- `RemoteControl` to handle steering wheel button events
+- `RemoteControl` to handle steering wheel button eventEntities
 
 [Unreleased]: https://github.com/rampage128/cardroid

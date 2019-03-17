@@ -13,6 +13,8 @@
     <string name="unit_hertz">Hz</string>
     <string name="unit_percent">%</string>
 
+    <string name="save">Save</string>
+
     <!-- Status display -->
     <string name="usb_status_preparing">Loading…</string>
     <string name="usb_status_connecting">Connecting to device…</string>
@@ -104,6 +106,10 @@
     <string name="pref_title_gps_monitor">GPS monitor</string>
     <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
 
+    <!-- Other settings -->
+    <string name="pref_header_rules">Rules</string>
+    <string name="pref_header_description_rules">Define rules for event based actionEntities</string>
+
     <!-- status grids -->
     <string name="status_unavailable">N/A</string>
     <string name="status_connection">Connection</string>
@@ -139,4 +145,56 @@
 
     <string name="car_status_packets">Packets per second</string>
     <string name="car_status_systems">Registered car systems</string>
+
+    <!-- Rule editor -->
+    <string name="title_rule_list">Rules</string>
+    <string name="edit_rule">Edit Rule</string>
+    <string name="event_name">Event name</string>
+
+    <string name="add_action">Add Action</string>
+    <string name="edit_action">Edit Action</string>
+
+    <!-- event names -->
+    <string name="event_unknown">Unknown event (%1$d)</string>
+    <string name="event_1">Carduino booted</string>
+    <string name="event_2">Carduino sleep</string>
+    <string name="event_3">Carduino wake up</string>
+
+    <string name="event_4">Carduino connected</string>
+    <string name="event_5">Carduino disconnected</string>
+
+
+    <!-- ACTIONS -->
+    <string name="media_key_action">Media Key</string>
+    <string name="action_mediakey_key_code">Key</string>
+    <string name="action_mediakey_play">Play</string>
+    <string name="action_mediakey_pause">Pause</string>
+    <string name="action_mediakey_play_pause">Play/Pause</string>
+    <string name="action_mediakey_previous">Previous</string>
+    <string name="action_mediakey_next">Next</string>
+
+    <string name="volume_adjust_action">Audio Volume</string>
+    <string name="action_volume_stream">Stream</string>
+    <string name="action_volume_notification">Notifications</string>
+    <string name="action_volume_alarm">Alarm</string>
+    <string name="action_volume_music">Media</string>
+    <string name="action_volume_automatic">Automatic</string>
+    <string name="action_volume_action">Action</string>
+    <string name="action_volume_down">Down</string>
+    <string name="action_volume_up">Up</string>
+    <string name="action_volume_mute">Mute</string>
+    <string name="action_volume_unmute">Unmute</string>
+    <string name="action_volume_togglemute">Toggle mute</string>
+
+    <string name="start_app_action">Start App</string>
+    <string name="action_startapp_package">App</string>
+
+    <string name="voice_action">Voice Command</string>
+
+    <string name="wifi_toggle_action">Toggle WiFi</string>
+    <string name="action_wifitoggle_state">State</string>
+    <string name="action_wifitoggle_on">On</string>
+    <string name="action_wifitoggle_off">Off</string>
+
+    <string name="property_delimiter">,\u0020</string>
 </resources>

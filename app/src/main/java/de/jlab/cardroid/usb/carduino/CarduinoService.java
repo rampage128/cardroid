@@ -1,9 +1,11 @@
 package de.jlab.cardroid.usb.carduino;
 
+import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
@@ -12,7 +14,13 @@ import android.view.KeyEvent;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import de.jlab.cardroid.car.Car;
 import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemFactory;
@@ -21,9 +29,14 @@ import de.jlab.cardroid.car.ManageableCarSystem;
 import de.jlab.cardroid.car.RemoteControl;
 import de.jlab.cardroid.car.UnknownCarSystemException;
 import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.rules.Event;
+import de.jlab.cardroid.rules.storage.EventEntity;
+import de.jlab.cardroid.rules.storage.EventRepository;
+import de.jlab.cardroid.rules.storage.RuleDefinition;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
+import de.jlab.cardroid.rules.RuleHandler;
 
 public class CarduinoService extends UsbService implements ManageableCarSystem.CarSystemEventListener {
     private static final String LOG_TAG = "CarduinoService";
@@ -34,67 +47,9 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     private SerialReader serialReader;
     private Car car;
 
-    private class RemoteControlChangeListener implements CarSystem.ChangeListener<RemoteControl> {
-        @Override
-        public void onChange(RemoteControl system) {
-            Log.d(LOG_TAG, "Button pressed " + system.getButtonId());
-            switch (system.getButtonId()) {
-                case 1: // SOURCE
-                    // TODO switch task
-                    break;
-                case 2: // SOURCE LONG
-                    // TODO open task switcher
-                    break;
-                case 10: // MENU UP
-                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
-                    break;
-                case 11: // MENU DOWN
-                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_NEXT);
-                    break;
-                case 12: // MENU ENTER
-                    sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
-                    break;
-                case 13: // BACK
-                    // TODO send back button event to system
-                    break;
-                case 20: // VOL DOWN
-                    adjustVolume(AudioManager.ADJUST_LOWER);
-                    break;
-                case 21: // VOL UP
-                    adjustVolume(AudioManager.ADJUST_RAISE);
-                    break;
-                case 30: // PHONE
-                    // TODO find some action for phone key (maybe mute?!)
-                    break;
-                case 42: // VOICE
-                    Intent voiceIntent =
-                            new Intent(RecognizerIntent.ACTION_VOICE_SEARCH_HANDS_FREE);
-                    voiceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    CarduinoService.this.startActivity(voiceIntent);
-                    break;
-            }
-        }
+    private RuleHandler ruleHandler;
 
-        private void adjustVolume(int direction) {
-            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
-
-            if (audioManager != null) {
-                audioManager.adjustVolume(direction, AudioManager.FLAG_SHOW_UI);
-            }
-        }
-
-        private void sendMediaEvent(int keyCode) {
-            AudioManager audioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
-
-            if (audioManager != null) {
-                KeyEvent downEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-                audioManager.dispatchMediaKeyEvent(downEvent);
-
-                KeyEvent upEvent = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
-                audioManager.dispatchMediaKeyEvent(upEvent);
-            }
-        }
-    }
+    private ArrayList<PacketHandler> packetHandlers = new ArrayList<>();
 
     public class MainServiceBinder extends UsbServiceBinder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
@@ -127,6 +82,10 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
 
         public void stopCanSniffer() {
             CarduinoService.this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.STOP_SNIFFING, null)));
+        }
+
+        public void updateRule(RuleDefinition ruleDefinition) {
+            CarduinoService.this.ruleHandler.updateRuleDefinition(ruleDefinition);
         }
 
         public int getBaudRate() {
@@ -166,6 +125,12 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
                 } catch (UnknownCarSystemException e) {
                     Log.e(LOG_TAG, "Cannot update car system", e);
                 }
+
+                for (PacketHandler handler : packetHandlers) {
+                    if (handler.shouldHandlePacket(packet)) {
+                        handler.handleSerialPacket(packet);
+                    }
+                }
             }
         }
     };
@@ -190,9 +155,6 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
         climateControl.addEventListener(this);
 
-        RemoteControl remoteControl = (RemoteControl)this.car.getCarSystem(CarSystemFactory.REMOTE_CONTROL);
-        remoteControl.addChangeListener(new RemoteControlChangeListener());
-
         this.overlayWindow = new OverlayWindow(this, climateControl);
 
         this.serialReader = new SerialReader();
@@ -200,12 +162,20 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
 
         this.connectionManager = new SerialConnectionManager(this);
         this.connectionManager.addConnectionListener(this.serialReader);
+
+        this.packetHandlers.clear();
+
+        try {
+            this.ruleHandler = new getRulesTask(getApplication()).execute().get();
+            this.packetHandlers.add(this.ruleHandler);
+        } catch (ExecutionException e) {} catch (InterruptedException e) {}
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
+        this.packetHandlers.clear();
         this.serialReader.removeListener(this.listener);
         this.connectionManager.removeConnectionListener(this.serialReader);
     }
@@ -242,10 +212,15 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         if (prefs.getBoolean("overlay_active", false)) {
             this.overlayWindow.create();
         }
+
+        this.ruleHandler.triggerRule(4);
+
         return true;
     }
 
     protected void disconnectDevice() {
+        this.ruleHandler.triggerRule(5);
+
         this.connectionManager.disconnect();
         this.overlayWindow.destroy();
     }
@@ -253,5 +228,32 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
     @Override
     public void onTrigger(SerialCarButtonEventPacket packet) {
         this.connectionManager.send(SerialPacketFactory.serialize(packet));
+    }
+
+    public interface PacketHandler<T extends SerialPacket> {
+
+        void handleSerialPacket(@NonNull T packet);
+
+        boolean shouldHandlePacket(@NonNull SerialPacket packet);
+
+    }
+
+    private static class getRulesTask extends AsyncTask<Void, Void, RuleHandler> {
+
+        private Application application;
+
+        public getRulesTask(Application application) {
+            this.application = application;
+        }
+
+        @Override
+        protected RuleHandler doInBackground(Void... voids) {
+            EventRepository eventRepo = new EventRepository(this.application);
+            List<RuleDefinition> rules = eventRepo.getAllRules();
+
+            RuleHandler ruleHandler = new RuleHandler(this.application);
+            ruleHandler.updateRuleDefinitions(rules);
+            return ruleHandler;
+        }
     }
 }

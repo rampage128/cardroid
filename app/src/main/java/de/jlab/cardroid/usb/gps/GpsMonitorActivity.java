@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.text.method.ScrollingMovementMethod;
@@ -17,6 +14,10 @@ import android.widget.GridView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.UsageStatistics;

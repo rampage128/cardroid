@@ -2,6 +2,7 @@ package de.jlab.cardroid.car;
 
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
+@Deprecated
 public class RemoteControl extends CarSystem {
     private int buttonId;
 

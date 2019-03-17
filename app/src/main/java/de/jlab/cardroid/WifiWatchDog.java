@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 
+@Deprecated
 public class WifiWatchDog implements WatchDogService.WatchDog {
     private Context context;
     private WifiManager wifiManager;

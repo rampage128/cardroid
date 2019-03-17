@@ -18,12 +18,12 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
-import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.util.List;
 
+import androidx.appcompat.app.ActionBar;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 /**
