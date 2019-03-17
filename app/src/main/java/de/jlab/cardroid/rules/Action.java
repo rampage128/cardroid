@@ -4,7 +4,7 @@ import android.content.Context;
 
 import java.util.HashMap;
 
-import androidx.annotation.NonNull;
+import de.jlab.cardroid.rules.actions.KillAppAction;
 import de.jlab.cardroid.rules.actions.MediaKeyAction;
 import de.jlab.cardroid.rules.actions.VolumeAdjustAction;
 import de.jlab.cardroid.rules.actions.StartAppAction;
@@ -47,6 +47,7 @@ public abstract class Action {
                 new ActionDefinition(MediaKeyAction.class, context),
                 new ActionDefinition(VolumeAdjustAction.class, context),
                 new ActionDefinition(StartAppAction.class, context),
+                new ActionDefinition(KillAppAction.class, context),
                 new ActionDefinition(VoiceAction.class, context),
                 new ActionDefinition(WifiToggleAction.class, context)
         };

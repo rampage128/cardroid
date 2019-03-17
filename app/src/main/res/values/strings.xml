@@ -34,10 +34,6 @@
     <string name="pref_description_power_toggle_screen_on">Automatically turn on/off screen when device is charging or disconnected</string>
     <string name="pref_description_power_toggle_screen_off">Do not manage screen status when device is charging or disconnected</string>
 
-    <string name="pref_title_power_toggle_wifi">Toggle Wi-Fi</string>
-    <string name="pref_description_power_toggle_wifi_on">Automatically turn off Wi-Fi when disconnected from charger</string>
-    <string name="pref_description_power_toggle_wifi_off">Do not touch Wi-Fi status</string>
-
     <string name="pref_title_power_resume_music">Resume music</string>
     <string name="pref_description_power_resume_music_on">Resume music playback when connected to charger (if it was playing before)</string>
     <string name="pref_description_power_resume_music_off">Never resume music playback when connected to charger</string>
@@ -188,6 +184,9 @@
 
     <string name="start_app_action">Start App</string>
     <string name="action_startapp_package">App</string>
+
+    <string name="kill_app_action">Kill App</string>
+    <string name="action_killapp_package">App</string>
 
     <string name="voice_action">Voice Command</string>
 
