@@ -19,7 +19,7 @@ public class ActionPropertyConverters {
         DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d+L"), Long::valueOf);
         DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d*\\.\\d+D"), Double::valueOf);
         DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d*\\.\\d+F"), Float::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("\".*\""), (s) -> s.substring(0, s.length()-1));
+        DESERIALIZER.addConversion((s) -> s.matches("\".*\""), (s) -> s.substring(1, s.length()-1));
     }
 
     private static final ValueConverter<Object, String, Function<Object, Boolean>, Function<Object, String>> SERIALIZER = new ValueConverter<>();
