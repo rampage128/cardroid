@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -242,7 +244,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             public void onProgressChanged(SeekArc seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
                     float value = progress / 2f + OverlayWindow.this.minTemp;
-                    viewHolder.temperatureChangeText.setText(String.format(Locale.getDefault(), "%s", value));
+                    viewHolder.temperatureChangeText.setText(getFancyDecimalValue(value)); //String.format(Locale.getDefault(), "%s", value)
                 }
             }
 
@@ -376,7 +378,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 float temperature = system.getTemperature();
                 boolean isFanOff = fanLevel == 0;
                 boolean isTempOff = temperature == 0;
-                String temperatureText  = String.format(Locale.getDefault(), "%s", temperature);
+                Spanned temperatureText  = getFancyDecimalValue(temperature); //String.format(Locale.getDefault(), "%s", temperature);
                 String fanText          = String.format(Locale.getDefault(), "%s", fanLevel);
 
                 viewHolder.mainFanIcon.setProgress(fanLevel);
@@ -416,6 +418,12 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 viewHolder.acButton.setState(system.isAcOn());
             }
         });
+    }
+
+    private Spanned getFancyDecimalValue(float value) {
+        String[] parts = Float.toString(value).split("\\.");
+        String decimals = parts.length > 1 ? "<small>." + parts[1] + "</small>" : "";
+        return Html.fromHtml(parts[0] + decimals);
     }
 
     private void runOnUiThread(Runnable runnable) {
