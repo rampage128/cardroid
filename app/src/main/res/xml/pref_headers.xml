@@ -13,6 +13,15 @@
         android:summary="@string/pref_header_description_car" />
 
     <header
+        android:icon="@drawable/ic_pref_rules"
+        android:title="@string/pref_header_rules"
+        android:summary="@string/pref_header_description_rules">
+        <intent android:targetPackage="de.jlab.cardroid"
+                android:targetClass="de.jlab.cardroid.rules.RuleActivity" />
+    </header>
+
+
+    <header
         android:fragment="de.jlab.cardroid.SettingsActivity$GpsPreferenceFragment"
         android:icon="@drawable/ic_pref_gps"
         android:title="@string/pref_header_gps"

@@ -22,7 +22,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean toggleScreen = prefs.getBoolean("power_toggle_screen", false);
-        boolean toggleWifi = prefs.getBoolean("power_toggle_wifi", false);
         boolean resumeMusic = prefs.getBoolean("power_resume_music", false);
 
         String action = intent.getAction();
@@ -32,10 +31,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             }
             if (toggleScreen) {
                 toggleScreen(true, powerPrefs, context);
-            }
-            if (toggleWifi && powerPrefs.getBoolean("was_wifi_on", false)) {
-                WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                wifiManager.setWifiEnabled(true);
             }
             context.startService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
@@ -47,11 +42,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             sendMediaEvent(KeyEvent.KEYCODE_MEDIA_PAUSE, context);
             if (toggleScreen) {
                 toggleScreen(false, powerPrefs, context);
-            }
-            if (toggleWifi) {
-                WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                powerPrefs.edit().putBoolean("was_wifi_on", wifiManager.isWifiEnabled()).apply();
-                wifiManager.setWifiEnabled(false);
             }
             context.stopService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }

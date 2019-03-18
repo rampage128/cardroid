@@ -7,12 +7,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.carduino.SerialCanPacket;
@@ -108,9 +108,9 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
 
         this.updateHandler = new Handler();
 
-        this.bandwidthStatText = (TextView)findViewById(R.id.bandwidthText);
-        this.packetStatText = (TextView)findViewById(R.id.packetText);
-        this.canView = (CanView)findViewById(R.id.packet_list);
+        this.bandwidthStatText = findViewById(R.id.bandwidthText);
+        this.packetStatText = findViewById(R.id.packetText);
+        this.canView = findViewById(R.id.packet_list);
 
         this.bandwidthStatText.setText(R.string.pref_title_car_bandwidth);
         this.packetStatText.setText(R.string.pref_title_car_packets);

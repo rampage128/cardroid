@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:app="http://schemas.android.com/apk/res-auto"
              xmlns:overlaytogglebutton="http://schemas.android.com/apk/res-auto"
              xmlns:seekarc="http://schemas.android.com/apk/res-auto"
@@ -8,7 +8,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/detailContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,49 +16,49 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_top"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="128dp"/>
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_col_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.25"/>
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_col_3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.5"/>
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_col_4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.75"/>
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_col_m1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.375"/>
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_col_m2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.625"/>
 
-        <android.support.v7.widget.AppCompatImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/imageView"
             android:layout_width="96dp"
             android:layout_height="96dp"
@@ -71,7 +71,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_overlay_close"/>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/autoView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -91,9 +91,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="top|start"
                 overlaytogglebutton:src="@drawable/ic_cc_auto"/>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/acView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -114,9 +114,9 @@
                 android:layout_height="match_parent"
                 overlaytogglebutton:src="@drawable/ic_cc_ac"/>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/modeView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -140,25 +140,25 @@
                 android:paddingRight="16dp"
                 android:paddingBottom="8dp">
 
-                <android.support.v7.widget.AppCompatImageView
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/ductFace"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face"/>
 
-                <android.support.v7.widget.AppCompatImageView
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/ductBackground"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg"/>
 
-                <android.support.v7.widget.AppCompatImageView
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/ductWindshield"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws"/>
 
-                <android.support.v7.widget.AppCompatImageView
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/ductFeet"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -166,9 +166,9 @@
 
             </FrameLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/fanView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -184,7 +184,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/offView">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -222,14 +222,14 @@
                     app:layout_constraintBottom_toTopOf="@+id/guide_fan_base"
                     app:layout_constraintEnd_toStartOf="@+id/imageView2"/>
 
-                <android.support.constraint.Guideline
+                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_fan_base"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     app:layout_constraintGuide_percent="0.7"/>
 
-                <android.support.constraint.Guideline
+                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_fan_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -246,11 +246,11 @@
                     app:layout_constraintTop_toTopOf="@+id/fanChangeText"
                     seekarc:srcCompat="@drawable/ic_cc_fan"/>
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/tempView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -266,18 +266,18 @@
             app:layout_constraintStart_toStartOf="@+id/guide_col_3"
             app:layout_constraintTop_toBottomOf="@+id/offView">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <android.support.constraint.Guideline
+                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_temp_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     app:layout_constraintGuide_percent="0.25"/>
 
-                <android.support.constraint.Guideline
+                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_temp_base"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -332,11 +332,11 @@
                     seekarc:startAngle="100"
                     seekarc:sweepAngle="250"/>
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/offView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -357,9 +357,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical|center_horizontal"
                 overlaytogglebutton:src="@drawable/ic_cc_off"/>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/wshView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -380,9 +380,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical|center_horizontal"
                 overlaytogglebutton:src="@drawable/ic_cc_wsh"/>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/rwhView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -403,9 +403,9 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical|center_horizontal"
                 overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/recirculationView"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -426,11 +426,11 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical|center_horizontal"
                 overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/toggleButton"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -472,6 +472,6 @@
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold"/>
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

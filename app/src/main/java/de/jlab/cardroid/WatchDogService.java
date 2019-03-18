@@ -56,7 +56,6 @@ public class WatchDogService extends Service {
         this.watchDogs.clear();
         this.watchDogs.add(new GpsWatchDog(this));
         this.watchDogs.add(new CarduinoWatchDog(this));
-        this.watchDogs.add(new WifiWatchDog(this));
 
         PowerManager powerManager = (PowerManager)getApplicationContext().getSystemService(Context.POWER_SERVICE);
         if (powerManager != null) {

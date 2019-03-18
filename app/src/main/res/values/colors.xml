@@ -10,11 +10,11 @@
 
     <color name="colorGpsSatelliteTimeout">#99AAAAAA</color>
     <color name="colorGpsSatelliteNoFix">#ffEEDC82</color>
-    <color name="colorGpsSatelliteFix">#55d456</color>
+    <color name="colorGpsSatelliteFix">#55D456</color>
 
     <color name="colorOverlayOn">#FFFFBE00</color>
     <color name="colorOverlayOff">#44EEEEEE</color>
-    <color name="colorOverlayItemBg">#FF424242</color>
+    <color name="colorOverlayItemBg">#424242</color>
 
     <color name="progress_gray">#FFD8D8D8</color>
     <color name="progress_gray_dark">#FF383838</color>

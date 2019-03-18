@@ -5,12 +5,12 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.support.annotation.Nullable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.LongSparseArray;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.carduino.SerialCanPacket;
 
