@@ -130,14 +130,14 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
                 showActionDetails(actionEntity.uid);
                 break;
             case COMMAND_SAVE:
-                Snackbar.make(findViewById(android.R.id.content), "ACTION SAVED", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(android.R.id.content), getString(R.string.action_saved), Snackbar.LENGTH_LONG).show();
             case COMMAND_CANCEL:
                 showEventDetails(this.eventId);
                 break;
             case COMMAND_DELETE:
                 ActionRepository repository = new ActionRepository(getApplication());
                 repository.delete(actionEntity);
-                Snackbar.make(findViewById(android.R.id.content), "ACTION DELETED", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(android.R.id.content), getString(R.string.action_deleted), Snackbar.LENGTH_LONG).show();
                 break;
         }
     }

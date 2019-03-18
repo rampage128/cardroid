@@ -149,6 +149,8 @@
 
     <string name="add_action">Add Action</string>
     <string name="edit_action">Edit Action</string>
+    <string name="action_saved">Action successfully saved!</string>
+    <string name="action_deleted">Action deleted!</string>
 
     <!-- event names -->
     <string name="event_unknown">Unknown event (%1$d)</string>
