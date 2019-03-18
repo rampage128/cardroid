@@ -2,7 +2,7 @@ package de.jlab.cardroid.car;
 
 import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
-public class ClimateControl extends ManageableCarSystem {
+public class ClimateControl extends CarSystem {
 
     private boolean isAcOn = false;
     private boolean isAuto = false;
@@ -69,42 +69,5 @@ public class ClimateControl extends ManageableCarSystem {
 
     public float getTemperature() {
         return temperature;
-    }
-
-
-    public void pushOffButton() {
-        this.manage(CarSystemEvent.CC_OFF_BUTTON);
-    }
-
-    public void pushAcButton() {
-        this.manage(CarSystemEvent.CC_AC_BUTTON);
-    }
-
-    public void pushAutoButton() {
-        this.manage(CarSystemEvent.CC_AUTO_BUTTON);
-    }
-
-    public void pushRecirculationButton() {
-        this.manage(CarSystemEvent.CC_RECIRCULATION_BUTTON);
-    }
-
-    public void pushWindshieldHeatingButton() {
-        this.manage(CarSystemEvent.CC_WSH_BUTTON);
-    }
-
-    public void pushRearWindowHeatingButton() {
-        this.manage(CarSystemEvent.CC_RWH_BUTTON);
-    }
-
-    public void pushModeButton() {
-        this.manage(CarSystemEvent.CC_MODE_BUTTON);
-    }
-
-    public void setTemperature(float temperature) {
-        this.manage(CarSystemEvent.CC_TEMPERATURE, new byte[] { (byte)(temperature * 2) });
-    }
-
-    public void setFanLevel(byte level) {
-        this.manage(CarSystemEvent.CC_FAN_LEVEL, new byte[] { level });
     }
 }

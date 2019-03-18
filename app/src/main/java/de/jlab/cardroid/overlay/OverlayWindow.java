@@ -23,7 +23,10 @@ import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.CarSystem;
+import de.jlab.cardroid.car.CarSystemEvent;
+import de.jlab.cardroid.car.CarSystemFactory;
 import de.jlab.cardroid.car.ClimateControl;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private static final String LOG_TAG = "OverlayWindow";
@@ -31,10 +34,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private Context context;
+    private CarduinoService service;
 
     private WindowManager windowManager;
-    private ClimateControl climateControl;
 
     private boolean trackingFans = false;
     private boolean trackingTemp = false;
@@ -88,9 +90,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private ViewHolder viewHolder = new ViewHolder();
 
 
-    public OverlayWindow(Context context, ClimateControl climateControl) {
-        this.context = context;
-        this.climateControl = climateControl;
+    public OverlayWindow(CarduinoService service) {
+        this.service = service;
     }
 
     public void create() {
@@ -100,24 +101,24 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         this.uiHandler = new Handler();
 
-        this.windowManager = (WindowManager) this.context.getSystemService(Context.WINDOW_SERVICE);
+        this.windowManager = (WindowManager) this.service.getSystemService(Context.WINDOW_SERVICE);
 
         // Request user to grant permission for drawing if needed and bail out
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this.context)) {
-            Intent permissionIntent = new Intent(this.context, SettingsActivity.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this.service)) {
+            Intent permissionIntent = new Intent(this.service, SettingsActivity.class);
             permissionIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.OverlayPreferenceFragment.class.getName());
             permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.context.startActivity(permissionIntent);
+            this.service.startActivity(permissionIntent);
             return;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
         this.minTemp = Integer.valueOf(prefs.getString("overlay_temperature_min", "16"));
         int maxTemp = Integer.valueOf(prefs.getString("overlay_temperature_max", "30"));
         int maxFan = Integer.valueOf(prefs.getString("overlay_fan_max", "7"));
 
         // initialize views
-        viewHolder.rootView = LayoutInflater.from(this.context).inflate(R.layout.view_overlay, null);
+        viewHolder.rootView = LayoutInflater.from(this.service).inflate(R.layout.view_overlay, null);
 
         viewHolder.toggleButton = viewHolder.rootView.findViewById(R.id.toggleButton);
         viewHolder.mainText = (TextView)viewHolder.rootView.findViewById(R.id.mainText);
@@ -179,25 +180,25 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             public void onClick(View view) {
                 switch (view.getId()) {
                     case R.id.offButton:
-                        climateControl.pushOffButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_OFF_BUTTON, null);
                         break;
                     case R.id.wshButton:
-                        climateControl.pushWindshieldHeatingButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_WSH_BUTTON, null);
                         break;
                     case R.id.rwhButton:
-                        climateControl.pushRearWindowHeatingButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_RWH_BUTTON, null);
                         break;
                     case R.id.recirculationButton:
-                        climateControl.pushRecirculationButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_RECIRCULATION_BUTTON, null);
                         break;
                     case R.id.modeButton:
-                        climateControl.pushModeButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_MODE_BUTTON, null);
                         break;
                     case R.id.autoButton:
-                        climateControl.pushAutoButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_AUTO_BUTTON, null);
                         break;
                     case R.id.acButton:
-                        climateControl.pushAcButton();
+                        service.sendCarduinoEvent(CarSystemEvent.CC_AC_BUTTON, null);
                         break;
                 }
             }
@@ -231,7 +232,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
-                climateControl.setFanLevel((byte)Math.max(seekBar.getProgress(), 1));
+                service.sendCarduinoEvent(CarSystemEvent.CC_FAN_LEVEL, new byte[] { (byte)Math.max(seekBar.getProgress(), 1) });
                 uiHandler.postDelayed(stopFanInteraction, 1000);
             }
         });
@@ -255,7 +256,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
-                climateControl.setTemperature(seekBar.getProgress() / 2f + OverlayWindow.this.minTemp);
+                float temperature = seekBar.getProgress() / 2f + OverlayWindow.this.minTemp;
+                service.sendCarduinoEvent(CarSystemEvent.CC_TEMPERATURE, new byte[] { (byte)(temperature * 2) });
                 uiHandler.postDelayed(stopTempInteraction, 1000);
             }
         });
@@ -263,7 +265,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         // Set up initial view state
         viewHolder.detailView.setVisibility(View.GONE);
 
-        this.climateControl.addChangeListener(this);
+        CarSystem climateControl = this.service.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
+        climateControl.addChangeListener(this);
     }
 
     private void roundCardViews(View v) {
@@ -280,7 +283,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     }
 
     public void toggle() {
-        float elevation = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, this.context.getResources().getDisplayMetrics());
+        float elevation = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, this.service.getResources().getDisplayMetrics());
         if (this.viewHolder.detailView != null) {
             if (this.viewHolder.detailView.getVisibility() == View.GONE) {
                 this.viewHolder.toggleButton.setVisibility(View.GONE);
@@ -360,7 +363,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             this.windowManager.removeView(this.viewHolder.rootView);
             this.isAttached = false;
         }
-        this.climateControl.removeChangeListener(this);
+        CarSystem climateControl = this.service.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
+        climateControl.removeChangeListener(this);
     }
 
     @Override

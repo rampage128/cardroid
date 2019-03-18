@@ -2,7 +2,7 @@ package de.jlab.cardroid.car;
 
 import de.jlab.cardroid.usb.carduino.SerialCarButtonEventPacket;
 
-enum CarSystemEvent {
+public enum CarSystemEvent {
     CC_OFF_BUTTON(0x01),
     CC_AC_BUTTON(0x02),
     CC_AUTO_BUTTON(0x03),

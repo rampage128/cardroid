@@ -16,9 +16,9 @@ import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.Car;
+import de.jlab.cardroid.car.CarSystem;
+import de.jlab.cardroid.car.CarSystemEvent;
 import de.jlab.cardroid.car.CarSystemFactory;
-import de.jlab.cardroid.car.ClimateControl;
-import de.jlab.cardroid.car.ManageableCarSystem;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
@@ -27,7 +27,7 @@ import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
 
-public class CarduinoService extends UsbService implements ManageableCarSystem.CarSystemEventListener, SerialReader.SerialPacketListener {
+public class CarduinoService extends UsbService implements SerialReader.SerialPacketListener {
     private static final String LOG_TAG = "CarduinoService";
 
     private OverlayWindow overlayWindow;
@@ -131,13 +131,8 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         } catch (ExecutionException e) {} catch (InterruptedException e) {}
 
 
-        // inititalize feedback mechanism for climate control.
-        // TODO this has to be fully decoupled from car systems.
-        ClimateControl climateControl = (ClimateControl)this.car.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
-        climateControl.addEventListener(this);
-
-        this.overlayWindow = new OverlayWindow(this, climateControl);
-
+        // intitialize overlay window
+        this.overlayWindow = new OverlayWindow(this);
     }
 
     @Override
@@ -205,8 +200,12 @@ public class CarduinoService extends UsbService implements ManageableCarSystem.C
         }
     }
 
-    @Override
-    public void onTrigger(SerialCarButtonEventPacket packet) {
+    public CarSystem getCarSystem(CarSystemFactory carSystemType) {
+        return this.car.getCarSystem(carSystemType);
+    }
+
+    public void sendCarduinoEvent(CarSystemEvent event, byte[] payload) {
+        SerialPacket packet = CarSystemEvent.serialize(event, payload);
         this.connectionManager.send(SerialPacketFactory.serialize(packet));
     }
 
