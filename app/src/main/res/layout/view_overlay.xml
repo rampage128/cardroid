@@ -213,14 +213,16 @@
                     android:id="@+id/fanChangeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:text="OFF"
-                    android:textAlignment="viewEnd"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:textAlignment="center"
                     android:textColor="@android:color/white"
                     android:textSize="32sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@+id/guide_fan_base"
-                    app:layout_constraintEnd_toStartOf="@+id/imageView2"/>
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:text="OFF"/>
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_fan_base"
@@ -228,23 +230,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     app:layout_constraintGuide_percent="0.7"/>
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_fan_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.75"/>
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginTop="2dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/fanChangeText"
-                    app:layout_constraintEnd_toStartOf="@+id/guide_fan_icon"
-                    app:layout_constraintTop_toTopOf="@+id/fanChangeText"
-                    seekarc:srcCompat="@drawable/ic_cc_fan"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -270,48 +255,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_temp_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.25"/>
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_temp_base"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.7"/>
-
-                <TextView
-                    android:id="@+id/temperatureChangeText"
-                    android:layout_width="64dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    android:text="OFF"
-                    android:textAlignment="center"
-                    android:textColor="@android:color/white"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:visibility="invisible"
-                    app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
-                    app:layout_constraintStart_toStartOf="@+id/guide_temp_icon"/>
-
-                <TextView
-                    android:id="@+id/temperatureText"
-                    android:layout_width="64dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    android:text="OFF"
-                    android:textAlignment="center"
-                    android:textColor="@android:color/white"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="@+id/temperatureChangeText"
-                    app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
-                    app:layout_constraintStart_toStartOf="@+id/temperatureChangeText"/>
-
                 <de.jlab.cardroid.overlay.SeekArc
                     android:id="@+id/temperatureBar"
                     android:layout_width="0dp"
@@ -331,6 +274,46 @@
                     seekarc:segments="28"
                     seekarc:startAngle="100"
                     seekarc:sweepAngle="250"/>
+
+                <TextView
+                    android:id="@+id/temperatureChangeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/white"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:text="OFF"/>
+
+                <TextView
+                    android:id="@+id/temperatureText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/white"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:text="OFF"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guide_temp_base"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.7"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
