@@ -57,6 +57,11 @@ public class GpsService extends UsbService {
         return this.gpsManager != null && this.gpsManager.isConnected();
     }
 
+    @Override
+    protected boolean isConnected(UsbDevice device) {
+        return this.gpsManager != null && this.gpsManager.isConnected(device);
+    }
+
     protected boolean connectDevice(UsbDevice device) {
         if (this.locationManager != null) {
             try {

@@ -170,6 +170,11 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         return this.connectionManager != null && this.connectionManager.isConnected();
     }
 
+    @Override
+    protected boolean isConnected(UsbDevice device) {
+        return this.connectionManager != null && this.connectionManager.isConnected(device);
+    }
+
     protected boolean connectDevice(UsbDevice device) {
         this.connectionManager.connect(device, 115200);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CarduinoService.this);
@@ -228,6 +233,10 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
                 int baudRate = (int)packet.readDWord(0);
                 Log.d(LOG_TAG, "Adapting baudRate to " + baudRate);
                 service.connectionManager.setBaudRate(baudRate);
+            }
+            else if (packet.getId() == 0x03) {
+                service.disconnectDevice();
+                service.stopSelf();
             }
         }
 
