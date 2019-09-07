@@ -73,6 +73,7 @@
         <item>57600</item>
         <item>115200</item>
         <item>230400</item>
+        <item>345600</item>
         <item>460800</item>
         <item>921600</item>
         <!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
