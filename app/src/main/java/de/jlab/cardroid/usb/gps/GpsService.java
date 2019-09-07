@@ -1,9 +1,11 @@
 package de.jlab.cardroid.usb.gps;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.usb.UsbDevice;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -11,6 +13,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.view.WindowManager;
 
+import androidx.core.content.ContextCompat;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
@@ -89,7 +92,8 @@ public class GpsService extends UsbService {
 
     protected void disconnectDevice() {
         this.gpsManager.disconnect();
-        if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
+        boolean hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        if (hasPermission && this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
             this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
             this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
             this.locationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
