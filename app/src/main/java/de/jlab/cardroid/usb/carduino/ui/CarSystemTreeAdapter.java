@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.ui;
 
 import android.content.Context;
 import android.view.LayoutInflater;

@@ -1,10 +1,11 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.serial;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import androidx.annotation.NonNull;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class ErrorPacketHandler implements CarduinoService.PacketHandler<SerialErrorPacket> {
     private LinkedHashMap<Byte, Error> errors = new LinkedHashMap<>();
@@ -68,7 +69,7 @@ public class ErrorPacketHandler implements CarduinoService.PacketHandler<SerialE
         }
     }
 
-    interface ErrorListener {
+    public interface ErrorListener {
         void onError(Error error, Error[] errors);
     }
 }

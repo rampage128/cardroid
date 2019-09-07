@@ -26,6 +26,13 @@ import de.jlab.cardroid.rules.storage.RuleDefinition;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
+import de.jlab.cardroid.usb.carduino.serial.ErrorPacketHandler;
+import de.jlab.cardroid.usb.carduino.serial.MetaEvent;
+import de.jlab.cardroid.usb.carduino.serial.MetaSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacketFactory;
+import de.jlab.cardroid.usb.carduino.serial.SerialReader;
+import de.jlab.cardroid.usb.carduino.ui.ErrorNotifier;
 
 public class CarduinoService extends UsbService implements SerialReader.SerialPacketListener {
     private static final String LOG_TAG = "CarduinoService";

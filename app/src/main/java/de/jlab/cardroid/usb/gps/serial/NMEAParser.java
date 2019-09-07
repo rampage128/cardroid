@@ -1,10 +1,11 @@
-package de.jlab.cardroid.usb.gps;
+package de.jlab.cardroid.usb.gps.serial;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.Calendar;
 import java.util.HashMap;
+
+import de.jlab.cardroid.usb.gps.GpsPosition;
 
 public abstract class NMEAParser {
 

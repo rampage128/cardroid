@@ -12,7 +12,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.usb.carduino.SerialCanPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
 
 public class CanView extends View {
 

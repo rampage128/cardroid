@@ -2,7 +2,11 @@ package de.jlab.cardroid.car;
 
 import java.lang.*;
 
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.car.systems.ClimateControl;
+import de.jlab.cardroid.car.systems.Doors;
+import de.jlab.cardroid.car.systems.GearBox;
+import de.jlab.cardroid.car.systems.PowerState;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 
 public enum CarSystemFactory {
     CLIMATE_CONTROL(0x63, ClimateControl.class),

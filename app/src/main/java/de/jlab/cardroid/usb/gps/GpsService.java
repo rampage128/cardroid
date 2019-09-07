@@ -15,6 +15,7 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.SerialConnectionManager;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
+import de.jlab.cardroid.usb.gps.serial.GPSSerialReader;
 
 public class GpsService extends UsbService {
     private LocationManager locationManager;

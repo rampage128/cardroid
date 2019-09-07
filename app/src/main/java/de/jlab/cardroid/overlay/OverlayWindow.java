@@ -27,7 +27,7 @@ import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemEvent;
 import de.jlab.cardroid.car.CarSystemFactory;
-import de.jlab.cardroid.car.ClimateControl;
+import de.jlab.cardroid.car.systems.ClimateControl;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {

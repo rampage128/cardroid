@@ -1,9 +1,9 @@
-package de.jlab.cardroid.usb;
+package de.jlab.cardroid.usb.carduino.serial;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import de.jlab.cardroid.usb.carduino.SerialDataPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialDataPacket;
 
 public class CarSystemSerialPacket extends SerialDataPacket {
     public CarSystemSerialPacket(ByteArrayInputStream stream) throws IOException {

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 
 public abstract class CarSystem {
 

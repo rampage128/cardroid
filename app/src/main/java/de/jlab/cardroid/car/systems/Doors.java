@@ -1,6 +1,7 @@
-package de.jlab.cardroid.car;
+package de.jlab.cardroid.car.systems;
 
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.car.CarSystem;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 
 public class Doors extends CarSystem {
 

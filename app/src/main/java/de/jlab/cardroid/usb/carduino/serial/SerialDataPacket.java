@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.serial;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

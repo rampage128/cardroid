@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.gps;
+package de.jlab.cardroid.usb.gps.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,6 +21,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.usb.UsageStatistics;
+import de.jlab.cardroid.usb.gps.serial.GPSSerialReader;
+import de.jlab.cardroid.usb.gps.GpsPosition;
+import de.jlab.cardroid.usb.gps.GpsSatellite;
+import de.jlab.cardroid.usb.gps.GpsService;
 
 public class GpsMonitorActivity extends AppCompatActivity implements GPSSerialReader.PositionListener {
 

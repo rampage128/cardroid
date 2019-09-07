@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.ui;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.usb.carduino.serial.ErrorPacketHandler;
 
 public class ErrorNotifier implements ErrorPacketHandler.ErrorListener {
 

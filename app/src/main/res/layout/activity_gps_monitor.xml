@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="de.jlab.cardroid.usb.gps.GpsMonitorActivity">
+    tools:context="de.jlab.cardroid.usb.gps.ui.GpsMonitorActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/statusView"
@@ -42,7 +42,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/statusContainer">
 
-            <de.jlab.cardroid.usb.gps.GpsSatView
+            <de.jlab.cardroid.usb.gps.ui.GpsSatView
                 android:id="@+id/gpsSatView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>

@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.ui;
 
 import android.content.Context;
 import android.util.SparseArray;
@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.usb.carduino.serial.SerialDataPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
 public class PacketListAdapter extends BaseAdapter {
 

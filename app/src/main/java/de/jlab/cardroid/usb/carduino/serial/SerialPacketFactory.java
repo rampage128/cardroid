@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.serial;
 
 import android.util.Log;
 
@@ -7,8 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
 public enum SerialPacketFactory {
     META(0x61, MetaSerialPacket.class),

@@ -11,9 +11,9 @@ import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
-import de.jlab.cardroid.usb.carduino.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
 public final class RuleHandler implements CarduinoService.PacketHandler<CarSystemSerialPacket> {
 

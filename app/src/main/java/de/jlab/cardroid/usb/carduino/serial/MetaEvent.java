@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.serial;
 
 public enum MetaEvent {
     START_SNIFFING(0x0a),
