@@ -122,6 +122,11 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.car = new Car();
         this.packetHandlers.add(this.car);
 
+        ErrorNotifier errorNotifier = new ErrorNotifier(this);
+        ErrorPacketHandler errorHandler = new ErrorPacketHandler();
+        errorHandler.addListener(errorNotifier);
+        this.packetHandlers.add(errorHandler);
+
         MetaPacketHandler metaPacketHandler = new MetaPacketHandler(this);
         this.packetHandlers.add(metaPacketHandler);
 
