@@ -4,20 +4,19 @@ import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
 public class GearBox extends CarSystem {
 
-    private int gear;
-    private boolean isSynchroRev;
+    public static final String GEAR = "gear";
+    public static final String SYNCHRO_REV = "synchro_rev";
 
-    public int getGear() {
-        return this.gear;
-    }
-
-    public boolean isSynchroRev() {
-        return this.isSynchroRev;
+    @Override
+    protected void registerProperties() {
+        registerProperty(GEAR, (byte)0);
+        registerProperty(SYNCHRO_REV, false);
     }
 
     @Override
-    public void updateDataFromPacket(CarSystemSerialPacket packet) {
-        this.gear           = packet.readByte(0);
-        this.isSynchroRev   = packet.readFlag(1, 7);
+    protected void updateDataFromPacket(CarSystemSerialPacket packet) {
+        updateProperty(GEAR, packet.readByte(0));
+        updateProperty(SYNCHRO_REV, packet.readFlag(1, 7));
     }
-}
+
+ }

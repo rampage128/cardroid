@@ -23,7 +23,7 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
     private ArrayList<CarSystem> carSystemList = new ArrayList<>();
     private ArrayList<CarSystemFactory> typeList = new ArrayList<>();
 
-    private LinkedHashMap<CarSystemFactory, Method[]> propertyMap = new LinkedHashMap<>();
+    private LinkedHashMap<CarSystemFactory, String[]> propertyMap = new LinkedHashMap<>();
 
     static class GroupViewHolder {
         TextView label;
@@ -113,10 +113,10 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
 
         CarSystem carSystem = this.carSystemList.get(groupPosition);
         CarSystemFactory type = this.typeList.get(groupPosition);
-        Method method = this.propertyMap.get(type)[childPosition];
-        holder.label.setText(method.getName().replaceAll("(is|get)", ""));
+        String propertyName = this.propertyMap.get(type)[childPosition];
+        holder.label.setText(propertyName);
         try {
-            holder.value.setText(Objects.toString(method.invoke(carSystem)));
+            holder.value.setText(Objects.toString(carSystem.get(propertyName)));
         } catch (Exception e) {
             holder.value.setText(this.context.getString(R.string.status_unavailable));
         }
@@ -136,20 +136,10 @@ public class CarSystemTreeAdapter extends BaseExpandableListAdapter {
             if (!this.propertyMap.containsKey(type)) {
                 this.carSystemList.add(carSystem);
                 this.typeList.add(type);
-                this.propertyMap.put(type, getCarSystemProperties(carSystem));
+                this.propertyMap.put(type, carSystem.getPropertyKeys());
             }
         }
         catch (UnknownCarSystemException e) { /* Intentionally left blank */ }
     }
 
-    private Method[] getCarSystemProperties(CarSystem carSystem) {
-        ArrayList<Method> properties = new ArrayList<>();
-        for (Method m : carSystem.getClass().getMethods()) {
-            String name = m.getName();
-            if (name.startsWith("is") || name.startsWith("get")) {
-                properties.add(m);
-            }
-        }
-        return properties.toArray(new Method[properties.size()]);
-    }
 }
