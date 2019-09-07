@@ -15,14 +15,14 @@ import android.view.WindowManager;
 
 import androidx.core.content.ContextCompat;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
 import de.jlab.cardroid.usb.gps.serial.GPSSerialReader;
 
 public class GpsService extends UsbService {
     private LocationManager locationManager;
-    private SerialConnectionManager gpsManager;
+    private SerialConnection gpsManager;
     private GPSSerialReader gpsReader;
 
     private GPSSerialReader.PositionListener positionListener = new GPSSerialReader.PositionListener() {
@@ -44,7 +44,7 @@ public class GpsService extends UsbService {
         this.gpsReader = new GPSSerialReader();
         this.gpsReader.addPositionListener(this.positionListener);
 
-        this.gpsManager = new SerialConnectionManager(this);
+        this.gpsManager = new SerialConnection(this);
         this.gpsManager.addConnectionListener(gpsReader);
     }
 

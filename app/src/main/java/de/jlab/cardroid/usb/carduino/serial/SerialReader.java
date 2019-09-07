@@ -6,10 +6,10 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
 
-public class SerialReader implements SerialConnectionManager.SerialConnectionListener {
+public class SerialReader implements SerialConnection.SerialConnectionListener {
     private static final String LOG_TAG = "SerialReader";
 
     private ArrayList<SerialPacketListener> packetListeners = new ArrayList<>();

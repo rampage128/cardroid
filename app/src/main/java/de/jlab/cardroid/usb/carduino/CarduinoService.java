@@ -23,7 +23,7 @@ import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
 import de.jlab.cardroid.usb.carduino.serial.ErrorPacketHandler;
@@ -39,7 +39,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
     private OverlayWindow overlayWindow;
 
-    private SerialConnectionManager connectionManager;
+    private SerialConnection connectionManager;
     private SerialReader serialReader;
     private Car car;
 
@@ -119,7 +119,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.serialReader = new SerialReader();
         this.serialReader.addListener(this);
 
-        this.connectionManager = new SerialConnectionManager(this);
+        this.connectionManager = new SerialConnection(this);
         this.connectionManager.addConnectionListener(this.serialReader);
 
 

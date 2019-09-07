@@ -10,7 +10,7 @@ import com.felhr.usbserial.UsbSerialInterface;
 
 import java.util.ArrayList;
 
-public class SerialConnectionManager {
+public class SerialConnection {
     private Context context;
 
     private UsbDevice device;
@@ -34,7 +34,7 @@ public class SerialConnectionManager {
         }
     };
 
-    public SerialConnectionManager(Context context) {
+    public SerialConnection(Context context) {
         this.context = context;
     }
 
