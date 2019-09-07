@@ -32,9 +32,12 @@ public abstract class UsbService extends Service {
                     return START_STICKY;
                 }
                 if (Objects.equals(UsbManager.ACTION_USB_DEVICE_DETACHED, intent.getAction())) {
-                    this.disconnectDevice();
-                    stopSelf();
-                    return START_NOT_STICKY;
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (this.isConnected(device)) {
+                        this.disconnectDevice();
+                        stopSelf();
+                        return START_NOT_STICKY;
+                    }
                 }
             }
         }
@@ -48,6 +51,7 @@ public abstract class UsbService extends Service {
         this.disconnectDevice();
     }
 
+    protected abstract boolean isConnected(UsbDevice device);
     protected abstract boolean isConnected();
     protected abstract boolean connectDevice(UsbDevice device);
     protected abstract void disconnectDevice();
