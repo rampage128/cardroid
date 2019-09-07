@@ -120,7 +120,11 @@ public class SerialConnectionManager {
     }
 
     public boolean isConnected(UsbDevice device) {
-        return this.device.getDeviceName().equals(device.getDeviceName());
+        if (this.device == null) {
+            return false;
+        }
+
+        return this.device.getDeviceId() == device.getDeviceId();
     }
 
     public boolean send(byte[] data) {
