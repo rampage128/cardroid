@@ -100,9 +100,16 @@ public class PacketListAdapter extends BaseAdapter {
         }
 
         holder.id.setText(byteToHex(packet.getId()));
-        holder.raw.setText(new String(payload));
-        holder.hex.setText(bytesToHex(payload));
-        holder.binary.setText(bytesToBin(payload));
+        if (payload.length > 0) {
+            holder.raw.setText(new String(payload));
+            holder.hex.setText(bytesToHex(payload));
+            holder.binary.setText(bytesToBin(payload));
+        }
+        else {
+            holder.raw.setText("");
+            holder.hex.setText("");
+            holder.binary.setText("");
+        }
 
         return convertView;
     }
