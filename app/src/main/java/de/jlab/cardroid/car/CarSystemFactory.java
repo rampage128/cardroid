@@ -6,7 +6,9 @@ import de.jlab.cardroid.usb.CarSystemSerialPacket;
 
 public enum CarSystemFactory {
     CLIMATE_CONTROL(0x63, ClimateControl.class),
-    GEAR_BOX(0x67, GearBox.class);
+    DOORS(0x64, Doors.class),
+    GEAR_BOX(0x67, GearBox.class),
+    POWER_STATE(0x70, PowerState.class);
 
     private byte identifier;
     private Class<? extends CarSystem> carSystemClass;
