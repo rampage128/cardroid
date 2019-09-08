@@ -211,6 +211,7 @@
     <string name="carduino_error">%1$s: %2$s x%3$d</string>
     <string name="carduino_error_unknown">Unknown error</string>
 
+    <string name="carduino_error_01">Baud rate adaption failed</string>
     <string name="carduino_error_30">CAN initialization error</string>
     <string name="carduino_error_31">CAN not ready for use</string>
     <string name="carduino_error_32">CAN already in transaction</string>
