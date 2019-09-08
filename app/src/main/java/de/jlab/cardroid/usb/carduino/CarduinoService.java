@@ -47,6 +47,8 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
     private ArrayList<PacketHandler> packetHandlers = new ArrayList<>();
 
+    private static final byte PROTOCOL_MAJOR = 0x01;
+
     public class MainServiceBinder extends UsbServiceBinder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
             CarduinoService.this.connectionManager.addBandwidthStatisticsListener(listener);
@@ -103,6 +105,10 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
         byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
         this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload)));
+    }
+
+    public void requestCarduinoConnection() {
+        this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.REQUEST_CONNECTION, null)));
     }
 
     @Override
@@ -236,7 +242,16 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
         @Override
         public void handleSerialPacket(@NonNull MetaSerialPacket packet) {
-            if (packet.getId() == 0x01) {
+            if (packet.getId() == 0x00) {
+                int major = packet.readByte(0);
+                //int minor = packet.readByte(1);
+                //int revision = packet.readByte(2);
+
+                if (major == CarduinoService.PROTOCOL_MAJOR) {
+                    service.requestCarduinoConnection();
+                }
+            }
+            else if (packet.getId() == 0x01) {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
                 int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
                 service.requestCarduinoBaudRate(baudRate);
