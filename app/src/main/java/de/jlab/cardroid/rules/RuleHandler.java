@@ -13,6 +13,7 @@ import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
 import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.usb.carduino.serial.SerialEventPacket;
 import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
 public final class RuleHandler implements CarduinoService.PacketHandler<CarSystemSerialPacket> {
@@ -55,14 +56,12 @@ public final class RuleHandler implements CarduinoService.PacketHandler<CarSyste
 
     @Override
     public void handleSerialPacket(@NonNull CarSystemSerialPacket packet) {
-        int eventIdentifier = packet.readUnsignedByte(0);
-
-        this.triggerRule(eventIdentifier);
+        this.triggerRule(packet.getId());
     }
 
     @Override
     public boolean shouldHandlePacket(@NonNull SerialPacket packet) {
-        return packet instanceof CarSystemSerialPacket && packet.getId() == 0x72;
+        return packet instanceof SerialEventPacket;
     }
 
     public void updateRuleDefinition(RuleDefinition ruleDefinition) {
