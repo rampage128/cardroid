@@ -16,7 +16,7 @@ import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.usb.carduino.serial.SerialEventPacket;
 import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
-public final class RuleHandler implements CarduinoService.PacketHandler<CarSystemSerialPacket> {
+public final class RuleHandler implements CarduinoService.PacketHandler<SerialEventPacket> {
 
     private Application application;
 
@@ -55,7 +55,7 @@ public final class RuleHandler implements CarduinoService.PacketHandler<CarSyste
     }
 
     @Override
-    public void handleSerialPacket(@NonNull CarSystemSerialPacket packet) {
+    public void handleSerialPacket(@NonNull SerialEventPacket packet) {
         this.triggerRule(packet.getId());
     }
 
