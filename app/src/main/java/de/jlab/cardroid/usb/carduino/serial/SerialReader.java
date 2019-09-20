@@ -77,8 +77,8 @@ public class SerialReader implements SerialConnection.SerialConnectionListener {
         }
 
         if (!packetList.isEmpty()) {
-            for (SerialPacketListener listener : packetListeners) {
-                listener.onReceivePackets(packetList);
+            for(int i = 0; i < packetListeners.size(); i++){
+                packetListeners.get(i).onReceivePackets(packetList);
             }
         }
     }
