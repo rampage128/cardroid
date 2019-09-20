@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,9 +20,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.car.CarSystemFactory;
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.StatusGridAdapter;
+import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialReader;
 
 public class CarduinoMonitorActivity extends AppCompatActivity implements SerialReader.SerialPacketListener {
 

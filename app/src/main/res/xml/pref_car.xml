@@ -13,7 +13,7 @@
         android:title="@string/pref_title_car_monitor"
         android:summary="@string/pref_description_car_monitor">
         <intent android:targetPackage="de.jlab.cardroid"
-                android:targetClass="de.jlab.cardroid.usb.carduino.CarduinoMonitorActivity"/>
+                android:targetClass="de.jlab.cardroid.usb.carduino.ui.CarduinoMonitorActivity"/>
     </Preference>
 
     <Preference

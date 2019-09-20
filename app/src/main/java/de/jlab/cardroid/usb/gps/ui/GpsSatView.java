@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.gps;
+package de.jlab.cardroid.usb.gps.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.usb.gps.GpsSatellite;
 
 public class GpsSatView extends View {
 

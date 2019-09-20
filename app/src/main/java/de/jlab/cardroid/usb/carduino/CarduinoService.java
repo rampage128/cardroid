@@ -23,22 +23,31 @@ import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
 import de.jlab.cardroid.usb.UsbService;
+import de.jlab.cardroid.usb.carduino.serial.ErrorPacketHandler;
+import de.jlab.cardroid.usb.carduino.serial.MetaEvent;
+import de.jlab.cardroid.usb.carduino.serial.MetaSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacketFactory;
+import de.jlab.cardroid.usb.carduino.serial.SerialReader;
+import de.jlab.cardroid.usb.carduino.ui.ErrorNotifier;
 
 public class CarduinoService extends UsbService implements SerialReader.SerialPacketListener {
     private static final String LOG_TAG = "CarduinoService";
 
     private OverlayWindow overlayWindow;
 
-    private SerialConnectionManager connectionManager;
+    private SerialConnection connectionManager;
     private SerialReader serialReader;
     private Car car;
 
     private RuleHandler ruleHandler;
 
     private ArrayList<PacketHandler> packetHandlers = new ArrayList<>();
+
+    private static final byte PROTOCOL_MAJOR = 0x01;
 
     public class MainServiceBinder extends UsbServiceBinder {
         public void addBandwidthStatisticsListener(UsageStatistics.UsageStatisticsListener listener) {
@@ -98,6 +107,10 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload)));
     }
 
+    public void requestCarduinoConnection() {
+        this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.REQUEST_CONNECTION, null)));
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return this.binder;
@@ -112,7 +125,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.serialReader = new SerialReader();
         this.serialReader.addListener(this);
 
-        this.connectionManager = new SerialConnectionManager(this);
+        this.connectionManager = new SerialConnection(this);
         this.connectionManager.addConnectionListener(this.serialReader);
 
 
@@ -121,6 +134,11 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
         this.car = new Car();
         this.packetHandlers.add(this.car);
+
+        ErrorNotifier errorNotifier = new ErrorNotifier(this);
+        ErrorPacketHandler errorHandler = new ErrorPacketHandler();
+        errorHandler.addListener(errorNotifier);
+        this.packetHandlers.add(errorHandler);
 
         MetaPacketHandler metaPacketHandler = new MetaPacketHandler(this);
         this.packetHandlers.add(metaPacketHandler);
@@ -224,7 +242,16 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
         @Override
         public void handleSerialPacket(@NonNull MetaSerialPacket packet) {
-            if (packet.getId() == 0x01) {
+            if (packet.getId() == 0x00) {
+                int major = packet.readByte(0);
+                //int minor = packet.readByte(1);
+                //int revision = packet.readByte(2);
+
+                if (major == CarduinoService.PROTOCOL_MAJOR) {
+                    service.requestCarduinoConnection();
+                }
+            }
+            else if (packet.getId() == 0x01) {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
                 int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
                 service.requestCarduinoBaudRate(baudRate);

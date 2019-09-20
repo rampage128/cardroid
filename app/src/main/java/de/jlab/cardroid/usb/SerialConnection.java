@@ -10,7 +10,7 @@ import com.felhr.usbserial.UsbSerialInterface;
 
 import java.util.ArrayList;
 
-public class SerialConnectionManager {
+public class SerialConnection {
     private Context context;
 
     private UsbDevice device;
@@ -34,7 +34,7 @@ public class SerialConnectionManager {
         }
     };
 
-    public SerialConnectionManager(Context context) {
+    public SerialConnection(Context context) {
         this.context = context;
     }
 
@@ -120,7 +120,11 @@ public class SerialConnectionManager {
     }
 
     public boolean isConnected(UsbDevice device) {
-        return this.device.getDeviceName().equals(device.getDeviceName());
+        if (this.device == null) {
+            return false;
+        }
+
+        return this.device.getDeviceId() == device.getDeviceId();
     }
 
     public boolean send(byte[] data) {

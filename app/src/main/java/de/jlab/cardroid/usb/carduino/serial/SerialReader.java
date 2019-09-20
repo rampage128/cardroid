@@ -1,4 +1,4 @@
-package de.jlab.cardroid.usb.carduino;
+package de.jlab.cardroid.usb.carduino.serial;
 
 import android.util.Log;
 
@@ -6,10 +6,10 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
 
-public class SerialReader implements SerialConnectionManager.SerialConnectionListener {
+public class SerialReader implements SerialConnection.SerialConnectionListener {
     private static final String LOG_TAG = "SerialReader";
 
     private ArrayList<SerialPacketListener> packetListeners = new ArrayList<>();
@@ -77,8 +77,8 @@ public class SerialReader implements SerialConnectionManager.SerialConnectionLis
         }
 
         if (!packetList.isEmpty()) {
-            for (SerialPacketListener listener : packetListeners) {
-                listener.onReceivePackets(packetList);
+            for(int i = 0; i < packetListeners.size(); i++){
+                packetListeners.get(i).onReceivePackets(packetList);
             }
         }
     }

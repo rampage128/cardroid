@@ -5,9 +5,9 @@ import android.util.Log;
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.usb.CarSystemSerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.CarSystemSerialPacket;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
-import de.jlab.cardroid.usb.carduino.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
 public class Car implements CarduinoService.PacketHandler<CarSystemSerialPacket> {
 

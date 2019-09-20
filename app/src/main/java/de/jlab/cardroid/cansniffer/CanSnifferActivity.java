@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.usb.carduino.SerialCanPacket;
-import de.jlab.cardroid.usb.carduino.SerialPacket;
-import de.jlab.cardroid.usb.carduino.SerialReader;
+import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialReader;
 import de.jlab.cardroid.usb.UsageStatistics;
 
 public class CanSnifferActivity extends AppCompatActivity implements SerialReader.SerialPacketListener {

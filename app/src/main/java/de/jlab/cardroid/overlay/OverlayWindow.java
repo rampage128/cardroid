@@ -27,7 +27,7 @@ import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemEvent;
 import de.jlab.cardroid.car.CarSystemFactory;
-import de.jlab.cardroid.car.ClimateControl;
+import de.jlab.cardroid.car.systems.ClimateControl;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
@@ -374,8 +374,8 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                int fanLevel = Math.max(0, Math.min(system.getFanLevel(), OverlayWindow.this.maxFanLevel));
-                float temperature = system.getTemperature();
+                int fanLevel = Math.max(0, Math.min((byte)system.get(ClimateControl.FAN_LEVEL).get(), OverlayWindow.this.maxFanLevel));
+                float temperature = (float)system.get(ClimateControl.TEMPERATURE).get();
                 boolean isFanOff = fanLevel == 0;
                 boolean isTempOff = temperature == 0;
                 Spanned temperatureText  = getFancyDecimalValue(temperature); //String.format(Locale.getDefault(), "%s", temperature);
@@ -384,9 +384,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 viewHolder.mainFanIcon.setProgress(fanLevel);
 
                 viewHolder.offButton.setState(!isFanOff);
-                viewHolder.wshButton.setState(system.isWindshieldHeating());
-                viewHolder.rwhButton.setState(system.isRearWindowHeating());
-                viewHolder.recirculationButton.setState(system.isRecirculation());
+                viewHolder.wshButton.setState((boolean)system.get(ClimateControl.IS_WINDSHIELD_HEATING).get());
+                viewHolder.rwhButton.setState((boolean)system.get(ClimateControl.IS_REAR_WINDOW_HEATING).get());
+                viewHolder.recirculationButton.setState((boolean)system.get(ClimateControl.IS_RECIRCULATION).get());
 
                 if (!trackingFans) {
                     if (isFanOff) {
@@ -395,14 +395,14 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                         viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
                         viewHolder.fanChangeText.setText(R.string.cc_off);
                     } else {
-                        viewHolder.modeFaceIcon.setVisibility(system.isDuctFaceActive() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeFeetIcon.setVisibility(system.isDuctFeetActive() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeWsIcon.setVisibility(system.isDuctWindshieldActive() ? View.VISIBLE : View.INVISIBLE);
+                        viewHolder.modeFaceIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_FACE).get() ? View.VISIBLE : View.INVISIBLE);
+                        viewHolder.modeFeetIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_FEET).get() ? View.VISIBLE : View.INVISIBLE);
+                        viewHolder.modeWsIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_WINDSHIELD).get() ? View.VISIBLE : View.INVISIBLE);
                         viewHolder.fanChangeText.setText(fanText);
                     }
                     viewHolder.fanDial.setProgress(Math.max(0, fanLevel));
                 }
-                viewHolder.autoButton.setState(system.isAuto());
+                viewHolder.autoButton.setState((boolean)system.get(ClimateControl.IS_AUTO).get());
 
                 if (!trackingTemp) {
                     viewHolder.temperatureDial.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
@@ -415,7 +415,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                     viewHolder.temperatureText.setText(temperatureText);
                     viewHolder.mainText.setText(temperatureText);
                 }
-                viewHolder.acButton.setState(system.isAcOn());
+                viewHolder.acButton.setState((boolean)system.get(ClimateControl.IS_AC_ON).get());
             }
         });
     }

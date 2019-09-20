@@ -1,13 +1,14 @@
-package de.jlab.cardroid.usb.gps;
+package de.jlab.cardroid.usb.gps.serial;
 
 import android.util.Log;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.usb.SerialConnectionManager;
+import de.jlab.cardroid.usb.SerialConnection;
 import de.jlab.cardroid.usb.UsageStatistics;
+import de.jlab.cardroid.usb.gps.GpsPosition;
 
-public class GPSSerialReader implements SerialConnectionManager.SerialConnectionListener {
+public class GPSSerialReader implements SerialConnection.SerialConnectionListener {
 
     private long lastPositionTime = 0;
     private GpsPosition position = new GpsPosition();

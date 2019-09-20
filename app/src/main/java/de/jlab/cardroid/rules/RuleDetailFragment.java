@@ -1,26 +1,19 @@
 package de.jlab.cardroid.rules;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,14 +30,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.rules.properties.ActionPropertyEditor;
 import de.jlab.cardroid.rules.properties.Property;
-import de.jlab.cardroid.rules.properties.PropertyValue;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventViewDetailModel;
-import de.jlab.cardroid.rules.storage.EventViewListModel;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.carduino.CarduinoMonitorActivity;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class RuleDetailFragment extends Fragment {
 

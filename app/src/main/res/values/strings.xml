@@ -73,6 +73,7 @@
         <item>57600</item>
         <item>115200</item>
         <item>230400</item>
+        <item>345600</item>
         <item>460800</item>
         <item>921600</item>
         <!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
@@ -198,4 +199,23 @@
     <string name="action_wifitoggle_off">Off</string>
 
     <string name="property_delimiter">,\u0020</string>
+
+    <!-- NOTIFICATIONS -->
+    <string name="notification_channel_error_name">Errors</string>
+    <string name="notification_channel_error_description">Display Errors from Carduino</string>
+
+    <string name="notification_error_title">%1$d new Carduino errors</string>
+    <string name="notification_error_text">Last error: %1$s</string>
+
+    <!-- CARDUINO ERRORS -->
+    <string name="carduino_error">%1$s: %2$s x%3$d</string>
+    <string name="carduino_error_unknown">Unknown error</string>
+
+    <string name="carduino_error_01">Baud rate adaption failed</string>
+    <string name="carduino_error_30">CAN initialization error</string>
+    <string name="carduino_error_31">CAN not ready for use</string>
+    <string name="carduino_error_32">CAN already in transaction</string>
+    <string name="carduino_error_33">CAN send buffer full</string>
+    <string name="carduino_error_34">CAN send timeout</string>
+    <string name="carduino_error_35">CAN control error</string>
 </resources>

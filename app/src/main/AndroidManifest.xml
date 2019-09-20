@@ -97,7 +97,7 @@
                 android:resource="@xml/device_filter"/>
         </activity>
         <activity
-            android:name=".usb.gps.GpsMonitorActivity"
+            android:name=".usb.gps.ui.GpsMonitorActivity"
             android:label="@string/pref_title_gps_monitor">
         </activity>
 
@@ -109,7 +109,7 @@
         </service>
 
         <activity
-            android:name=".usb.carduino.CarduinoMonitorActivity"
+            android:name=".usb.carduino.ui.CarduinoMonitorActivity"
             android:label="@string/pref_title_car_monitor">
         </activity>
     </application>

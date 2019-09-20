@@ -2,7 +2,7 @@ package de.jlab.cardroid.cansniffer;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.usb.carduino.SerialCanPacket;
+import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
 
 public class SniffedCanPacket {
     private long id;
