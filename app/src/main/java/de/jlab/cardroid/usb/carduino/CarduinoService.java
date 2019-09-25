@@ -16,9 +16,8 @@ import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.Car;
-import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemEvent;
-import de.jlab.cardroid.car.CarSystemFactory;
+import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
@@ -33,6 +32,7 @@ import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 import de.jlab.cardroid.usb.carduino.serial.SerialPacketFactory;
 import de.jlab.cardroid.usb.carduino.serial.SerialReader;
 import de.jlab.cardroid.usb.carduino.ui.ErrorNotifier;
+import de.jlab.cardroid.variables.VariableStore;
 
 public class CarduinoService extends UsbService implements SerialReader.SerialPacketListener {
     private static final String LOG_TAG = "CarduinoService";
@@ -43,6 +43,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
     private SerialReader serialReader;
     private Car car;
 
+    private VariableStore variableStore;
     private RuleHandler ruleHandler;
 
     private ArrayList<PacketHandler> packetHandlers = new ArrayList<>();
@@ -68,6 +69,18 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
         public void addSerialPacketListener(SerialReader.SerialPacketListener listener) {
             CarduinoService.this.serialReader.addListener(listener);
+        }
+
+        public void addPacketHandler(PacketHandler<? extends SerialPacket> handler) {
+            CarduinoService.this.packetHandlers.add(handler);
+        }
+
+        public void removePacketHandler(PacketHandler<? extends SerialPacket> handler) {
+            CarduinoService.this.packetHandlers.remove(handler);
+        }
+
+        public VariableStore getVariableStore() {
+            return CarduinoService.this.variableStore;
         }
 
         public void removeSerialPacketListener(SerialReader.SerialPacketListener listener) {
@@ -101,6 +114,14 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
 
     private final IBinder binder = new MainServiceBinder();
 
+    public void enableCarData(int packetId, byte mask) {
+        byte[] payload = ByteBuffer.allocate(5).putInt(packetId).put(mask).array();
+        //Log.d("CarDataRequest", String.format("%02x", packetId) + ": " + String.format("%8s", Integer.toBinaryString(mask & 0xFF)).replace(' ', '0'));
+        MetaSerialPacket packet = MetaEvent.serialize(MetaEvent.CAR_DATA_DEFINITION, payload);
+        //Log.d("CarDataRequest", packet.payloadAsHexString());
+        this.connectionManager.send(SerialPacketFactory.serialize(packet));
+    }
+
     public void requestCarduinoBaudRate(int baudRate) {
         Log.d(LOG_TAG, "Requesting baudRate " + baudRate);
         byte[] payload = ByteBuffer.allocate(4).putInt(baudRate).array();
@@ -116,6 +137,11 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         return this.binder;
     }
 
+    private void initServices() {
+        this.car.initVariables(new ScriptEngine());
+        this.overlayWindow.initData();
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -128,11 +154,16 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.connectionManager = new SerialConnection(this);
         this.connectionManager.addConnectionListener(this.serialReader);
 
+        // Initialize variable store
+        this.variableStore = new VariableStore();
+
+        // intitialize overlay window
+        this.overlayWindow = new OverlayWindow(this, this.variableStore);
 
         // intitalize packet handlers
         this.packetHandlers.clear();
 
-        this.car = new Car();
+        this.car = new Car(this, this.variableStore);
         this.packetHandlers.add(this.car);
 
         ErrorNotifier errorNotifier = new ErrorNotifier(this);
@@ -147,10 +178,6 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
             this.ruleHandler = new getRulesTask(getApplication()).execute().get();
             this.packetHandlers.add(this.ruleHandler);
         } catch (ExecutionException e) {} catch (InterruptedException e) {}
-
-
-        // intitialize overlay window
-        this.overlayWindow = new OverlayWindow(this);
     }
 
     @Override
@@ -209,22 +236,24 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.ruleHandler.triggerRule(5);
 
         this.connectionManager.disconnect();
-        this.overlayWindow.destroy();
+        if (this.overlayWindow != null) {
+            this.overlayWindow.destroy();
+        }
+        if (this.variableStore != null) {
+            this.variableStore.dispose();
+        }
     }
 
     @Override
     public void onReceivePackets(ArrayList<SerialPacket> packets) {
         for (final SerialPacket packet : packets) {
-            for (PacketHandler handler : packetHandlers) {
+            for (int i = 0; i < this.packetHandlers.size(); i++) {
+                PacketHandler handler = this.packetHandlers.get(i);
                 if (handler.shouldHandlePacket(packet)) {
                     handler.handleSerialPacket(packet);
                 }
             }
         }
-    }
-
-    public CarSystem getCarSystem(CarSystemFactory carSystemType) {
-        return this.car.getCarSystem(carSystemType);
     }
 
     public void sendCarduinoEvent(CarSystemEvent event, byte[] payload) {
@@ -252,6 +281,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
                 }
             }
             else if (packet.getId() == 0x01) {
+                service.initServices();
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
                 int baudRate = Integer.valueOf(prefs.getString("car_baud_rate", "115200"));
                 service.requestCarduinoBaudRate(baudRate);

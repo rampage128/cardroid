@@ -2,6 +2,7 @@ package de.jlab.cardroid.usb.carduino.ui;
 
 import android.content.Context;
 import android.util.SparseArray;
+import android.util.SparseLongArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +11,18 @@ import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
 import de.jlab.cardroid.usb.carduino.serial.SerialDataPacket;
 import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
 
 public class PacketListAdapter extends BaseAdapter {
 
     private Context context;
-    private SparseArray<PacketContainer> packets = new SparseArray<>();
+    private LinkedHashMap<Long, PacketContainer> packets = new LinkedHashMap<>();
 
     static class ViewHolder {
         TextView id;
@@ -29,7 +33,7 @@ public class PacketListAdapter extends BaseAdapter {
 
     static class PacketContainer {
         long lastUpdate;
-        SerialPacket packet;
+        SerialCanPacket packet;
     }
 
     public PacketListAdapter(Context context) {
@@ -37,20 +41,24 @@ public class PacketListAdapter extends BaseAdapter {
     }
 
     public void flushPackets() {
-        for (int i = this.packets.size() - 1; i >= 0; i--) {
-            PacketContainer container = this.packets.valueAt(i);
-            if (System.currentTimeMillis() - container.lastUpdate > 3000) {
-                this.packets.remove(container.packet.getId());
+        Iterator<Long> keyIt = this.packets.keySet().iterator();
+        while (keyIt.hasNext()) {
+            Long key = keyIt.next();
+            PacketContainer container = this.packets.get(key);
+            if (container != null) {
+                if (System.currentTimeMillis() - container.lastUpdate > 3000) {
+                    this.packets.remove(key);
+                }
             }
         }
     }
 
-    public void updatePacket(SerialPacket packet) {
-        int id = packet.getId() & 0xFF;
+    public void updatePacket(SerialCanPacket packet) {
+        long id = packet.getCanId();
         PacketContainer container = this.packets.get(id);
         if (container == null) {
             container = new PacketContainer();
-            this.packets.append(id, container);
+            this.packets.put(id, container);
         }
         container.lastUpdate = System.currentTimeMillis();
         container.packet = packet;
@@ -64,17 +72,17 @@ public class PacketListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return this.packets.valueAt(position);
+        return this.packets.values().toArray(new PacketContainer[0])[position];
     }
 
     @Override
     public long getItemId(int position) {
-        return this.packets.keyAt(position) & 0xFF;
+        return this.packets.values().toArray(new PacketContainer[0])[position].packet.getCanId();
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        SerialPacket packet = ((PacketContainer)getItem(position)).packet;
+        SerialCanPacket packet = ((PacketContainer)getItem(position)).packet;
 
         ViewHolder holder;
         if (convertView == null) {
@@ -92,16 +100,16 @@ public class PacketListAdapter extends BaseAdapter {
         }
 
         byte[] payload = new byte[0];
-        if (packet instanceof SerialDataPacket) {
+        if (packet != null) {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             try {
                 packet.serialize(bout);
                 payload = bout.toByteArray();
             }
             catch (IOException exception) { /* Intentionally left blank */ }
+            holder.id.setText(String.format("%02X", packet.getCanId()));
         }
 
-        holder.id.setText(byteToHex(packet.getId()));
         if (payload.length > 0) {
             holder.raw.setText(new String(payload));
             holder.hex.setText(bytesToHex(payload));

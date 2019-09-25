@@ -42,17 +42,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/statusContainer">
 
-            <ExpandableListView
+            <ListView
                 android:id="@+id/carSystemListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            </ExpandableListView>
+            </ListView>
 
-            <ListView
-                android:id="@+id/packetListView"
+            <ScrollView
+                android:id="@+id/packetListViewContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="match_parent">
+                <de.jlab.cardroid.cansniffer.CanView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/packetListView" />
+            </ScrollView>
         </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -24,19 +24,19 @@ import java.util.Locale;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.car.CarSystem;
 import de.jlab.cardroid.car.CarSystemEvent;
-import de.jlab.cardroid.car.CarSystemFactory;
-import de.jlab.cardroid.car.systems.ClimateControl;
 import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.variables.Variable;
+import de.jlab.cardroid.variables.VariableStore;
 
-public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
+public class OverlayWindow {
     private static final String LOG_TAG = "OverlayWindow";
 
     private boolean isAttached = false;
 
     private Handler uiHandler;
     private CarduinoService service;
+    private VariableStore variableStore;
 
     private WindowManager windowManager;
 
@@ -44,7 +44,17 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private boolean trackingTemp = false;
 
     private int minTemp = 0;
-    private int maxFanLevel = 0;
+
+    private float temperature = 0;
+    private boolean isDuctFace = false;
+    private boolean isDuctFeet = false;
+    private boolean isDuctWindshield = false;
+    private boolean isWindshieldHeating = false;
+    private boolean isRecirculation = false;
+    private boolean isAutomatic = false;
+    private boolean isAcOn = false;
+    private boolean isRearWindowHeating = false;
+    private int fanLevel = 0;
 
     private Runnable stopFanInteraction = new Runnable() {
         @Override
@@ -92,8 +102,9 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
     private ViewHolder viewHolder = new ViewHolder();
 
 
-    public OverlayWindow(CarduinoService service) {
+    public OverlayWindow(CarduinoService service, VariableStore variableStore) {
         this.service = service;
+        this.variableStore = variableStore;
     }
 
     public void create() {
@@ -152,8 +163,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         viewHolder.fanDial.setSegments(maxFan);
         viewHolder.mainFanIcon.setMax(maxFan);
         viewHolder.mainFanIcon.setSegments(maxFan);
-
-        this.maxFanLevel = maxFan;
 
         // Add rootview to overlay window
         final WindowManager.LayoutParams params = getWindowLayout(
@@ -266,10 +275,110 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
 
         // Set up initial view state
         viewHolder.detailView.setVisibility(View.GONE);
-
-        CarSystem climateControl = this.service.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
-        climateControl.addChangeListener(this);
+        updateUi();
     }
+
+    private void attachBubbleData() {
+        attach("hvacTargetTemperature", tempListener);
+        attach("hvacFanLevel", fanListener);
+    }
+
+    private void attachFullData() {
+        attach("hvacIsAirductWindshield", ductWindshieldListener);
+        attach("hvacIsAirductFace", ductFaceListener);
+        attach("hvacIsAirductFeet", ductFeetListener);
+        attach("hvacIsWindshieldHeating", isWindshieldHeatingListener);
+        attach("hvacIsRecirculation", isRecirculationListener);
+        attach("hvacIsAutomatic", isAutomaticListener);
+        attach("hvacIsAcOn", isAcOnListener);
+        attach("hvacIsRearWindowHeating", isRearWindowHeatingListener);
+    }
+
+    private void attach(String variableName, Variable.VariableChangeListener listener) {
+        Variable variable = this.variableStore.getVariable(variableName);
+        if (variable != null) {
+            variable.addChangeListener(listener);
+        }
+    }
+
+    private void detachBubbleData() {
+        detach("hvacTargetTemperature", tempListener);
+        detach("hvacFanLevel", fanListener);
+    }
+
+    private void detachFullData() {
+        detach("hvacIsAirductWindshield", ductWindshieldListener);
+        detach("hvacIsAirductFace", ductFaceListener);
+        detach("hvacIsAirductFeet", ductFeetListener);
+        detach("hvacIsWindshieldHeating", isWindshieldHeatingListener);
+        detach("hvacIsRecirculation", isRecirculationListener);
+        detach("hvacIsAutomatic", isAutomaticListener);
+        detach("hvacIsAcOn", isAcOnListener);
+        detach("hvacIsRearWindowHeating", isRearWindowHeatingListener);
+    }
+
+    private void detach(String variableName, Variable.VariableChangeListener listener) {
+        Variable variable = this.variableStore.getVariable(variableName);
+        if (variable != null) {
+            variable.removeChangeListener(listener);
+        }
+    }
+
+    // BUBBLE LISTENERS
+
+    private Variable.VariableChangeListener tempListener = (oldValue, newValue) -> {
+        this.temperature = ((Double)newValue).floatValue();
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener fanListener = (oldValue, newValue) -> {
+        this.fanLevel = ((Double)newValue).intValue();
+        updateUi();
+    };
+
+    // FULL LISTENERS
+
+    private Variable.VariableChangeListener ductFaceListener = (oldValue, newValue) -> {
+        this.isDuctFace = (Boolean)newValue;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener ductFeetListener = (oldValue, newValue) -> {
+        this.isDuctFeet = (Boolean)newValue;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener ductWindshieldListener = (oldValue, newValue) -> {
+        this.isDuctWindshield = (Boolean)newValue;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener isAcOnListener = (oldValue, newValue) -> {
+        this.isAcOn = (Integer)newValue == 1;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener isRecirculationListener = (oldValue, newValue) -> {
+        this.isRecirculation = (Integer)newValue == 1;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener isWindshieldHeatingListener = (oldValue, newValue) -> {
+        this.isWindshieldHeating = (Integer)newValue == 1;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener isAutomaticListener = (oldValue, newValue) -> {
+        this.isAutomatic = (Integer)newValue == 1;
+        updateUi();
+    };
+
+    private Variable.VariableChangeListener isRearWindowHeatingListener = (oldValue, newValue) -> {
+        this.isRearWindowHeating = (Integer)newValue == 1;
+        updateUi();
+    };
+
+    // LISTENERS END
 
     private void roundCardViews(View v) {
         if (v instanceof CardView) {
@@ -282,6 +391,10 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 roundCardViews(child);
             }
         }
+    }
+
+    public void initData() {
+        this.attachBubbleData();
     }
 
     public void toggle() {
@@ -305,6 +418,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                         roundCardViews(viewHolder.detailView);
                     }
                 });
+                attachFullData();
             }
             else {
                 this.viewHolder.detailView.setVisibility(View.GONE);
@@ -318,6 +432,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 );
                 this.viewHolder.toggleButton.setElevation(elevation);
                 this.viewHolder.toggleButton.setVisibility(View.VISIBLE);
+                detachFullData();
             }
         }
     }
@@ -365,58 +480,52 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             this.windowManager.removeView(this.viewHolder.rootView);
             this.isAttached = false;
         }
-        CarSystem climateControl = this.service.getCarSystem(CarSystemFactory.CLIMATE_CONTROL);
-        climateControl.removeChangeListener(this);
+        detachBubbleData();
+        detachFullData();
     }
 
-    @Override
-    public void onChange(final ClimateControl system) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                int fanLevel = Math.max(0, Math.min((byte)system.get(ClimateControl.FAN_LEVEL).get(), OverlayWindow.this.maxFanLevel));
-                float temperature = (float)system.get(ClimateControl.TEMPERATURE).get();
-                boolean isFanOff = fanLevel == 0;
-                boolean isTempOff = temperature == 0;
-                Spanned temperatureText  = getFancyDecimalValue(temperature); //String.format(Locale.getDefault(), "%s", temperature);
-                String fanText          = String.format(Locale.getDefault(), "%s", fanLevel);
+    private void updateUi() {
+        runOnUiThread(() -> {
+            boolean isFanOff = fanLevel == 0;
+            boolean isTempOff = temperature == 0;
+            Spanned temperatureText  = getFancyDecimalValue(temperature); //String.format(Locale.getDefault(), "%s", temperature);
+            String fanText          = String.format(Locale.getDefault(), "%s", fanLevel);
 
-                viewHolder.mainFanIcon.setProgress(fanLevel);
+            viewHolder.mainFanIcon.setProgress(fanLevel);
 
-                viewHolder.offButton.setState(!isFanOff);
-                viewHolder.wshButton.setState((boolean)system.get(ClimateControl.IS_WINDSHIELD_HEATING).get());
-                viewHolder.rwhButton.setState((boolean)system.get(ClimateControl.IS_REAR_WINDOW_HEATING).get());
-                viewHolder.recirculationButton.setState((boolean)system.get(ClimateControl.IS_RECIRCULATION).get());
+            viewHolder.offButton.setState(!isFanOff);
+            viewHolder.wshButton.setState(isWindshieldHeating);
+            viewHolder.rwhButton.setState(isRearWindowHeating);
+            viewHolder.recirculationButton.setState(isRecirculation);
 
-                if (!trackingFans) {
-                    if (isFanOff) {
-                        viewHolder.modeFaceIcon.setVisibility(View.INVISIBLE);
-                        viewHolder.modeFeetIcon.setVisibility(View.INVISIBLE);
-                        viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
-                        viewHolder.fanChangeText.setText(R.string.cc_off);
-                    } else {
-                        viewHolder.modeFaceIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_FACE).get() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeFeetIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_FEET).get() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeWsIcon.setVisibility((boolean)system.get(ClimateControl.IS_DUCT_WINDSHIELD).get() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.fanChangeText.setText(fanText);
-                    }
-                    viewHolder.fanDial.setProgress(Math.max(0, fanLevel));
+            if (!trackingFans) {
+                if (isFanOff) {
+                    viewHolder.modeFaceIcon.setVisibility(View.INVISIBLE);
+                    viewHolder.modeFeetIcon.setVisibility(View.INVISIBLE);
+                    viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
+                    viewHolder.fanChangeText.setText(R.string.cc_off);
+                } else {
+                    viewHolder.modeFaceIcon.setVisibility(isDuctFace ? View.VISIBLE : View.INVISIBLE);
+                    viewHolder.modeFeetIcon.setVisibility(isDuctFeet ? View.VISIBLE : View.INVISIBLE);
+                    viewHolder.modeWsIcon.setVisibility(isDuctWindshield ? View.VISIBLE : View.INVISIBLE);
+                    viewHolder.fanChangeText.setText(fanText);
                 }
-                viewHolder.autoButton.setState((boolean)system.get(ClimateControl.IS_AUTO).get());
-
-                if (!trackingTemp) {
-                    viewHolder.temperatureDial.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
-                }
-                if (isTempOff) {
-                    viewHolder.temperatureText.setText(R.string.cc_off);
-                    viewHolder.mainText.setText(R.string.cc_off);
-                }
-                else {
-                    viewHolder.temperatureText.setText(temperatureText);
-                    viewHolder.mainText.setText(temperatureText);
-                }
-                viewHolder.acButton.setState((boolean)system.get(ClimateControl.IS_AC_ON).get());
+                viewHolder.fanDial.setProgress(Math.max(0, fanLevel));
             }
+            viewHolder.autoButton.setState(isAutomatic);
+
+            if (!trackingTemp) {
+                viewHolder.temperatureDial.setProgress((int) ((temperature - OverlayWindow.this.minTemp) * 2));
+            }
+            if (isTempOff) {
+                viewHolder.temperatureText.setText(R.string.cc_off);
+                viewHolder.mainText.setText(R.string.cc_off);
+            }
+            else {
+                viewHolder.temperatureText.setText(temperatureText);
+                viewHolder.mainText.setText(temperatureText);
+            }
+            viewHolder.acButton.setState(isAcOn);
         });
     }
 

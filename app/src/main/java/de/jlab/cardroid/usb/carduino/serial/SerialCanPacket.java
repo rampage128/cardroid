@@ -2,6 +2,7 @@ package de.jlab.cardroid.usb.carduino.serial;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class SerialCanPacket extends SerialDataPacket {
     public SerialCanPacket(ByteArrayInputStream stream) throws IOException {
@@ -21,6 +22,10 @@ public class SerialCanPacket extends SerialDataPacket {
         byte[] data = new byte[this.payload.remaining()];
         this.payload.get(data);
         return data;
+    }
+
+    public ByteBuffer getData() {
+        return ByteBuffer.wrap(this.getDataRaw());
     }
 
     private final char[] hexArray = "0123456789ABCDEF".toCharArray();

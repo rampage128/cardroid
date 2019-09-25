@@ -141,7 +141,7 @@
     <string name="car_connection">Connection</string>
 
     <string name="car_status_packets">Packets per second</string>
-    <string name="car_status_systems">Registered car systems</string>
+    <string name="car_status_variables">Registered variables</string>
 
     <!-- Rule editor -->
     <string name="title_rule_list">Rules</string>

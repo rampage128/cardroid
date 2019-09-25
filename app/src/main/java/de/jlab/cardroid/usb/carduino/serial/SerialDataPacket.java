@@ -32,6 +32,33 @@ public class SerialDataPacket extends SerialPacket {
         return (this.payload.get(index) & (1<<bitNum)) != 0;
     }
 
+    public String readString(int index, int length) {
+        return new String(readByteArray(index, length));
+    }
+
+    public byte[] readByteArray(int index, int length) {
+        byte[] bytes = new byte[length];
+        this.payload.get(bytes, index, length);
+        return bytes;
+    }
+
+    public long readNumber(int index, int length) {
+        long value = 0;
+        for (int i = index; i < index + length; i++) {
+            value = (value << 8) + (this.payload.get(i) & 0xff);
+        }
+        return value;
+    }
+
+    public long readNumberLittleEndian(int index, int length) {
+        long value = 0;
+        int lastIndex = index + length - 1;
+        for (int i = index; i < index + length; i++) {
+            value = (value << 8) + (this.payload.get(lastIndex - i) & 0xff);
+        }
+        return value;
+    }
+
     public long readDWord(int index) {
         return this.payload.getInt(index);
     }
@@ -48,6 +75,10 @@ public class SerialDataPacket extends SerialPacket {
         return this.payload.get(index);
     }
 
+    public int payloadSize() {
+        return this.payload.capacity();
+    }
+
     public void serialize(ByteArrayOutputStream stream) throws IOException {
         super.serialize(stream);
 
@@ -58,6 +89,20 @@ public class SerialDataPacket extends SerialPacket {
             this.payload.get(payload);
             stream.write(payload);
         }
+    }
+
+    public String payloadAsHexString() {
+        byte[] payload = new byte[this.payload.capacity()];
+        this.payload.rewind();
+        this.payload.get(payload);
+
+        StringBuilder sb = new StringBuilder();
+        for (byte b : payload) {
+            sb.append("0x");
+            sb.append(String.format("%02x", b));
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 
     public boolean payloadEquals(SerialDataPacket otherPacket) {
