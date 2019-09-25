@@ -128,8 +128,8 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
         this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.CHANGE_BAUD_RATE, payload)));
     }
 
-    public void requestCarduinoConnection() {
-        this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.REQUEST_CONNECTION, null)));
+    public void requestCarduinoConnection(byte protocolMajor) {
+        this.connectionManager.send(SerialPacketFactory.serialize(MetaEvent.serialize(MetaEvent.REQUEST_CONNECTION, new byte[] { protocolMajor })));
     }
 
     @Override
@@ -277,7 +277,7 @@ public class CarduinoService extends UsbService implements SerialReader.SerialPa
                 //int revision = packet.readByte(2);
 
                 if (major == CarduinoService.PROTOCOL_MAJOR) {
-                    service.requestCarduinoConnection();
+                    service.requestCarduinoConnection(CarduinoService.PROTOCOL_MAJOR);
                 }
             }
             else if (packet.getId() == 0x01) {
