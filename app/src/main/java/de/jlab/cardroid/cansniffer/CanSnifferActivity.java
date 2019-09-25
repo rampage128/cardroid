@@ -26,25 +26,6 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
     private TextView packetStatText;
     private CanView canView;
 
-    private ConcurrentHashMap<Long, SerialCanPacket> packets = new ConcurrentHashMap<>();
-    private Handler updateHandler;
-    private Runnable updateRunner = new Runnable() {
-        @Override
-        public void run() {
-            boolean needsRepaint = false;
-            for (SerialCanPacket packet : CanSnifferActivity.this.packets.values()) {
-                needsRepaint |= CanSnifferActivity.this.canView.updatePacket(packet);
-            }
-            CanSnifferActivity.this.packets.clear();
-            needsRepaint |= CanSnifferActivity.this.canView.flushPackets();
-
-            if (needsRepaint) {
-                CanSnifferActivity.this.canView.invalidate();
-            }
-            CanSnifferActivity.this.updateHandler.postDelayed(this, 50);
-        }
-    };
-
     private UsageStatistics.UsageStatisticsListener bandWidthStatListener = new UsageStatistics.UsageStatisticsListener() {
         @Override
         public void onInterval(final int count, final UsageStatistics statistics) {
@@ -95,8 +76,7 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
     public void onReceivePackets(final ArrayList<SerialPacket> packets) {
         for (SerialPacket packet : packets) {
             if (packet instanceof SerialCanPacket) {
-                SerialCanPacket canPacket = (SerialCanPacket)packet;
-                this.packets.put(canPacket.getCanId(), canPacket);
+                this.runOnUiThread(() -> this.canView.updatePacket((SerialCanPacket)packet));
             }
         }
     }
@@ -106,20 +86,20 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_can_sniffer);
 
-        this.updateHandler = new Handler();
-
         this.bandwidthStatText = findViewById(R.id.bandwidthText);
         this.packetStatText = findViewById(R.id.packetText);
         this.canView = findViewById(R.id.packet_list);
 
         this.bandwidthStatText.setText(R.string.pref_title_car_bandwidth);
         this.packetStatText.setText(R.string.pref_title_car_packets);
+
+        this.canView.startLiveMode();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        this.updateHandler.removeCallbacks(this.updateRunner);
+        this.canView.stopLiveMode();
         if (mainService != null) {
             mainService.stopCanSniffer();
             mainService.removeBandwidthStatisticsListener(this.bandWidthStatListener);
@@ -134,6 +114,6 @@ public class CanSnifferActivity extends AppCompatActivity implements SerialReade
         super.onResume();
         bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
 
-        this.updateHandler.postDelayed(this.updateRunner, 50);
+        this.canView.startLiveMode();
     }
 }

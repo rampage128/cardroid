@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.os.Handler;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.LongSparseArray;
@@ -35,6 +36,28 @@ public class CanView extends View {
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
+    private Handler updateHandler;
+    private Runnable updateRunner = new Runnable() {
+        @Override
+        public void run() {
+            boolean needsRepaint = false;
+            /*
+            for (int i = 0; i < CanView.this.packets.size(); i++) {
+                long key = CanView.this.packets.keyAt(i);
+                SniffedCanPacket packet = CanView.this.packets.get(key);
+                needsRepaint |= packet.updateSelf();
+            }
+            CanSnifferActivity.this.packets.clear();
+            */
+            needsRepaint |= CanView.this.flushPackets();
+
+            if (needsRepaint) {
+                CanView.this.invalidate();
+            }
+            CanView.this.updateHandler.postDelayed(this, 50);
+        }
+    };
+
     public CanView(Context context) {
         super(context);
         initMetrics();
@@ -51,6 +74,7 @@ public class CanView extends View {
     public CanView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         initMetrics();
+        this.updateHandler = new Handler();
     }
 
     protected void initMetrics() {
@@ -84,6 +108,14 @@ public class CanView extends View {
             this.requestLayout();
         }
         return needsRepaint;
+    }
+
+    public void startLiveMode() {
+        this.updateHandler.postDelayed(this.updateRunner, 50);
+    }
+
+    public void stopLiveMode() {
+        this.updateHandler.removeCallbacks(this.updateRunner);
     }
 
     public boolean updatePacket(SerialCanPacket serialPacket) {
