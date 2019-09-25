@@ -37,6 +37,7 @@ proguard/
 *.log
 
 # Android Studio
+/app/release/
 /*/build/
 /*/local.properties
 /*/out
@@ -63,7 +64,9 @@ obj/
 /out/
 
 # User-specific configurations
+.idea/caches/
 .idea/libraries/
+.idea/codeStyles/
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/.name
@@ -81,6 +84,7 @@ obj/
 .idea/sqlDataSources.xml
 .idea/dynamic.xml
 .idea/uiDesigner.xml
+.idea/assetWizardSettings.xml
 
 # OS-specific files
 .DS_Store
