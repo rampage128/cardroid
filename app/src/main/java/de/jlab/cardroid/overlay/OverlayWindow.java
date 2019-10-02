@@ -21,22 +21,28 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.car.CarSystemEvent;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
+import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.variables.Variable;
-import de.jlab.cardroid.variables.VariableStore;
 
+/**
+ * @deprecated OverlayWindow is static legacy code. This has to be replaced with the coming "screens" feature.
+ * This way users will be able to build complete custom hvac-screens based on variable values
+ */
+@Deprecated
 public class OverlayWindow {
     private static final String LOG_TAG = "OverlayWindow";
 
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private CarduinoService service;
-    private VariableStore variableStore;
+    private DeviceService service;
 
     private WindowManager windowManager;
 
@@ -101,10 +107,50 @@ public class OverlayWindow {
     }
     private ViewHolder viewHolder = new ViewHolder();
 
+    private Variable.VariableChangeListener bubbleListener = (oldValue, newValue, name) -> {
+        switch(name) {
+            case "hvacTargetTemperature":
+                this.temperature = ((Double)newValue).floatValue();
+                break;
+            case "hvacFanLevel":
+                this.fanLevel = ((Double)newValue).intValue();
+                break;
+        }
+        updateUi();
+    };
 
-    public OverlayWindow(CarduinoService service, VariableStore variableStore) {
+    private Variable.VariableChangeListener fullChangeListener = (oldValue, newValue, name) -> {
+        switch(name) {
+            case "hvacIsAirductFace":
+                this.isDuctFace = (Boolean)newValue;
+                break;
+            case "hvacIsAirductFeet":
+                this.isDuctFeet = (Boolean)newValue;
+                break;
+            case "hvacIsAirductWindshield":
+                this.isDuctWindshield = (Boolean)newValue;
+                break;
+            case "hvacIsAcOn":
+                this.isAcOn = (Integer)newValue == 1;
+                break;
+            case "hvacIsRecirculation":
+                this.isRecirculation = (Integer)newValue == 1;
+                break;
+            case "hvacIsAutomatic":
+                this.isAutomatic = (Integer)newValue == 1;
+                break;
+            case "hvacIsRearWindowHeating":
+                this.isRearWindowHeating = (Integer)newValue == 1;
+                break;
+            case "hvacIsWindshieldHeating":
+                this.isWindshieldHeating = (Integer)newValue == 1;
+                break;
+        }
+        updateUi();
+    };
+
+    public OverlayWindow(DeviceService service) {
         this.service = service;
-        this.variableStore = variableStore;
     }
 
     public void create() {
@@ -189,28 +235,31 @@ public class OverlayWindow {
         View.OnClickListener buttonListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (view.getId()) {
-                    case R.id.offButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_OFF_BUTTON, null);
-                        break;
-                    case R.id.wshButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_WSH_BUTTON, null);
-                        break;
-                    case R.id.rwhButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_RWH_BUTTON, null);
-                        break;
-                    case R.id.recirculationButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_RECIRCULATION_BUTTON, null);
-                        break;
-                    case R.id.modeButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_MODE_BUTTON, null);
-                        break;
-                    case R.id.autoButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_AUTO_BUTTON, null);
-                        break;
-                    case R.id.acButton:
-                        service.sendCarduinoEvent(CarSystemEvent.CC_AC_BUTTON, null);
-                        break;
+                CarduinoEventProvider eventProvider = service.getDeviceProvider(CarduinoEventProvider.class);
+                if (eventProvider != null) {
+                    switch (view.getId()) {
+                        case R.id.offButton:
+                            sendEvent(CarduinoEventType.CC_OFF_BUTTON, null);
+                            break;
+                        case R.id.wshButton:
+                            sendEvent(CarduinoEventType.CC_WSH_BUTTON, null);
+                            break;
+                        case R.id.rwhButton:
+                            sendEvent(CarduinoEventType.CC_RWH_BUTTON, null);
+                            break;
+                        case R.id.recirculationButton:
+                            sendEvent(CarduinoEventType.CC_RECIRCULATION_BUTTON, null);
+                            break;
+                        case R.id.modeButton:
+                            sendEvent(CarduinoEventType.CC_MODE_BUTTON, null);
+                            break;
+                        case R.id.autoButton:
+                            sendEvent(CarduinoEventType.CC_AUTO_BUTTON, null);
+                            break;
+                        case R.id.acButton:
+                            sendEvent(CarduinoEventType.CC_AC_BUTTON, null);
+                            break;
+                    }
                 }
             }
         };
@@ -243,7 +292,7 @@ public class OverlayWindow {
 
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
-                service.sendCarduinoEvent(CarSystemEvent.CC_FAN_LEVEL, new byte[] { (byte)Math.max(seekBar.getProgress(), 1) });
+                sendEvent(CarduinoEventType.CC_FAN_LEVEL, new byte[]{(byte) Math.max(seekBar.getProgress(), 1)});
                 uiHandler.postDelayed(stopFanInteraction, 1000);
             }
         });
@@ -268,7 +317,7 @@ public class OverlayWindow {
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
                 float temperature = seekBar.getProgress() / 2f + OverlayWindow.this.minTemp;
-                service.sendCarduinoEvent(CarSystemEvent.CC_TEMPERATURE, new byte[] { (byte)(temperature * 2) });
+                sendEvent(CarduinoEventType.CC_TEMPERATURE, new byte[]{(byte) (temperature * 2)});
                 uiHandler.postDelayed(stopTempInteraction, 1000);
             }
         });
@@ -276,109 +325,56 @@ public class OverlayWindow {
         // Set up initial view state
         viewHolder.detailView.setVisibility(View.GONE);
         updateUi();
+        this.attachBubbleData();
+    }
+
+    private void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
+        CarduinoEventProvider eventProvider = this.service.getDeviceProvider(CarduinoEventProvider.class);
+        if (eventProvider != null) {
+            eventProvider.sendEvent(event, payload);
+        }
     }
 
     private void attachBubbleData() {
-        attach("hvacTargetTemperature", tempListener);
-        attach("hvacFanLevel", fanListener);
+        attach("hvacTargetTemperature", this.bubbleListener);
+        attach("hvacFanLevel", this.bubbleListener);
     }
 
     private void attachFullData() {
-        attach("hvacIsAirductWindshield", ductWindshieldListener);
-        attach("hvacIsAirductFace", ductFaceListener);
-        attach("hvacIsAirductFeet", ductFeetListener);
-        attach("hvacIsWindshieldHeating", isWindshieldHeatingListener);
-        attach("hvacIsRecirculation", isRecirculationListener);
-        attach("hvacIsAutomatic", isAutomaticListener);
-        attach("hvacIsAcOn", isAcOnListener);
-        attach("hvacIsRearWindowHeating", isRearWindowHeatingListener);
+        attach("hvacIsAirductWindshield", this.fullChangeListener);
+        attach("hvacIsAirductFace", this.fullChangeListener);
+        attach("hvacIsAirductFeet", this.fullChangeListener);
+        attach("hvacIsWindshieldHeating", this.fullChangeListener);
+        attach("hvacIsRecirculation", this.fullChangeListener);
+        attach("hvacIsAutomatic", this.fullChangeListener);
+        attach("hvacIsAcOn", this.fullChangeListener);
+        attach("hvacIsRearWindowHeating", this.fullChangeListener);
     }
 
     private void attach(String variableName, Variable.VariableChangeListener listener) {
-        Variable variable = this.variableStore.getVariable(variableName);
-        if (variable != null) {
-            variable.addChangeListener(listener);
-        }
+        detach(variableName, listener);
+        this.service.getVariableStore().subscribe(variableName, listener);
     }
 
     private void detachBubbleData() {
-        detach("hvacTargetTemperature", tempListener);
-        detach("hvacFanLevel", fanListener);
+        detach("hvacTargetTemperature", this.bubbleListener);
+        detach("hvacFanLevel", this.bubbleListener);
     }
 
     private void detachFullData() {
-        detach("hvacIsAirductWindshield", ductWindshieldListener);
-        detach("hvacIsAirductFace", ductFaceListener);
-        detach("hvacIsAirductFeet", ductFeetListener);
-        detach("hvacIsWindshieldHeating", isWindshieldHeatingListener);
-        detach("hvacIsRecirculation", isRecirculationListener);
-        detach("hvacIsAutomatic", isAutomaticListener);
-        detach("hvacIsAcOn", isAcOnListener);
-        detach("hvacIsRearWindowHeating", isRearWindowHeatingListener);
+        detach("hvacIsAirductWindshield", this.fullChangeListener);
+        detach("hvacIsAirductFace", this.fullChangeListener);
+        detach("hvacIsAirductFeet", this.fullChangeListener);
+        detach("hvacIsWindshieldHeating", this.fullChangeListener);
+        detach("hvacIsRecirculation", this.fullChangeListener);
+        detach("hvacIsAutomatic", this.fullChangeListener);
+        detach("hvacIsAcOn", this.fullChangeListener);
+        detach("hvacIsRearWindowHeating", this.fullChangeListener);
     }
 
     private void detach(String variableName, Variable.VariableChangeListener listener) {
-        Variable variable = this.variableStore.getVariable(variableName);
-        if (variable != null) {
-            variable.removeChangeListener(listener);
-        }
+        this.service.getVariableStore().unsubscribe(variableName, listener);
     }
-
-    // BUBBLE LISTENERS
-
-    private Variable.VariableChangeListener tempListener = (oldValue, newValue) -> {
-        this.temperature = ((Double)newValue).floatValue();
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener fanListener = (oldValue, newValue) -> {
-        this.fanLevel = ((Double)newValue).intValue();
-        updateUi();
-    };
-
-    // FULL LISTENERS
-
-    private Variable.VariableChangeListener ductFaceListener = (oldValue, newValue) -> {
-        this.isDuctFace = (Boolean)newValue;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener ductFeetListener = (oldValue, newValue) -> {
-        this.isDuctFeet = (Boolean)newValue;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener ductWindshieldListener = (oldValue, newValue) -> {
-        this.isDuctWindshield = (Boolean)newValue;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener isAcOnListener = (oldValue, newValue) -> {
-        this.isAcOn = (Integer)newValue == 1;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener isRecirculationListener = (oldValue, newValue) -> {
-        this.isRecirculation = (Integer)newValue == 1;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener isWindshieldHeatingListener = (oldValue, newValue) -> {
-        this.isWindshieldHeating = (Integer)newValue == 1;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener isAutomaticListener = (oldValue, newValue) -> {
-        this.isAutomatic = (Integer)newValue == 1;
-        updateUi();
-    };
-
-    private Variable.VariableChangeListener isRearWindowHeatingListener = (oldValue, newValue) -> {
-        this.isRearWindowHeating = (Integer)newValue == 1;
-        updateUi();
-    };
-
-    // LISTENERS END
 
     private void roundCardViews(View v) {
         if (v instanceof CardView) {
@@ -391,10 +387,6 @@ public class OverlayWindow {
                 roundCardViews(child);
             }
         }
-    }
-
-    public void initData() {
-        this.attachBubbleData();
     }
 
     public void toggle() {

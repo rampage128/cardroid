@@ -15,13 +15,14 @@ import android.view.View;
 import de.jlab.cardroid.R;
 
 /**
- *
+ * @deprecated This is deprecated together with OverlayWindow
  * SeekArc.java
  *
  * This is a class that functions much like a SeekBar but
  * follows a circle path instead of a straight line.
  *
  */
+@Deprecated
 public class SeekArc extends View {
 
     private static final String TAG = SeekArc.class.getSimpleName();

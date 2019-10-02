@@ -35,11 +35,7 @@
         </activity>
 
         <service
-            android:name=".usb.carduino.CarduinoService"
-            android:exported="false"
-            android:launchMode="singleTop"/>
-        <service
-            android:name=".usb.gps.GpsService"
+            android:name=".devices.DeviceService"
             android:exported="false"
             android:launchMode="singleTop"/>
 
@@ -52,7 +48,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".usb.CarDiscconectedReceiver"
+            android:name=".devices.DeviceDisconnectedReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"/>
@@ -73,7 +69,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".cansniffer.CanSnifferActivity"
+            android:name=".car.ui.CanSnifferActivity"
             android:hardwareAccelerated="true"
             android:label="@string/pref_title_can_sniffer"
             android:launchMode="singleTop">
@@ -84,7 +80,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".usb.UsbStatusActivity"
+            android:name=".devices.DeviceConnectionActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.UserDialog">
@@ -97,19 +93,12 @@
                 android:resource="@xml/device_filter"/>
         </activity>
         <activity
-            android:name=".usb.gps.ui.GpsMonitorActivity"
+            android:name=".gps.ui.GpsMonitorActivity"
             android:label="@string/pref_title_gps_monitor">
         </activity>
 
-        <service
-            android:name=".WatchDogService"
-            android:enabled="true"
-            android:exported="false"
-            android:launchMode="singleInstance">
-        </service>
-
         <activity
-            android:name=".usb.carduino.ui.CarduinoMonitorActivity"
+            android:name=".car.ui.CarMonitorActivity"
             android:label="@string/pref_title_car_monitor">
         </activity>
     </application>

@@ -30,14 +30,14 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     private int eventId = 0;
     private Fragment activeFragment;
 
-    private CarduinoService.MainServiceBinder serviceBinder;
+    //private CarduinoService.MainServiceBinder serviceBinder;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            RuleActivity.this.serviceBinder = (CarduinoService.MainServiceBinder)service;
+            //RuleActivity.this.serviceBinder = (CarduinoService.MainServiceBinder)service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            RuleActivity.this.serviceBinder = null;
+            //RuleActivity.this.serviceBinder = null;
         }
     };
 
@@ -146,7 +146,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     public void onRuleChange(int command, RuleDefinition ruleDefinition) {
         switch (command) {
             case COMMAND_UPDATED:
-                this.serviceBinder.updateRule(ruleDefinition);
+                //this.serviceBinder.updateRule(ruleDefinition);
                 break;
         }
     }

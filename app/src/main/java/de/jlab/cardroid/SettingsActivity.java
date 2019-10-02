@@ -38,15 +38,15 @@ import de.jlab.cardroid.usb.carduino.CarduinoService;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    private static CarduinoService.MainServiceBinder mainService;
+    //private static CarduinoService.MainServiceBinder mainService;
 
     private ServiceConnection mainServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            mainService = (CarduinoService.MainServiceBinder)service;
+            //mainService = (CarduinoService.MainServiceBinder)service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            mainService = null;
+            //mainService = null;
         }
     };
 
@@ -126,9 +126,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        /*
         if (mainService != null) {
             getApplicationContext().unbindService(this.mainServiceConnection);
         }
+         */
     }
 
     /**
@@ -298,7 +300,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             findPreference("car_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    mainService.requestBaudRate(Integer.valueOf((String)newValue));
+                    //mainService.requestBaudRate(Integer.valueOf((String)newValue));
                     return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
                 }
             });

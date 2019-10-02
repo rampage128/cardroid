@@ -49,4 +49,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:cardview-v7:28.0.0'
     implementation 'io.apisense:rhino-android:1.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
 }

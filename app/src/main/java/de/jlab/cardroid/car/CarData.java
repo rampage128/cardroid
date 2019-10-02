@@ -1,9 +1,12 @@
 package de.jlab.cardroid.car;
 
-import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
-import de.jlab.cardroid.usb.carduino.serial.SerialDataPacket;
+import de.jlab.cardroid.devices.serial.can.CanPacket;
 import de.jlab.cardroid.variables.ObservableValue;
 
+/**
+ * @deprecated This has to be rewritten and placed somewhere meaningful (maybe as ObservableCanValue in variables)
+ */
+@Deprecated
 public class CarData extends ObservableValue {
 
     public enum Type {
@@ -29,27 +32,27 @@ public class CarData extends ObservableValue {
         return this.byteIndex;
     }
 
-    public void updateFromSerialPacket(SerialCanPacket packet, int byteOffset) {
+    public void updateFromSerialPacket(CanPacket packet, int byteOffset) {
         int readIndex = this.byteIndex + byteOffset;
 
         Object newValue;
         if (this.type == Type.ARRAY) {
             byte[] bytes = new byte[this.length];
             for (int i = 0; i < this.length; i++) {
-                bytes[i] = packet.readByte(readIndex + i);
+                //bytes[i] = packet.readByte(readIndex + i);
             }
             newValue = bytes;
         } else if (this.type == Type.STRING) {
-            newValue = packet.readString(readIndex, this.length);
+            //newValue = packet.readString(readIndex, this.length);
         } else if (this.type == Type.FLAG) {
-            newValue = packet.readFlag(readIndex, 7 - this.length) ? 1 : 0;
+            //newValue = packet.readFlag(readIndex, 7 - this.length) ? 1 : 0;
         } else if (this.type == Type.NUMBER_LITTLE_ENDIAN) {
-            newValue = packet.readNumberLittleEndian(readIndex, this.length);
+            //newValue = packet.readNumberLittleEndian(readIndex, this.length);
         } else {
-            newValue = packet.readNumber(readIndex, this.length);
+            //newValue = packet.readNumber(readIndex, this.length);
         }
 
-        this.change(newValue);
+        //this.change(newValue);
     }
 
 }

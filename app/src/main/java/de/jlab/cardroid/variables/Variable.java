@@ -50,12 +50,12 @@ public class Variable implements ObservableValue.ValueObserver {
     @Override
     public void onChange(Object oldValue, Object newValue) {
         for (int i = 0; i < this.listeners.size(); i++) {
-            this.listeners.get(i).onChange(oldValue, newValue);
+            this.listeners.get(i).onChange(oldValue, newValue, this.name);
         }
     }
 
     public interface VariableChangeListener {
-        void onChange(Object oldValue, Object newValue);
+        void onChange(Object oldValue, Object newValue, String variableName);
     }
 
 }

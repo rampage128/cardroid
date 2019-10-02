@@ -5,12 +5,16 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
+import de.jlab.cardroid.devices.serial.can.CanPacket;
 import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ObservableValueBag;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
 
+/**
+ * @deprecated This has to be rewritten with the new CanPacket architecture in mind
+ */
+@Deprecated
 public class CarDataParser {
 
     private ArrayList<Integer> byteIndexMap = new ArrayList<>();
@@ -34,7 +38,7 @@ public class CarDataParser {
         this.byteCount += byteCount;
     }
 
-    public void updateFromSerialPacket(@NonNull SerialCanPacket packet) {
+    public void updateFromSerialPacket(@NonNull CanPacket packet) {
         for (int i = 0; i < this.variables.size(); i++) {
             this.variables.get(i).updateFromSerialPacket(packet, this.byteCount, this.byteIndexMap);
         }
@@ -88,10 +92,10 @@ public class CarDataParser {
             this.data = data;
         }
 
-        public void updateFromSerialPacket(@NonNull SerialCanPacket packet, int expectedSize, @NonNull ArrayList<Integer> byteIndexMap) {
+        public void updateFromSerialPacket(@NonNull CanPacket packet, int expectedSize, @NonNull ArrayList<Integer> byteIndexMap) {
             int offset = 0;
             int byteIndex = this.data.getByteIndex();
-            if (packet.payloadSize() == expectedSize + 4) {
+            if (packet.getDataLength() == expectedSize + 4) {
                 int trueIndex = byteIndexMap.indexOf(byteIndex);
                 offset = trueIndex - byteIndex;
             }
@@ -101,7 +105,7 @@ public class CarDataParser {
                 String eB = "Error parsing packet \"" + String.format("%02x", packet.getCanId()) + "\"" +
                         " (offset: " + (offset + 4) +
                         ", expected size: " + expectedSize +
-                        ", realSize: " + packet.payloadSize() +
+                        ", realSize: " + packet.getDataLength() +
                         ")";
                 Log.e(this.getClass().getSimpleName(), eB, e);
             }

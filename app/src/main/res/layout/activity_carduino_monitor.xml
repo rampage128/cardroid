@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="de.jlab.cardroid.usb.carduino.ui.CarduinoMonitorActivity">
+    tools:context=".car.ui.CarMonitorActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/statusView"
@@ -53,7 +53,7 @@
                 android:id="@+id/packetListViewContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-                <de.jlab.cardroid.cansniffer.CanView
+                <de.jlab.cardroid.car.ui.CanView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/packetListView" />

@@ -32,7 +32,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             if (toggleScreen) {
                 toggleScreen(true, powerPrefs, context);
             }
-            context.startService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
         else if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
             AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
@@ -43,7 +42,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             if (toggleScreen) {
                 toggleScreen(false, powerPrefs, context);
             }
-            context.stopService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
     }
 

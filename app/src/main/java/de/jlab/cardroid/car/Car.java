@@ -3,22 +3,26 @@ package de.jlab.cardroid.car;
 import android.util.Log;
 import android.util.LongSparseArray;
 
-import androidx.annotation.NonNull;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
-import de.jlab.cardroid.usb.carduino.serial.SerialCanPacket;
-import de.jlab.cardroid.usb.carduino.serial.SerialPacket;
+import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
+import de.jlab.cardroid.devices.serial.can.CanPacket;
+import de.jlab.cardroid.usb.UsbService;
+import de.jlab.cardroid.usb.carduino.CarduinoSerialDevice;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
 import de.jlab.cardroid.variables.VariableStore;
 
-public class Car implements CarduinoService.PacketHandler<SerialCanPacket> {
+/**
+ * @deprecated Should this be included in CanDataProvider? Or is this a separate thing?
+ */
+@Deprecated
+public class Car implements CanDeviceHandler.CanPacketListener {
 
     private LongSparseArray<CarDataParser> data = new LongSparseArray<>();
-    private CarduinoService carduino;
+    private UsbService usbService;
     private VariableStore variableStore;
 
-    public Car(CarduinoService carduino, VariableStore variableStore) {
-        this.carduino = carduino;
+    public Car(UsbService usbService, VariableStore variableStore) {
+        this.usbService = usbService;
         this.variableStore = variableStore;
     }
 
@@ -157,7 +161,9 @@ public class Car implements CarduinoService.PacketHandler<SerialCanPacket> {
 
     private void registerCarData(int canId, CarDataParser parser) {
         this.data.put(canId, parser);
-        this.carduino.enableCarData(canId, parser.getByteMask());
+        for (CarduinoSerialDevice device : this.usbService.getCarDevices()) {
+            device.requestCarData(canId, parser.getByteMask());
+        }
         Variable[] variables = parser.getVariables();
         for (Variable variable : variables) {
             this.variableStore.registerVariable(variable);
@@ -165,8 +171,7 @@ public class Car implements CarduinoService.PacketHandler<SerialCanPacket> {
     }
 
     @Override
-    public void handleSerialPacket(@NonNull SerialCanPacket packet) {
-        Log.e("CarData", packet.payloadAsHexString());
+    public void onReceive(CanPacket packet) {
         long packetCanId = packet.getCanId();
         CarDataParser data = this.data.get(packetCanId);
         if (data != null) {
@@ -174,11 +179,6 @@ public class Car implements CarduinoService.PacketHandler<SerialCanPacket> {
         } else {
             Log.w("CarData", "Can id \"" + packetCanId + "\" has no parser!");
         }
-    }
-
-    @Override
-    public boolean shouldHandlePacket(@NonNull SerialPacket packet) {
-        return packet instanceof SerialCanPacket;
     }
 
     public long[] getUsedCanIds() {
