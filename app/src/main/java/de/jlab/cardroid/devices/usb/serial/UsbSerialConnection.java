@@ -107,8 +107,6 @@ public final class UsbSerialConnection {
             this.connection = null;
         }
 
-        this.device = null;
-
         this.isConnected = false;
 
         for (SerialConnectionListener listener : listeners) {
