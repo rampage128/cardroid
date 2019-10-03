@@ -11,7 +11,7 @@ import de.jlab.cardroid.gps.GpsDataProvider;
 
 public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialReader> {
 
-    private GpsPositionParser positionParser;
+    private GpsPositionParser positionParser = new GpsPositionParser();
 
     public GpsUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull DeviceService service) {
         super(device, defaultBaudrate, service);
@@ -19,8 +19,6 @@ public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialR
 
     @Override
     protected GpsSerialReader onConnect() {
-        this.positionParser = new GpsPositionParser();
-
         GpsSerialReader reader = new GpsSerialReader();
         reader.addSerialPacketListener(this.positionParser);
         return reader;
