@@ -24,7 +24,7 @@ import android.widget.Toast;
 import java.util.List;
 
 import androidx.appcompat.app.ActionBar;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.devices.DeviceService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -38,15 +38,16 @@ import de.jlab.cardroid.usb.carduino.CarduinoService;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    //private static CarduinoService.MainServiceBinder mainService;
 
-    private ServiceConnection mainServiceConnection = new ServiceConnection() {
+    private DeviceService.DeviceServiceBinder deviceService;
+
+    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            //mainService = (CarduinoService.MainServiceBinder)service;
+            deviceService = (DeviceService.DeviceServiceBinder)service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            //mainService = null;
+            deviceService = null;
         }
     };
 
@@ -119,18 +120,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        startMainService();
-        getApplicationContext().bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+
+        getApplicationContext().bindService(new Intent(this, DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        /*
-        if (mainService != null) {
-            getApplicationContext().unbindService(this.mainServiceConnection);
-        }
-         */
+
+        getApplicationContext().unbindService(this.deviceServiceConnection);
     }
 
     /**
@@ -144,20 +142,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private void startMainService() {
-        startService(new Intent(SettingsActivity.this, CarduinoService.class));
-    }
-
     private void showOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
-        overlayIntent.putExtra("command", "show_overlay");
-        startService(overlayIntent);
+        this.deviceService.showOverlay();
     }
 
     private void hideOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
-        overlayIntent.putExtra("command", "hide_overlay");
-        startService(overlayIntent);
+        this.deviceService.hideOverlay();
     }
 
     /**

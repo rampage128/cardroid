@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.util.SparseArray;
 
-import java.security.Provider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -181,6 +180,14 @@ public final class DeviceService extends Service {
         @NonNull
         public RuleHandler getRuleHandler() {
             return DeviceService.this.ruleHandler;
+        }
+
+        public void showOverlay() {
+            // TODO implement overlay functions
+        }
+
+        public void hideOverlay() {
+            // TODO implement overlay functions
         }
     }
 
