@@ -5,6 +5,7 @@ import android.hardware.usb.UsbDevice;
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketParser;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
@@ -51,7 +52,7 @@ public final class CarduinoUsbDeviceDetector extends UsbSerialDeviceDetector {
     private class CarduinoDetectionParser extends CarduinoPacketParser {
         @Override
         protected boolean shouldHandlePacket(CarduinoSerialPacket packet) {
-            return packet.getPacketType() == CarduinoSerialPacket.PACKETID_META && packet.getPacketId() == 0x00;
+            return CarduinoPacketType.META.equals(packet.getPacketType()) && packet.getPacketId() == 0x00;
         }
 
         @Override
