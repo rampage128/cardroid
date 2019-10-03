@@ -57,7 +57,7 @@ public final class CarduinoUsbDeviceDetector extends UsbSerialDeviceDetector {
 
         @Override
         protected void handlePacket(CarduinoSerialPacket packet) {
-            CarduinoUsbDeviceDetector.this.deviceDetected((char)packet.readByte(0));
+            CarduinoUsbDeviceDetector.this.deviceDetected((char)packet.readByte(3));
         }
     }
 }
