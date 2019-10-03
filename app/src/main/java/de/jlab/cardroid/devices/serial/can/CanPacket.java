@@ -1,34 +1,23 @@
 package de.jlab.cardroid.devices.serial.can;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.BitSet;
 
 public class CanPacket {
 
     private long canId = 0;
-    private BitSet bits;
     private byte[] data;
 
     public CanPacket(long canId, byte[] data) {
         this.canId = canId;
         this.data = data;
-
-        // BitSet wants to be initialized with an array in Little Endian.
-        // reverse the array
-        byte[] reversed = new byte[data.length];
-        for (int i = 0; i < data.length; i++) {
-            reversed[i] = data[data.length - 1 - i];
-        }
-        this.bits = BitSet.valueOf(reversed);
     }
 
     public void updateData(byte[] data) {
-        this.bits = BitSet.valueOf(data);
+        this.data = data;
     }
 
     public int getDataLength() {
-        return this.bits.length()/8;
+        return this.data.length;
     }
 
     public long getCanId() {
@@ -43,50 +32,28 @@ public class CanPacket {
         return this.read(startBit, bitLength, ByteOrder.LITTLE_ENDIAN);
     }
 
-
-    private long read(int start, int length, ByteOrder order) {
-        BitSet readValue = this.bits.get(start, start + length);
-        ByteBuffer bytes = ByteBuffer.wrap(readValue.toByteArray());
-        // bytes are in Little Endian. But because we've swapped endianness in the intialized
-        // we need to invert endianness here.
-        if (order == ByteOrder.LITTLE_ENDIAN) {
-            bytes.order(ByteOrder.BIG_ENDIAN);
-        } else {
-            bytes.order(ByteOrder.LITTLE_ENDIAN);
-        }
-
-        if (length <= 8) {
-            return bytes.get();
-        } else if (length <= 16) {
-            return bytes.getShort();
-        } else if (length <= 32) {
-            return bytes.getInt();
-        } else {
-            return bytes.getLong();
-        }
-    }
-
-    public long readOriginal(int startBit, int bitLength, ByteOrder order) {
+    private long read(int startBit, int bitLength, ByteOrder order) {
         long result = 0;
-        int currentByte = (int)Math.floor((startBit + 1) / 8f);
+        int currentByte = startBit / 8;
         int currentBit;
 
-        for (int i = startBit; i < startBit + bitLength; i++) {
+        for (int i = startBit; i < startBit + bitLength;) {
             // get the offset bit index in current data byte
             int offsetBit = i % 8;
-            // Retrieve byte for bit-index from data array
-            if (offsetBit == 0) {
-                currentByte = (int)Math.floor((i + 1) / 8f);
-                // TODO make readBigEndian shift whole bytes to make a little endian version
+            // Calculate how many bits can we read simultaneously
+            byte bitSize = (byte) (Math.min(8, bitLength + startBit - i) - offsetBit);
+            currentByte = i / 8;
+            if (bitSize == 8) {
+                // fast path
+                result <<= 8;
+                result  |= this.data[currentByte] & 0xFF;
+            } else {
+                result <<= bitSize;
+                // offset the chunk we are interested in, then mask it
+                result |= (byte)((this.data[currentByte] >> (8 - bitSize - offsetBit)) & (( 1 << bitSize ) - 1));
             }
 
-            result <<= 1;
-
-            // transfer current bit if 1
-            currentBit = (this.data[currentByte] >> (7 - offsetBit)) & 0x01;
-            if (currentBit != 0) {
-                result |= 0x01;
-            }
+            i += bitSize;
         }
 
         if (order == ByteOrder.LITTLE_ENDIAN) {
