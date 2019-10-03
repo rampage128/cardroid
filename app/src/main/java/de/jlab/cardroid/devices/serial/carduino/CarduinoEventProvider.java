@@ -12,6 +12,14 @@ import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
 public final class CarduinoEventProvider extends DeviceDataProvider<CarduinoUsbDeviceHandler> {
 
+    private ArrayList<CarduinoEventParser.EventListener> externalListeners = new ArrayList<>();
+
+    private CarduinoEventParser.EventListener listener = eventNum -> {
+        for (int i = 0; i < this.externalListeners.size(); i++) {
+            this.externalListeners.get(i).onEvent(eventNum);
+        }
+    };
+
     public CarduinoEventProvider(@NonNull DeviceService service) {
         super(service);
     }
@@ -30,19 +38,28 @@ public final class CarduinoEventProvider extends DeviceDataProvider<CarduinoUsbD
         }
     }
 
+    public void subscribe(CarduinoEventParser.EventListener listener) {
+        this.externalListeners.add(listener);
+    }
+
+    public void unsubscribe(CarduinoEventParser.EventListener listener) {
+        this.externalListeners.remove(listener);
+    }
+
     @Override
     protected void onUpdate(@NonNull CarduinoUsbDeviceHandler previousDevice, @NonNull CarduinoUsbDeviceHandler newDevice, @NonNull DeviceService service) {
-
+        previousDevice.removeEventListener(this.listener);
+        newDevice.addEventListener(this.listener);
     }
 
     @Override
     protected void onStop(@NonNull CarduinoUsbDeviceHandler device, @NonNull DeviceService service) {
-
+        device.removeEventListener(this.listener);
     }
 
     @Override
     protected void onStart(@NonNull CarduinoUsbDeviceHandler device, @NonNull DeviceService service) {
-
+        device.addEventListener(this.listener);
     }
 
 }

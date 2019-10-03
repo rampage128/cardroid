@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
+import de.jlab.cardroid.errors.ErrorDataProvider;
 import de.jlab.cardroid.gps.GpsDataProvider;
 
 public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
@@ -24,12 +26,6 @@ public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
         }
         return connectedDevices;
     }
-
-    /*
-    public boolean isConnected() {
-        return this.device != null && this.device.isConnected();
-    }
-     */
 
     public void start(@NonNull DeviceType device) {
         // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
@@ -76,6 +72,12 @@ public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
         }
         if (providerType.equals(CanDataProvider.class)) {
             return new CanDataProvider(service);
+        }
+        if (providerType.equals(CarduinoEventProvider.class)) {
+            return new CarduinoEventProvider(service);
+        }
+        if (providerType.equals(ErrorDataProvider.class)) {
+            return new ErrorDataProvider(service);
         }
 
         throw new IllegalArgumentException("Provider \"" + providerType.getSimpleName() + "\" is not registered in DeviceDataProvider.");
