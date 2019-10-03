@@ -29,7 +29,6 @@ public final class CarduinoUsbDeviceDetector extends UsbSerialDeviceDetector {
         this.reader.addSerialPacketListener(this.parser);
         this.dummyDevice = new CarduinoDummyDeviceHandler(this.reader, device, 115200, service);
 
-
         return this.dummyDevice.connectDevice();
     }
 
@@ -39,6 +38,7 @@ public final class CarduinoUsbDeviceDetector extends UsbSerialDeviceDetector {
     }
 
     private void deviceDetected(char deviceType) {
+        this.dummyDevice.disconnectDevice();
         switch (deviceType) {
             case 'L':
                 this.deviceDetected(new CarduinoLegacyDeviceHandler(this.device, 115200, this.service));
