@@ -17,8 +17,8 @@ public final class GpsUsbDeviceDetector extends UsbSerialDeviceDetector {
 
     @Override
     public boolean startSerialIdentification(@NonNull UsbDevice device, @NonNull DeviceService service) {
-        this.gps.addPositionListener(this.positionListener);
         this.gps = new GpsUsbDeviceHandler(device, 4800, service);
+        this.gps.addPositionListener(this.positionListener);
         return this.gps.connectDevice();
     }
 
