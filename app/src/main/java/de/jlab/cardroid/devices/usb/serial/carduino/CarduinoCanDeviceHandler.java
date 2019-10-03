@@ -1,12 +1,18 @@
 package de.jlab.cardroid.devices.usb.serial.carduino;
 
 import android.hardware.usb.UsbDevice;
+import android.util.Log;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.car.CanPacketDescriptor;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoCanParser;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.errors.ErrorDataProvider;
 
@@ -18,12 +24,52 @@ public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler imp
         super(device, defaultBaudrate, service);
     }
 
-    public void addCanListener(CarduinoCanParser.CanPacketListener listener) {
+    @Override
+    public void addCanListener(CanPacketListener listener) {
         this.canParser.addCanListener(listener);
     }
 
-    public void removeCanListener(CarduinoCanParser.CanPacketListener listener) {
+    @Override
+    public void removeCanListener(CanPacketListener listener) {
         this.canParser.removeCanListener(listener);
+    }
+
+    @Override
+    public void registerCanId(CanPacketDescriptor descriptor) {
+        byte[] payload = ByteBuffer.allocate(5).putInt((int)descriptor.getCanId()).put(descriptor.getByteMask()).array();
+        try {
+            this.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Error registering can id " + String.format("%02x", descriptor.getCanId()) + " with device " + this.getDeviceId() + ".");
+        }
+    }
+
+    @Override
+    public void unregisterCanId(CanPacketDescriptor descriptor) {
+        byte[] payload = ByteBuffer.allocate(5).putInt((int)descriptor.getCanId()).put((byte)0x00).array();
+        try {
+            this.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Error unregistering can id " + String.format("%02x", descriptor.getCanId()) + " from device " + this.getDeviceId() + ".");
+        }
+    }
+
+    @Override
+    public void startSniffer() {
+        try {
+            this.send(CarduinoMetaType.createPacket(CarduinoMetaType.START_SNIFFING, null));
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Error starting can sniffer for device " + this.getDeviceId() + ".");
+        }
+    }
+
+    @Override
+    public void stopSniffer() {
+        try {
+            this.send(CarduinoMetaType.createPacket(CarduinoMetaType.STOP_SNIFFING, null));
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Error stopping can sniffer for device " + this.getDeviceId() + ".");
+        }
     }
 
     @Override

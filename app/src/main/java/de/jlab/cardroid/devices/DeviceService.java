@@ -11,8 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.util.SparseArray;
 
-import com.google.android.gms.common.util.DeviceProperties;
-
+import java.security.Provider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -28,6 +27,7 @@ import de.jlab.cardroid.gps.GpsDataProvider;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
+import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.VariableStore;
 
 
@@ -42,6 +42,7 @@ public final class DeviceService extends Service {
 
     private RuleHandler ruleHandler;
     private VariableStore variableStore;
+    private ScriptEngine scriptEngine = new ScriptEngine();
 
     @Override
     public void onCreate() {
@@ -89,6 +90,11 @@ public final class DeviceService extends Service {
 
         this.variableStore.dispose();
         this.ruleHandler = null;
+    }
+
+    @NonNull
+    public ScriptEngine getScriptEngine() {
+        return this.scriptEngine;
     }
 
     @NonNull

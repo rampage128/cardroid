@@ -47,6 +47,22 @@ public class Variable implements ObservableValue.ValueObserver {
         this.listeners.clear();
     }
 
+    public static Variable createFromExpression(@NonNull String name, @NonNull String expressionString, @NonNull ObservableValue value, @NonNull ObservableValue maxValue, @NonNull ScriptEngine engine) {
+        ObservableValue targetValue = value;
+        if (expressionString.trim().length() > 0 && !expressionString.trim().equals("value")) {
+            Expression expression = engine.createExpression(expressionString, null, name);
+            expression.addVariable("value", value);
+            expression.addVariable("max", maxValue);
+            targetValue = expression;
+        }
+
+        return new Variable(name, targetValue);
+    }
+
+    public static Variable createPlain(@NonNull String name, @NonNull ObservableValue value) {
+        return new Variable(name, value);
+    }
+
     @Override
     public void onChange(Object oldValue, Object newValue) {
         for (int i = 0; i < this.listeners.size(); i++) {
