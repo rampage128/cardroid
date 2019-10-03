@@ -1,6 +1,5 @@
 package de.jlab.cardroid.devices;
 
-import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
@@ -50,7 +49,7 @@ public final class DeviceService extends Service {
         this.variableStore = new VariableStore();
 
         try {
-            this.ruleHandler = new getRulesTask(getApplication()).execute().get();
+            this.ruleHandler = new getRulesTask().execute(this).get();
         } catch (ExecutionException | InterruptedException e) {
             Log.e(this.getClass().getSimpleName(), "Error creating RuleHandler", e);
         }
@@ -88,6 +87,8 @@ public final class DeviceService extends Service {
         super.onDestroy();
 
         this.variableStore.dispose();
+        this.variableStore = null;
+        this.ruleHandler.dispose();
         this.ruleHandler = null;
     }
 
@@ -207,20 +208,14 @@ public final class DeviceService extends Service {
     };
 
     // TODO: Rules are not part of devices. This should find it's own place
-    private static class getRulesTask extends AsyncTask<Void, Void, RuleHandler> {
-
-        private Application application;
-
-        public getRulesTask(Application application) {
-            this.application = application;
-        }
-
+    private static class getRulesTask extends AsyncTask<DeviceService, Void, RuleHandler> {
         @Override
-        protected RuleHandler doInBackground(Void... voids) {
-            EventRepository eventRepo = new EventRepository(this.application);
+        protected RuleHandler doInBackground(DeviceService... services) {
+            DeviceService service = services[0];
+            EventRepository eventRepo = new EventRepository(service.getApplication());
             List<RuleDefinition> rules = eventRepo.getAllRules();
 
-            RuleHandler ruleHandler = new RuleHandler(this.application);
+            RuleHandler ruleHandler = new RuleHandler(service);
             ruleHandler.updateRuleDefinitions(rules);
             return ruleHandler;
         }

@@ -16,12 +16,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
+import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.ActionRepository;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
 
 public class RuleActivity extends AppCompatActivity implements FragmentActionListener {
 
@@ -30,14 +30,14 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     private int eventId = 0;
     private Fragment activeFragment;
 
-    //private CarduinoService.MainServiceBinder serviceBinder;
+    private DeviceService.DeviceServiceBinder serviceBinder;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            //RuleActivity.this.serviceBinder = (CarduinoService.MainServiceBinder)service;
+            RuleActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder)service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            //RuleActivity.this.serviceBinder = null;
+            RuleActivity.this.serviceBinder = null;
         }
     };
 
@@ -77,7 +77,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, CarduinoService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -113,10 +113,8 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
 
     @Override
     public void onEventChange(int command, EventEntity eventEntity) {
-        switch (command) {
-            case COMMAND_EDIT:
-                showEventDetails(eventEntity.identifier);
-                break;
+        if (command == COMMAND_EDIT) {
+            showEventDetails(eventEntity.identifier);
         }
     }
 
@@ -144,10 +142,8 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
 
     @Override
     public void onRuleChange(int command, RuleDefinition ruleDefinition) {
-        switch (command) {
-            case COMMAND_UPDATED:
-                //this.serviceBinder.updateRule(ruleDefinition);
-                break;
+        if (command == COMMAND_UPDATED) {
+            this.serviceBinder.getRuleHandler().updateRuleDefinition(ruleDefinition);
         }
     }
 

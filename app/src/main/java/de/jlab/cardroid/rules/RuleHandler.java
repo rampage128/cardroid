@@ -7,21 +7,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
 
-public final class RuleHandler implements CarduinoSerialDevice.PacketHandler<SerialEventPacket> {
+public final class RuleHandler {
 
     private Application application;
+    private CarduinoEventProvider eventProvider;
 
     private KnownEvents knownEvents;
     private SparseArray<Rule> rules = new SparseArray<>();
 
-    public RuleHandler(Application application) {
-        this.application = application;
+    public RuleHandler(@NonNull DeviceService service) {
+        this.application = service.getApplication();
         this.knownEvents = new KnownEvents(application);
+        this.eventProvider = service.getDeviceProvider(CarduinoEventProvider.class);
+        if (this.eventProvider != null) {
+            this.eventProvider.subscribe(this::triggerRule);
+        }
     }
 
     public void triggerRule(int eventIdentifier) {
@@ -50,17 +57,7 @@ public final class RuleHandler implements CarduinoSerialDevice.PacketHandler<Ser
         return event;
     }
 
-    @Override
-    public void handleSerialPacket(@NonNull SerialEventPacket packet) {
-        this.triggerRule(packet.getId());
-    }
-
-    @Override
-    public boolean shouldHandlePacket(@NonNull SerialPacket packet) {
-        return packet instanceof SerialEventPacket;
-    }
-
-    public void updateRuleDefinition(RuleDefinition ruleDefinition) {
+    public void updateRuleDefinition(@NonNull RuleDefinition ruleDefinition) {
         if (ruleDefinition.actions == null || ruleDefinition.actions.isEmpty()) {
             this.rules.remove(ruleDefinition.event.identifier);
             return;
@@ -76,22 +73,16 @@ public final class RuleHandler implements CarduinoSerialDevice.PacketHandler<Ser
         this.rules.put(ruleDefinition.event.identifier, rule);
     }
 
-    public void updateRuleDefinitions(List<RuleDefinition> definitions) {
+    public void updateRuleDefinitions(@NonNull List<RuleDefinition> definitions) {
         this.rules.clear();
 
         for (RuleDefinition definition : definitions) {
-            if (definition.actions == null || definition.actions.isEmpty()) {
-                continue;
-            }
-            Event event = new Event(definition.event.identifier);
-            List<Action> actions = new ArrayList<>();
-            for (ActionEntity actionEntity : definition.actions) {
-                Action action = Action.createFromEntity(actionEntity);
-                actions.add(action);
-            }
-            Rule rule = new Rule(new Trigger(event), actions.toArray(new Action[0]));
-            this.rules.put(definition.event.identifier, rule);
+            this.updateRuleDefinition(definition);
         }
+    }
+
+    public void dispose() {
+        this.eventProvider.unsubscribe(this::triggerRule);
     }
 
 }
