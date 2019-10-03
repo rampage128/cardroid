@@ -1,7 +1,6 @@
 package de.jlab.cardroid.car;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.serial.can.CanPacket;
 import de.jlab.cardroid.variables.ObservableValue;
 
@@ -11,9 +10,9 @@ public class CanValue extends ObservableValue {
         // FIXME implement methods to read various types of data into CanPacket
         BIG_ENDIAN((bitIndex, bitLength, packet) -> packet.readBigEndian(bitIndex, bitLength)),
         LITTLE_ENDIAN((bitIndex, bitLength, packet) -> packet.readLittleEndian(bitIndex, bitLength)),
-        STRING((bitIndex, bitLength, packet) -> null),
-        FLAG((bitIndex, bitLength, packet) -> packet.readBigEndian(bitIndex, bitLength)),
-        BYTES((bitIndex, bitLength, packet) -> null);
+        STRING((bitIndex, bitLength, packet) -> new String(packet.readBytes(bitIndex, bitLength))),
+        FLAG((bitIndex, bitLength, packet) -> packet.readFlag(bitIndex)),
+        BYTES((bitIndex, bitLength, packet) -> packet.readBytes(bitIndex, bitLength));
 
         private DataTypeReader reader;
 

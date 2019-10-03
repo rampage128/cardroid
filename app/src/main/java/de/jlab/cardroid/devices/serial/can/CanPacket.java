@@ -1,6 +1,7 @@
 package de.jlab.cardroid.devices.serial.can;
 
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class CanPacket {
 
@@ -70,6 +71,19 @@ public class CanPacket {
         }
 
         return result;
+    }
+
+    // TODO: Might be nice to be able to read complex flags using bitIndex, bitLength and a mask to compare?
+    public long readFlag(int bitIndex) {
+        return this.readBigEndian(bitIndex, 1);
+    }
+
+    // TODO: Maybe we should zero the bits that are outside of startBit and and startBit + bitLength?
+    public byte[] readBytes(int startBit, int bitLength) {
+        int startByte = startBit / 8;
+        int endByte = startBit + bitLength / 8;
+
+        return Arrays.copyOfRange(this.data, startByte, endByte);
     }
 
     public byte[] getData() {
