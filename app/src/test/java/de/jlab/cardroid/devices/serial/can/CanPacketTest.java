@@ -116,11 +116,12 @@ class CanPacketBenchmark {
             currentByte = i / 8;
             if (bitSize == 8) {
                 // fast path
-                result = result << 8 | this.data[currentByte];
+                result <<= 8;
+                result  |= this.data[currentByte] & 0xFF;
             } else {
                 result <<= bitSize;
-                // offset the chunk we are interested in, then mask the whole thing
-                result |= (byte)((this.data[currentByte] >> (bitSize - offsetBit)) & (( 1 << bitSize ) - 1));
+                // offset the chunk we are interested in, then mask it
+                result |= (byte)((this.data[currentByte] >> (8 - bitSize - offsetBit)) & (( 1 << bitSize ) - 1));
             }
 
             i += bitSize;
