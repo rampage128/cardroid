@@ -3,6 +3,12 @@ package de.jlab.cardroid.devices.serial.carduino;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+/**
+ * @Deprecated Hardcoded event types are part of the LegacyDevice. The possible events should
+ * be broadcasted by the device on handshake and then made available as an option in the user
+ * interface when designing custom screens.
+ */
+@Deprecated
 public enum CarduinoEventType {
     CC_OFF_BUTTON(0x01),
     CC_AC_BUTTON(0x02),
