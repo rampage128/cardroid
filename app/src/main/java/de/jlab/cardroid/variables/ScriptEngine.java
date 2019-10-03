@@ -1,11 +1,7 @@
 package de.jlab.cardroid.variables;
 
-import android.util.Log;
-
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
-
-import java.util.Objects;
 
 public class ScriptEngine {
 
