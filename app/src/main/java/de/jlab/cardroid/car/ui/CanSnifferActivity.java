@@ -9,9 +9,10 @@ import android.os.IBinder;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
 import de.jlab.cardroid.devices.serial.can.CanPacket;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.utils.UsageStatistics;
 
@@ -25,6 +26,8 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanDe
     private TextView packetStatText;
     private CanView canView;
 
+    private CanDataProvider can = null;
+
     private UsageStatistics.UsageStatisticsListener bandWidthStatListener = new UsageStatistics.UsageStatisticsListener() {
         @Override
         public void onInterval(final int count, final UsageStatistics statistics) {
@@ -32,12 +35,7 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanDe
             final int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
             final int currentUsage = count > 0 ? Math.round(100f / (115200 * 0.125f) * count) : 0;
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    bandwidthStatText.setText(getString(R.string.car_stats_bandwidth, count, averageValue, averageReliability, currentUsage));
-                }
-            });
+            runOnUiThread(() -> bandwidthStatText.setText(getString(R.string.car_stats_bandwidth, count, averageValue, averageReliability, currentUsage)));
         }
     };
     private UsageStatistics.UsageStatisticsListener packetStatListener = new UsageStatistics.UsageStatisticsListener() {
@@ -46,38 +44,28 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanDe
             final int averageValue = Math.round(statistics.getAverage());
             final int averageReliability = Math.round(statistics.getAverageReliability() * 100f);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    packetStatText.setText(getString(R.string.car_stats_packets, count, averageValue, averageReliability));
-                }
-            });
+            runOnUiThread(() -> packetStatText.setText(getString(R.string.car_stats_packets, count, averageValue, averageReliability)));
         }
     };
 
-
-    //private static CarduinoService.MainServiceBinder mainService;
-
-    private ServiceConnection mainServiceConnection = new ServiceConnection() {
+    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            /*
-            mainService = (CarduinoService.MainServiceBinder)service;
-            mainService.startCanSniffer();
-            mainService.addBandwidthStatisticsListener(bandWidthStatListener);
-            mainService.addPacketStatisticsListener(packetStatListener);
-            mainService.addSerialPacketListener(CanSnifferActivity.this);
-
-             */
+            DeviceService.DeviceServiceBinder binder = (DeviceService.DeviceServiceBinder)service;
+            CanSnifferActivity.this.can = binder.getDeviceProvider(CanDataProvider.class);
+            if (CanSnifferActivity.this.can != null) {
+                CanSnifferActivity.this.can.startCanSniffer();
+                CanSnifferActivity.this.can.addExternalListener(CanSnifferActivity.this);
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            //mainService = null;
+            CanSnifferActivity.this.can = null;
         }
     };
 
     @Override
     public void onReceive(CanPacket packet) {
-        this.runOnUiThread(() -> this.canView.updatePacket((CanPacket)packet));
+        this.runOnUiThread(() -> this.canView.updatePacket(packet));
     }
 
     @Override
@@ -99,21 +87,18 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanDe
     protected void onPause() {
         super.onPause();
         this.canView.stopLiveMode();
-        /*
-        if (mainService != null) {
-            mainService.stopCanSniffer();
-            mainService.removeBandwidthStatisticsListener(this.bandWidthStatListener);
-            mainService.removePacketStatisticsListener(this.packetStatListener);
-            mainService.removeSerialPacketListener(CanSnifferActivity.this);
-            unbindService(this.mainServiceConnection);
+
+        if (this.can != null) {
+            this.can.stopCanSniffer();
+            this.can.removeExternalListener(this);
         }
-         */
+        this.unbindService(this.deviceServiceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
 
         this.canView.startLiveMode();
     }
