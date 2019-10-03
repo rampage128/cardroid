@@ -230,7 +230,6 @@ public class CanPacketTest {
 
     void optimizedImplementationBig() {
         CanPacketBenchmark p = new CanPacketBenchmark(0, testBytes);
-        byte s = (byte)0B00000011;
         ByteBuffer bytes = ByteBuffer.wrap(shortOffset4);
         bytes.order(ByteOrder.BIG_ENDIAN);
         short expectedResult = bytes.getShort();
