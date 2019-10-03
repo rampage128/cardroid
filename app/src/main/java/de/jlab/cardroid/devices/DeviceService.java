@@ -22,6 +22,7 @@ import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
 import de.jlab.cardroid.gps.GpsDataProvider;
+import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
@@ -41,11 +42,13 @@ public final class DeviceService extends Service {
     private RuleHandler ruleHandler;
     private VariableStore variableStore;
     private ScriptEngine scriptEngine = new ScriptEngine();
+    private OverlayWindow overlay;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        this.overlay = new OverlayWindow(this);
         this.variableStore = new VariableStore();
 
         try {
@@ -120,6 +123,14 @@ public final class DeviceService extends Service {
         return this.variableStore;
     }
 
+    public void showOverlay() {
+        DeviceService.this.overlay.create();
+    }
+
+    public void hideOverlay() {
+        DeviceService.this.overlay.destroy();
+    }
+
     private void usbDeviceAttached(@NonNull UsbDevice device) {
         this.deviceIdentificationTask.identify(device);
     }
@@ -188,11 +199,11 @@ public final class DeviceService extends Service {
         }
 
         public void showOverlay() {
-            // TODO implement overlay functions
+            DeviceService.this.overlay.create();
         }
 
         public void hideOverlay() {
-            // TODO implement overlay functions
+            DeviceService.this.overlay.destroy();
         }
     }
 

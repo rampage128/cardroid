@@ -305,11 +305,13 @@ public final class CanDataProvider extends DeviceDataProvider<CanDeviceHandler> 
     @Override
     protected void onStop(@NonNull CanDeviceHandler device, @NonNull DeviceService service) {
         this.deviceRemoved(device);
+        this.service.hideOverlay();
     }
 
     @Override
     protected void onStart(@NonNull CanDeviceHandler device, @NonNull DeviceService service) {
         this.deviceAdded(device);
+        this.service.showOverlay();
     }
 
 }
