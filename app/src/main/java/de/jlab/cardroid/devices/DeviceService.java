@@ -105,7 +105,11 @@ public final class DeviceService extends Service {
     @Nullable
     public <ProviderType extends DeviceDataProvider> ProviderType getDeviceProvider(@NonNull Class<ProviderType> type) {
         DeviceDataProvider provider = DeviceService.this.dataProviders.get(type);
-        if (provider != null && type.isInstance(provider)) {
+        if (provider == null) {
+            provider = DeviceDataProvider.createFrom(type, this);
+            DeviceService.this.dataProviders.put(type, provider);
+        }
+        if (type.isInstance(provider)) {
             return type.cast(provider);
         }
         return null;
