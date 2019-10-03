@@ -15,7 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.R;
 
-public class DeviceConnectionActivity extends AppCompatActivity {
+public final class DeviceConnectionActivity extends AppCompatActivity {
     private static final String ACTION_USB_PERMISSION  = "de.jlab.cardroid.USB_PERMISSION";
     private static final String LOG_TAG = "UsbStatus";
 
