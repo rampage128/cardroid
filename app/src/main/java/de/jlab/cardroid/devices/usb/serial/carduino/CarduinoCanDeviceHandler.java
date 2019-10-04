@@ -2,6 +2,7 @@ package de.jlab.cardroid.devices.usb.serial.carduino;
 
 import android.hardware.usb.UsbDevice;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -19,6 +20,8 @@ import de.jlab.cardroid.errors.ErrorDataProvider;
 public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler implements CanDeviceHandler {
 
     private CarduinoCanParser canParser;
+    private LongSparseArray<Byte> canIdRequests = new LongSparseArray<>();
+    private boolean isHandshakeComplete = false;
 
     public CarduinoCanDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull DeviceService service) {
         super(device, defaultBaudrate, service);
@@ -36,23 +39,37 @@ public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler imp
 
     @Override
     public void registerCanId(CanPacketDescriptor descriptor) {
-        byte[] payload = ByteBuffer.allocate(5).putInt((int)descriptor.getCanId()).put(descriptor.getByteMask()).array();
-        try {
-            this.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
-        } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Error registering can id " + String.format("%02x", descriptor.getCanId()) + " with device " + this.getDeviceId() + ".");
+        if (this.isHandshakeComplete) {
+            this.sendCanIdRequest(descriptor.getCanId(), descriptor.getByteMask());
+        } else {
+            this.canIdRequests.put(descriptor.getCanId(), descriptor.getByteMask());
         }
     }
 
     @Override
     public void unregisterCanId(CanPacketDescriptor descriptor) {
-        byte[] payload = ByteBuffer.allocate(5).putInt((int)descriptor.getCanId()).put((byte)0x00).array();
+        if (this.isHandshakeComplete) {
+            this.sendCanIdRequest(descriptor.getCanId(), (byte)0x00);
+        } else {
+            this.canIdRequests.put(descriptor.getCanId(), (byte)0x00);
+        }
+    }
+
+    private void sendCanIdRequest(long canId, byte mask) {
+        byte[] payload = ByteBuffer.allocate(5).putInt((int)canId).put(mask).array();
         try {
             Log.e(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.getDeviceId() + ".");
             this.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Error unregistering can id " + String.format("%02x", descriptor.getCanId()) + " from device " + this.getDeviceId() + ".");
+            Log.e(this.getClass().getSimpleName(), "Error sending can id request " + String.format("%02x", canId) + " to device " + this.getDeviceId() + ".");
         }
+    }
+
+    private void sendPendingCanIdRequests() {
+        for (int i = 0; i < this.canIdRequests.size(); i++) {
+            this.sendCanIdRequest(this.canIdRequests.keyAt(i), this.canIdRequests.valueAt(i));
+        }
+        this.canIdRequests.clear();
     }
 
     @Override
@@ -83,13 +100,15 @@ public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler imp
     protected void onDisconnectCarduino(CarduinoSerialReader reader) {
         reader.removeSerialPacketListener(this.canParser);
         this.canParser = null;
+        this.isHandshakeComplete = false;
         // TODO TRIGGER EVENT FOR DISCONNECT OF CAN DEVICE
     }
 
     @Override
     public void onHandshake(CarduinoSerialReader reader) {
-        // FIXME: requested can packets should probably be sent to the device here
         reader.addSerialPacketListener(this.canParser);
+        this.isHandshakeComplete = true;
+        this.sendPendingCanIdRequests();
     }
 
     @Override
