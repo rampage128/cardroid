@@ -54,12 +54,13 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
             String defaultBaudRateString = String.valueOf(device.getDefaultBaudrate());
             String baudRateString = prefs.getString("car_baud_rate", defaultBaudRateString);
             int baudRate = Integer.valueOf(baudRateString != null ? baudRateString : defaultBaudRateString);
-             */
+        FIXME: baud rate request is not available until baud-rate configuration is fixed
         try {
             this.device.send(PACKET_BAUD_RATE_REQUEST);
         } catch (IOException e) {
             Log.e(this.getClass().getSimpleName(), "Error sending baud rate request", e);
         }
+             */
     }
 
     private void requestConnection(CarduinoSerialPacket sourcePacket) {
