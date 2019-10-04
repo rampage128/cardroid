@@ -4,11 +4,13 @@ import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.car.CanPacketDescriptor;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.errors.ErrorDataProvider;
 
-public final class CarduinoLegacyDeviceHandler extends CarduinoUsbDeviceHandler {
+public final class CarduinoLegacyDeviceHandler extends CarduinoUsbDeviceHandler implements CanDeviceHandler {
 
     private CarduinoPowerDeviceHandler powerDevice;
     private CarduinoCanDeviceHandler canDevice;
@@ -45,6 +47,36 @@ public final class CarduinoLegacyDeviceHandler extends CarduinoUsbDeviceHandler 
     public void onHandshake(CarduinoSerialReader reader) {
         this.powerDevice.onHandshake(reader);
         this.canDevice.onHandshake(reader);
+    }
+
+    @Override
+    public void addCanListener(CanPacketListener listener) {
+        this.canDevice.addCanListener(listener);
+    }
+
+    @Override
+    public void removeCanListener(CanPacketListener listener) {
+        this.canDevice.removeCanListener(listener);
+    }
+
+    @Override
+    public void registerCanId(CanPacketDescriptor descriptor) {
+        this.canDevice.registerCanId(descriptor);
+    }
+
+    @Override
+    public void unregisterCanId(CanPacketDescriptor descriptor) {
+        this.canDevice.unregisterCanId(descriptor);
+    }
+
+    @Override
+    public void startSniffer() {
+        this.canDevice.startSniffer();
+    }
+
+    @Override
+    public void stopSniffer() {
+        this.canDevice.stopSniffer();
     }
 
     public Class<?>[] getFeatures() {

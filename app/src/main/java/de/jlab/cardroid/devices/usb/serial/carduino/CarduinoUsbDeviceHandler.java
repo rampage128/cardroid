@@ -40,6 +40,7 @@ public abstract class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Ca
         reader.addSerialPacketListener(this.metaParser);
         reader.addSerialPacketListener(this.errorParser);
         reader.addSerialPacketListener(this.eventParser);
+        this.onConnect(reader);
 
         return reader;
     }
