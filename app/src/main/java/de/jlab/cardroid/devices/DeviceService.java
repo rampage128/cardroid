@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoLegacyDeviceHandler;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
@@ -147,7 +148,14 @@ public final class DeviceService extends Service {
     }
 
     private void usbDeviceAttached(@NonNull UsbDevice device) {
-        this.deviceIdentificationTask.identify(device);
+        Log.e(this.getClass().getSimpleName(), "Device attached " + device.getDeviceId());
+
+        // FIXME: skipping device identification for testing purposes. Change this back for production
+        //this.deviceIdentificationTask.identify(device);
+        CarduinoLegacyDeviceHandler handler = new CarduinoLegacyDeviceHandler(device, 115200, this);
+        handler.connectDevice();
+        this.devices.put(device.getDeviceId(), handler);
+        this.updateDataProvider(handler);
     }
 
     private void usbDeviceDetached(@NonNull UsbDevice device) {
