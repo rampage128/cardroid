@@ -6,6 +6,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.util.SparseArray;
@@ -49,10 +50,13 @@ public final class DeviceService extends Service {
     private Timer timer = new Timer();
 
     private TimerTask disposalTask;
+    private Handler uiHandler;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        this.uiHandler = new Handler();
 
         this.overlay = new OverlayWindow(this);
         this.variableStore = new VariableStore();
@@ -97,6 +101,7 @@ public final class DeviceService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        this.overlay.destroy();
         this.variableStore.dispose();
         this.variableStore = null;
         this.ruleHandler.dispose();
@@ -132,12 +137,11 @@ public final class DeviceService extends Service {
     }
 
     public void showOverlay() {
-
-        DeviceService.this.overlay.create();
+        this.runOnUiThread(() -> this.overlay.create());
     }
 
     public void hideOverlay() {
-        DeviceService.this.overlay.destroy();
+        this.runOnUiThread(() -> this.overlay.destroy());
     }
 
     private void usbDeviceAttached(@NonNull UsbDevice device) {
@@ -172,6 +176,10 @@ public final class DeviceService extends Service {
         this.timer.purge();
         this.timer.schedule(this.disposalTask, 5000);
 
+    }
+
+    private void runOnUiThread(Runnable runnable) {
+        this.uiHandler.post(runnable);
     }
 
     private void stopDataProvider(DeviceHandler device) {
