@@ -12,6 +12,8 @@ import android.util.SparseArray;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
@@ -44,6 +46,10 @@ public final class DeviceService extends Service {
     private ScriptEngine scriptEngine = new ScriptEngine();
     private OverlayWindow overlay;
 
+    private Timer timer = new Timer();
+
+    private TimerTask disposalTask;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -63,16 +69,18 @@ public final class DeviceService extends Service {
                 new GpsUsbDeviceDetector(),
                 new CarduinoUsbDeviceDetector()
                 );
+
+        Log.e(this.getClass().getSimpleName(), DeviceService.this.toString());
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         synchronized (this) {
+            this.cancelDisposal();
             if (intent != null) {
                 if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     this.usbDeviceAttached(device);
-                    this.disposeIfEmpty();
                 }
                 if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -124,6 +132,7 @@ public final class DeviceService extends Service {
     }
 
     public void showOverlay() {
+
         DeviceService.this.overlay.create();
     }
 
@@ -145,8 +154,24 @@ public final class DeviceService extends Service {
         this.devices.remove(deviceId);
     }
 
+    private void cancelDisposal() {
+        if (this.disposalTask != null) {
+            this.disposalTask.cancel();
+        }
+    }
+
     private void disposeIfEmpty() {
-        this.stopSelf();
+        this.disposalTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (DeviceService.this.devices.size() == 0) {
+                    DeviceService.this.stopSelf();
+                }
+            }
+        };
+        this.timer.purge();
+        this.timer.schedule(this.disposalTask, 5000);
+
     }
 
     private void stopDataProvider(DeviceHandler device) {
@@ -211,6 +236,7 @@ public final class DeviceService extends Service {
         @Override
         public void deviceDetected(@NonNull DeviceHandler device) {
             if (device.connectDevice()) {
+                Log.e(this.getClass().getSimpleName(), DeviceService.this.toString());
                 DeviceService.this.devices.put(device.getDeviceId(), device);
                 DeviceService.this.updateDataProvider(device);
             }
@@ -219,6 +245,8 @@ public final class DeviceService extends Service {
         @Override
         public void detectionFailed() {
             // TODO notify user if the attached device is not supported
+            Log.e(this.getClass().getSimpleName(), "Detection of device failed!");
+            DeviceService.this.disposeIfEmpty();
         }
     };
 
