@@ -92,13 +92,13 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanDe
             this.can.stopCanSniffer();
             this.can.removeExternalListener(this);
         }
-        this.unbindService(this.deviceServiceConnection);
+        this.getApplicationContext().unbindService(this.deviceServiceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
 
         this.canView.startLiveMode();
     }

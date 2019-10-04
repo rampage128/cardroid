@@ -71,13 +71,13 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     protected void onPause() {
         super.onPause();
-        unbindService(this.serviceConnection);
+        this.getApplicationContext().unbindService(this.serviceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

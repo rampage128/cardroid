@@ -121,14 +121,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onResume() {
         super.onResume();
 
-        getApplicationContext().bindService(new Intent(this, DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        getApplicationContext().unbindService(this.deviceServiceConnection);
+        this.getApplicationContext().unbindService(this.deviceServiceConnection);
     }
 
     /**

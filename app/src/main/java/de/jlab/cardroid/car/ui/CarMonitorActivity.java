@@ -176,13 +176,13 @@ public class CarMonitorActivity extends AppCompatActivity implements CanDeviceHa
     protected void onPause() {
         super.onPause();
         CarMonitorActivity.this.packetListView.stopLiveMode();
-        unbindService(this.serviceConnection);
+        this.getApplicationContext().unbindService(this.serviceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
         if (this.bottomBar.getSelectedItemId() == R.id.action_connection) {
             CarMonitorActivity.this.packetListView.startLiveMode();
         }

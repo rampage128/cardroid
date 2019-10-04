@@ -34,7 +34,7 @@ public final class DeviceConnectionActivity extends AppCompatActivity {
                     if(device != null){
                         Intent actionIntent = DeviceConnectionActivity.this.createServiceIntent(device, UsbManager.ACTION_USB_DEVICE_ATTACHED);
                         if (actionIntent != null) {
-                            DeviceConnectionActivity.this.startService(actionIntent);
+                            DeviceConnectionActivity.this.getApplicationContext().startService(actionIntent);
                         }
                         DeviceConnectionActivity.this.finish();
                     }
@@ -92,7 +92,7 @@ public final class DeviceConnectionActivity extends AppCompatActivity {
                     }
 
                     if (actionIntent != null) {
-                        this.startService(actionIntent);
+                        this.getApplicationContext().startService(actionIntent);
                         DeviceConnectionActivity.this.finish();
                     }
                 }
@@ -101,7 +101,7 @@ public final class DeviceConnectionActivity extends AppCompatActivity {
     }
 
     private Intent createServiceIntent(UsbDevice device, String action) {
-        Intent actionIntent = new Intent(this, DeviceService.class);
+        Intent actionIntent = new Intent(this.getApplicationContext(), DeviceService.class);
         actionIntent.putExtra(UsbManager.EXTRA_DEVICE, device);
         actionIntent.setAction(action);
         return actionIntent;

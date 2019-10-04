@@ -22,10 +22,16 @@ public final class DeviceDisconnectedReceiver extends BroadcastReceiver {
     }
 
     private void disconnectDevice(UsbDevice device, Context context) {
+        Intent actionIntent = new Intent(context.getApplicationContext(), DeviceService.class);
+        actionIntent.putExtra(UsbManager.EXTRA_DEVICE, device);
+        actionIntent.setAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        context.getApplicationContext().startService(actionIntent);
+        /*
         Intent intent = new Intent(context, DeviceConnectionActivity.class);
         intent.putExtra(UsbManager.EXTRA_DEVICE, device);
         intent.setAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+         */
     }
 }

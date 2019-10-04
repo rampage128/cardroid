@@ -189,13 +189,13 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsPo
     @Override
     protected void onPause() {
         super.onPause();
-        unbindService(this.gpsServiceConnection);
+        this.getApplicationContext().unbindService(this.gpsServiceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        bindService(new Intent(this, GpsDataProvider.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), GpsDataProvider.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public void updateRawText(String rawData) {
