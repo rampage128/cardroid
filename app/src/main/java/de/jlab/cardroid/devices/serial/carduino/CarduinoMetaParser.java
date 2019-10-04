@@ -25,12 +25,12 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
 
     @Override
     protected boolean shouldHandlePacket(CarduinoSerialPacket packet) {
-        return CarduinoPacketType.META.equals(packet.getPacketId());
+        return CarduinoPacketType.META.equals(packet.getPacketType());
     }
 
     @Override
     protected void handlePacket(CarduinoSerialPacket packet) {
-        int eventType = packet.getPacketType();
+        int eventType = packet.getPacketId();
 
         if (eventType == 0x00) {
             this.requestConnection(packet);
