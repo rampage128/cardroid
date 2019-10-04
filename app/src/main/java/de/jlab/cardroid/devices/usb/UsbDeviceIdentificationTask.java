@@ -37,10 +37,10 @@ public final class UsbDeviceIdentificationTask {
 
         if (this.activeDetectorIndex < this.detectors.size()) {
             this.identify(this.activeDevice);
+        } else {
+            this.observer.detectionFailed();
+            this.endIdentification();
         }
-
-        this.observer.detectionFailed();
-        this.endIdentification();
     }
 
     private void endIdentification() {
