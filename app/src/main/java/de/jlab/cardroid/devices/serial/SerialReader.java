@@ -15,8 +15,8 @@ public abstract class SerialReader<PacketType extends SerialPacket> {
         this.byteStatistic.count(data.length);
         PacketType[] packets = this.createPackets(data);
         this.packetStatistic.count(packets.length);
-        for (SerialPacketListener<PacketType> listener : packetListeners) {
-            listener.onReceivePackets(packets);
+        for (int i = 0; i < this.packetListeners.size(); i++) {
+            this.packetListeners.get(i).onReceivePackets(packets);
         }
     }
 
