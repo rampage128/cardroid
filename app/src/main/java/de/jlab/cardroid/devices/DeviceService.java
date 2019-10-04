@@ -74,7 +74,7 @@ public final class DeviceService extends Service {
                 new CarduinoUsbDeviceDetector()
                 );
 
-        Log.e(this.getClass().getSimpleName(), DeviceService.this.toString());
+        Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
 
     @Override
@@ -106,6 +106,8 @@ public final class DeviceService extends Service {
         this.variableStore = null;
         this.ruleHandler.dispose();
         this.ruleHandler = null;
+
+        Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
 
     @NonNull
@@ -149,6 +151,7 @@ public final class DeviceService extends Service {
     }
 
     private void usbDeviceDetached(@NonNull UsbDevice device) {
+        Log.e(this.getClass().getSimpleName(), "Device detached " + device.getDeviceId());
         int deviceId = device.getDeviceId();
         DeviceHandler handler = this.devices.get(deviceId);
         if (handler != null) {

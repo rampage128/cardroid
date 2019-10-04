@@ -3,6 +3,7 @@ package de.jlab.cardroid.devices.usb.serial;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
@@ -31,6 +32,12 @@ public final class UsbSerialConnection {
     private ArrayList<SerialReader> readers = new ArrayList<>();
 
     private UsbSerialInterface.UsbReadCallback readCallback = bytes -> {
+        StringBuilder packetOutput = new StringBuilder("<- ");
+        for (int i = 0; i < bytes.length; i++) {
+            packetOutput.append(String.format(" %02x", bytes[i]));
+        }
+        Log.e("PACKET", packetOutput.toString());
+
         bandWidthUsage.count(bytes.length);
         for (SerialReader reader : readers) {
             reader.onReceiveData(bytes);
@@ -123,6 +130,13 @@ public final class UsbSerialConnection {
         if (!this.isConnected()) {
             return false;
         }
+
+        StringBuilder packet = new StringBuilder("-> ");
+        for (int i = 0; i < data.length; i++) {
+            packet.append(String.format(" %02x", data[i]));
+        }
+        Log.e("PACKET", packet.toString());
+
         this.serial.write(data);
         return true;
     }

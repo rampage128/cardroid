@@ -48,6 +48,7 @@ public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler imp
     public void unregisterCanId(CanPacketDescriptor descriptor) {
         byte[] payload = ByteBuffer.allocate(5).putInt((int)descriptor.getCanId()).put((byte)0x00).array();
         try {
+            Log.e(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.getDeviceId() + ".");
             this.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
         } catch (IOException e) {
             Log.e(this.getClass().getSimpleName(), "Error unregistering can id " + String.format("%02x", descriptor.getCanId()) + " from device " + this.getDeviceId() + ".");

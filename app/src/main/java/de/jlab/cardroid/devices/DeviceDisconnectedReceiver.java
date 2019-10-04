@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.util.Log;
 
 public final class DeviceDisconnectedReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.e(this.getClass().getSimpleName(), "Device detached!");
         String action = intent.getAction();
         Bundle bundle = intent.getExtras();
         if (bundle != null) {

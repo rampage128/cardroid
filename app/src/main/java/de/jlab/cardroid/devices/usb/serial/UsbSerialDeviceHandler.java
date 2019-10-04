@@ -3,6 +3,7 @@ package de.jlab.cardroid.devices.usb.serial;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceService;
@@ -30,6 +31,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
     public boolean connectDevice() {
         boolean isConnected = this.connection.connect();
         if (isConnected) {
+            Log.e(this.getClass().getSimpleName(), "Device connected " + device.getDeviceId());
             this.reader = this.onConnect();
             this.connection.addUsbSerialReader(this.reader);
         } else {
@@ -40,6 +42,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
 
     @Override
     public void disconnectDevice() {
+        Log.e(this.getClass().getSimpleName(), "Device disconnected " + device.getDeviceId());
         this.connection.removeUsbSerialReader(this.reader);
         if (this.connection.isConnected()) {
             this.connection.disconnect();
