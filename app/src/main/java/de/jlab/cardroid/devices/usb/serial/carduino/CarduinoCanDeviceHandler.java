@@ -87,6 +87,7 @@ public final class CarduinoCanDeviceHandler extends CarduinoUsbDeviceHandler imp
 
     @Override
     public void onHandshake(CarduinoSerialReader reader) {
+        // FIXME: requested can packets should probably be sent to the device here
         reader.addSerialPacketListener(this.canParser);
     }
 
