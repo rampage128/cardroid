@@ -19,6 +19,7 @@ public class ScriptEngine {
     }
 
     public Expression createExpression(String expression, ObservableValueBag variables, String contextName) {
+        Context context = Context.enter();
         Scriptable scope = context.initStandardObjects();
         return new Expression(expression, variables, contextName, scope, this);
     }
