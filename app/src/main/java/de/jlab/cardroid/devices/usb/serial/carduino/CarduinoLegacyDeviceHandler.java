@@ -27,8 +27,8 @@ public final class CarduinoLegacyDeviceHandler extends CarduinoUsbDeviceHandler 
 
     @Override
     protected void onConnect(CarduinoSerialReader reader) {
-        this.powerDevice.onConnect();
-        this.canDevice.onConnect();
+        this.powerDevice.onConnect(reader);
+        this.canDevice.onConnect(reader);
     }
 
     @Override
