@@ -38,6 +38,7 @@ public final class UsbSerialConnection {
     };
 
     public UsbSerialConnection(@NonNull UsbDevice device, int baudRate, @Nullable UsbManager usbManager) {
+        // FIXME: There seems to be a bug in the JNI part of the serial communication lib. It seems keeping an instance of the device can trigger native errors. Not sure tho.
         this.usbManager = usbManager;
         this.device = device;
         this.baudRate = baudRate;
