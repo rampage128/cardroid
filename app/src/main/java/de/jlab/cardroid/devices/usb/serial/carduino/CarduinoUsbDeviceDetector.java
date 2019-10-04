@@ -42,10 +42,13 @@ public final class CarduinoUsbDeviceDetector extends UsbSerialDeviceDetector {
         switch (deviceType) {
             case 'L':
                 this.deviceDetected(new CarduinoLegacyDeviceHandler(this.device, 115200, this.service));
+                break;
             case 'C':
                 this.deviceDetected(new CarduinoCanDeviceHandler(this.device, 115200, this.service));
+                break;
             case 'P':
                 this.deviceDetected(new CarduinoPowerDeviceHandler(this.device, 115200, this.service));
+                break;
         }
     }
 
