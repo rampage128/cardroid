@@ -244,9 +244,11 @@ public final class DeviceService extends Service {
         @Override
         public void deviceDetected(@NonNull DeviceHandler device) {
             if (device.connectDevice()) {
-                Log.e(this.getClass().getSimpleName(), DeviceService.this.toString());
+                Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" detected!");
                 DeviceService.this.devices.put(device.getDeviceId(), device);
                 DeviceService.this.updateDataProvider(device);
+            } else {
+                DeviceService.this.disposeIfEmpty();
             }
         }
 
