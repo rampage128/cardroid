@@ -21,10 +21,12 @@ public class Expression extends ObservableValue {
         this.contextName = contextName;
         this.scope = scope;
         this.engine = engine;
-        String[] variableNames = variables.getNames();
-        for (String name : variableNames) {
-            if (expression.contains(name)) {
-                this.addVariable(name, variables.get(name));
+        if (variables != null) {
+            String[] variableNames = variables.getNames();
+            for (String name : variableNames) {
+                if (expression.contains(name)) {
+                    this.addVariable(name, variables.get(name));
+                }
             }
         }
     }
