@@ -177,7 +177,7 @@ public final class DeviceService extends Service {
             }
         };
         this.timer.purge();
-        this.timer.schedule(this.disposalTask, 5000);
+        this.timer.schedule(this.disposalTask, 20000);
 
     }
 
