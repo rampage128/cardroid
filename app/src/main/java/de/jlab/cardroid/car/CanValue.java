@@ -7,7 +7,6 @@ import de.jlab.cardroid.variables.ObservableValue;
 public class CanValue extends ObservableValue {
 
     public enum DataType {
-        // FIXME implement methods to read various types of data into CanPacket
         BIG_ENDIAN((bitIndex, bitLength, packet) -> packet.readBigEndian(bitIndex, bitLength)),
         LITTLE_ENDIAN((bitIndex, bitLength, packet) -> packet.readLittleEndian(bitIndex, bitLength)),
         STRING((bitIndex, bitLength, packet) -> new String(packet.readBytes(bitIndex, bitLength))),
