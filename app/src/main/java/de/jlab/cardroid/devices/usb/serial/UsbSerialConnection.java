@@ -128,6 +128,7 @@ public final class UsbSerialConnection {
 
     public boolean send(@NonNull byte[] data) {
         if (!this.isConnected()) {
+            Log.e(this.getClass().getSimpleName(), "Can not send packet, device " + this.device.getDeviceId() + " is not connected!");
             return false;
         }
 
