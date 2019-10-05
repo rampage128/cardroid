@@ -31,7 +31,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
     public boolean connectDevice() {
         boolean isConnected = this.connection.connect();
         if (isConnected) {
-            Log.e(this.getClass().getSimpleName(), "Device connected " + device.getDeviceId());
+            Log.e(this.getClass().getSimpleName(), "Device connected " + this.getDeviceId());
             this.reader = this.onConnect();
             this.connection.addUsbSerialReader(this.reader);
         } else {
@@ -42,9 +42,10 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
 
     @Override
     public void disconnectDevice() {
-        Log.e(this.getClass().getSimpleName(), "Device disconnected " + device.getDeviceId());
+        Log.e(this.getClass().getSimpleName(), "Device disconnecting... " + this.getDeviceId());
         this.connection.removeUsbSerialReader(this.reader);
         if (this.connection.isConnected()) {
+            Log.e(this.getClass().getSimpleName(), "Device disconnected " + this.getDeviceId());
             this.connection.disconnect();
         }
         this.onDisconnect(this.reader);

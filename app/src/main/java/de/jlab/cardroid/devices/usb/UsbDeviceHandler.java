@@ -9,11 +9,9 @@ import de.jlab.cardroid.devices.DeviceService;
 public abstract class UsbDeviceHandler implements DeviceHandler {
 
     private UsbDevice device;
-    private DeviceService service;
 
     public UsbDeviceHandler(@NonNull UsbDevice device, @NonNull DeviceService service) {
         this.device = device;
-        this.service = service;
     }
 
     @Override
@@ -23,10 +21,6 @@ public abstract class UsbDeviceHandler implements DeviceHandler {
 
     protected UsbDevice getUsbDevice() {
         return this.device;
-    }
-
-    protected DeviceService getDeviceService() {
-        return this.service;
     }
 
 }
