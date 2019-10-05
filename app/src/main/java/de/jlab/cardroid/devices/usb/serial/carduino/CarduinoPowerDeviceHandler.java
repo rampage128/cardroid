@@ -15,7 +15,7 @@ public final class CarduinoPowerDeviceHandler extends CarduinoUsbDeviceHandler {
 
     @Override
     protected void onConnect(CarduinoSerialReader reader) {
-        this.getDeviceService().getRuleHandler().triggerRule(4);
+        //this.getDeviceService().getRuleHandler().triggerRule(4);
     }
 
     @Override
@@ -25,7 +25,7 @@ public final class CarduinoPowerDeviceHandler extends CarduinoUsbDeviceHandler {
 
     @Override
     protected void onDisconnectCarduino(CarduinoSerialReader reader) {
-        this.getDeviceService().getRuleHandler().triggerRule(5);
+        //this.getDeviceService().getRuleHandler().triggerRule(5);
     }
 
     @Override
