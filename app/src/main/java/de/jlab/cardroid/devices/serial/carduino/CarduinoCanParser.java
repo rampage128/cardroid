@@ -24,7 +24,7 @@ public final class CarduinoCanParser extends CarduinoPacketParser {
 
     @Override
     protected boolean shouldHandlePacket(CarduinoSerialPacket packet) {
-        return CarduinoPacketType.CAN.equals(packet.getPacketId());
+        return CarduinoPacketType.CAN.equals(packet.getPacketType());
     }
 
     @Override
