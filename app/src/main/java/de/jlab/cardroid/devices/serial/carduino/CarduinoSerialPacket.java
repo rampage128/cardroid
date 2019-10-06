@@ -54,11 +54,11 @@ public final class CarduinoSerialPacket extends BinarySerialPacket {
     }
 
     public byte[] readBytes(int startIndex, int length) {
-        return super.readBytes(startIndex, length);
+        return super.readBytes(startIndex + OFFSET_PAYLOAD, length);
     }
 
     protected byte[] readBytes(int startIndex) {
-        return super.readBytes(startIndex);
+        return super.readBytes(startIndex + OFFSET_PAYLOAD);
     }
 
     public byte getPayloadSize() {
