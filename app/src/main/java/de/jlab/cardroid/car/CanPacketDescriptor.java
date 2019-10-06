@@ -41,7 +41,7 @@ public class CanPacketDescriptor implements CanDeviceHandler.CanPacketListener {
         for (int i = 0; i < this.values.size(); i++) {
             CanValue value = this.values.get(i);
             int bitIndex = value.getBitIndex();
-            int startByteIndex = (int)Math.floor((bitIndex + 1) / 8f) - 1;
+            int startByteIndex = (int)Math.floor((bitIndex + 1) / 8f);
             int byteCount = getByteCountUntil(startByteIndex);
             int byteOffset = byteCount - startByteIndex;
             int bitOffset = (byteOffset * 8) * -1;
@@ -71,7 +71,7 @@ public class CanPacketDescriptor implements CanDeviceHandler.CanPacketListener {
             CanValue value = this.values.get(i);
             int bitOffset = 0;
             if (this.compressedPacketLength == packet.getDataLength()) {
-                this.bitOffsets.get(value.getBitIndex());
+                bitOffset = this.bitOffsets.get(value.getBitIndex());
             }
             value.updateFromCanPacket(packet, bitOffset);
         }
