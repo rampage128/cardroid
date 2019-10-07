@@ -35,26 +35,24 @@ public class CanPacket {
 
     private long read(int startBit, int bitLength, ByteOrder order) {
         long result = 0;
-        int currentByte = startBit / 8;
+        int currentByte = (int)Math.floor((startBit + 1) / 8f);
         int currentBit;
 
-        for (int i = startBit; i < startBit + bitLength;) {
+        for (int i = startBit; i < startBit + bitLength; i++) {
             // get the offset bit index in current data byte
             int offsetBit = i % 8;
-            // Calculate how many bits can we read simultaneously
-            byte bitSize = (byte) (Math.min(8, bitLength + startBit - i) - offsetBit);
-            currentByte = i / 8;
-            if (bitSize == 8) {
-                // fast path
-                result <<= 8;
-                result  |= this.data[currentByte] & 0xFF;
-            } else {
-                result <<= bitSize;
-                // offset the chunk we are interested in, then mask it
-                result |= (byte)((this.data[currentByte] >> (8 - bitSize - offsetBit)) & (( 1 << bitSize ) - 1));
+            // Retrieve byte for bit-index from data array
+            if (offsetBit == 0) {
+                currentByte = (int)Math.floor((i + 1) / 8f);
             }
 
-            i += bitSize;
+            result <<= 1;
+
+            // transfer current bit if 1
+            currentBit = (this.data[currentByte] >> (7 - offsetBit)) & 0x01;
+            if (currentBit != 0) {
+                result |= 0x01;
+            }
         }
 
         if (order == ByteOrder.LITTLE_ENDIAN) {
