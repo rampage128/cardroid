@@ -36,7 +36,7 @@ public abstract class BinarySerialPacket implements SerialPacket {
     }
 
     protected byte[] readBytes(int startIndex) {
-        return this.readBytes(startIndex, this.data.length);
+        return Arrays.copyOfRange(this.data, startIndex, this.data.length);
     }
 
 }

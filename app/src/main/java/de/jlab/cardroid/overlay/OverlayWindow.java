@@ -131,19 +131,19 @@ public class OverlayWindow {
                 this.isDuctWindshield = (Boolean)newValue;
                 break;
             case "hvacIsAcOn":
-                this.isAcOn = (Integer)newValue == 1;
+                this.isAcOn = (Long)newValue == 1;
                 break;
             case "hvacIsRecirculation":
-                this.isRecirculation = (Integer)newValue == 1;
+                this.isRecirculation = (Long)newValue == 1;
                 break;
             case "hvacIsAutomatic":
-                this.isAutomatic = (Integer)newValue == 1;
+                this.isAutomatic = (Long)newValue == 1;
                 break;
             case "hvacIsRearWindowHeating":
-                this.isRearWindowHeating = (Integer)newValue == 1;
+                this.isRearWindowHeating = (Long)newValue == 1;
                 break;
             case "hvacIsWindshieldHeating":
-                this.isWindshieldHeating = (Integer)newValue == 1;
+                this.isWindshieldHeating = (Long)newValue == 1;
                 break;
         }
         updateUi();
