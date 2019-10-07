@@ -155,24 +155,25 @@ public class CanPacketTest {
     public byte[] shortOffset8 = { (byte)0B00111100, (byte)0B10101111 };
     public byte[] shortOffset6Length10 = { (byte)0B00000011, (byte)0B00111100 };
     public byte[] shortOffset8Length10 = { (byte)0B00000000, (byte)0B11110010 };
-    public byte[] shortOffset3Size4 = { (byte) 0B00000000, (byte)0B00000001 };
-    public byte[] shortOffset5Size4 = { (byte) 0B00000000, (byte)0B00000110 };
-    public byte[] shortOffset2Size6 = { (byte) 0B00000000, (byte)0B00000011 };
-    public byte[] shortOffset0Size6 = { (byte) 0B00000000, (byte)0B00010000 };
+    public byte[] byteOffset3Size4 = { (byte)0B00000001 };
+    public byte[] byteOffset5Size4 = { (byte)0B00000110 };
+    public byte[] byteOffset2Size6 = { (byte)0B00000011 };
+    public byte[] byteOffset0Size6 = { (byte)0B00010000 };
 
     public ComparisonData data1 = new ComparisonData(testBytes, shortOffset4, 4, 16);
     public ComparisonData data2 = new ComparisonData(testBytes, shortOffset8, 8, 16);
     public ComparisonData data3 = new ComparisonData(testBytes, shortOffset6Length10, 6, 10);
     public ComparisonData data4 = new ComparisonData(testBytes, shortOffset8Length10, 8, 10);
-    public ComparisonData data5 = new ComparisonData(testBytes, shortOffset3Size4, 3, 4);
-    public ComparisonData data6 = new ComparisonData(testBytes, shortOffset5Size4, 5, 4);
-    public ComparisonData data7 = new ComparisonData(testBytes, shortOffset2Size6, 2, 6);
-    public ComparisonData data8 = new ComparisonData(testBytes, shortOffset0Size6, 0, 6);
+    public ComparisonData data5 = new ComparisonData(testBytes, byteOffset3Size4, 3, 4);
+    public ComparisonData data6 = new ComparisonData(testBytes, byteOffset5Size4, 5, 4);
+    public ComparisonData data7 = new ComparisonData(testBytes, byteOffset2Size6, 2, 6);
+    public ComparisonData data8 = new ComparisonData(testBytes, byteOffset0Size6, 0, 6);
 
-    public ComparisonData[] testBenchData = { data1, data2, data3, data4, data5, data6, data7, data8 };
+    public ComparisonData[] testBenchDataShort = { data1, data2, data3, data4 };
+    public ComparisonData[] testBenchDataBytes = { data5, data6, data7, data8 };
 
-    private void testByteOrder(ByteOrder order) {
-        for (ComparisonData data: testBenchData) {
+    private void testShorts(ByteOrder order) {
+        for (ComparisonData data: testBenchDataShort) {
             CanPacket p = new CanPacket(0, data.canBytes);
             ByteBuffer expectedBytes = data.expectedResult;
             expectedBytes.order(order);
@@ -184,14 +185,29 @@ public class CanPacketTest {
         }
     }
 
+    private void testBytes(ByteOrder order) {
+        for (ComparisonData data: testBenchDataBytes) {
+            CanPacket p = new CanPacket(0, data.canBytes);
+            ByteBuffer expectedBytes = data.expectedResult;
+            expectedBytes.order(order);
+            long result = order == ByteOrder.BIG_ENDIAN ?
+                    p.readBigEndian(data.bitNumber, data.length):
+                    p.readLittleEndian(data.bitNumber, data.length);
+            long expectedResult = expectedBytes.get();
+            assertTrue(result == expectedResult);
+        }
+    }
+
     @Test
     public void readBigEndian() {
-        testByteOrder(ByteOrder.BIG_ENDIAN);
+        testShorts(ByteOrder.BIG_ENDIAN);
+        testBytes(ByteOrder.LITTLE_ENDIAN);
     }
 
     @Test
     public void readLittleEndian() {
-        testByteOrder(ByteOrder.LITTLE_ENDIAN);
+        testShorts(ByteOrder.LITTLE_ENDIAN);
+        testBytes(ByteOrder.LITTLE_ENDIAN);
     }
 
     void bitSetImplementationLittle() {
