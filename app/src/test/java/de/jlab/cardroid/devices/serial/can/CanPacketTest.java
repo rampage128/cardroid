@@ -111,8 +111,10 @@ class CanPacketBenchmark {
         for (int i = startBit; i < startBit + bitLength;) {
             // get the offset bit index in current data byte
             int offsetBit = i % 8;
-            // Calculate how many bits can we read simultaneously
-            byte bitSize = (byte) (Math.min(8, bitLength + startBit - i) - offsetBit);
+            // Calculate how many bits can we read simultaneously.
+            // This is the minimum of the available bits we can read from this byte
+            // And the remaining bits to read
+            byte bitSize = (byte) Math.min(8 - offsetBit, bitLength - i + startBit);
             currentByte = i / 8;
             if (bitSize == 8) {
                 // fast path
@@ -153,13 +155,21 @@ public class CanPacketTest {
     public byte[] shortOffset8 = { (byte)0B00111100, (byte)0B10101111 };
     public byte[] shortOffset6Length10 = { (byte)0B00000011, (byte)0B00111100 };
     public byte[] shortOffset8Length10 = { (byte)0B00000000, (byte)0B11110010 };
+    public byte[] shortOffset3Size4 = { (byte) 0B00000000, (byte)0B00000001 };
+    public byte[] shortOffset5Size4 = { (byte) 0B00000000, (byte)0B00000110 };
+    public byte[] shortOffset2Size6 = { (byte) 0B00000000, (byte)0B00000011 };
+    public byte[] shortOffset0Size6 = { (byte) 0B00000000, (byte)0B00010000 };
 
     public ComparisonData data1 = new ComparisonData(testBytes, shortOffset4, 4, 16);
     public ComparisonData data2 = new ComparisonData(testBytes, shortOffset8, 8, 16);
     public ComparisonData data3 = new ComparisonData(testBytes, shortOffset6Length10, 6, 10);
     public ComparisonData data4 = new ComparisonData(testBytes, shortOffset8Length10, 8, 10);
+    public ComparisonData data5 = new ComparisonData(testBytes, shortOffset3Size4, 3, 4);
+    public ComparisonData data6 = new ComparisonData(testBytes, shortOffset5Size4, 5, 4);
+    public ComparisonData data7 = new ComparisonData(testBytes, shortOffset2Size6, 2, 6);
+    public ComparisonData data8 = new ComparisonData(testBytes, shortOffset0Size6, 0, 6);
 
-    public ComparisonData[] testBenchData = { data1, data2, data3, data4 };
+    public ComparisonData[] testBenchData = { data1, data2, data3, data4, data5, data6, data7, data8 };
 
     private void testByteOrder(ByteOrder order) {
         for (ComparisonData data: testBenchData) {

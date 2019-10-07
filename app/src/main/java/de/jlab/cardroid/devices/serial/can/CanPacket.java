@@ -41,8 +41,10 @@ public class CanPacket {
         for (int i = startBit; i < startBit + bitLength;) {
             // get the offset bit index in current data byte
             int offsetBit = i % 8;
-            // Calculate how many bits can we read simultaneously
-            byte bitSize = (byte) (Math.min(8, bitLength + startBit - i) - offsetBit);
+            // Calculate how many bits can we read simultaneously.
+            // This is the minimum of the available bits we can read from this byte
+            // And the remaining bits to read
+            byte bitSize = (byte) Math.min(8 - offsetBit, bitLength - i + startBit);
             currentByte = i / 8;
             if (bitSize == 8) {
                 // fast path
