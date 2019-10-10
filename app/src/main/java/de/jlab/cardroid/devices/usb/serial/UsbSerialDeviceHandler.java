@@ -33,9 +33,9 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
         boolean isConnected = this.connection.connect();
         if (isConnected) {
             Log.e(this.getClass().getSimpleName(), "Device connected " + this.getDeviceId() + " (" + this.connection.getBaudRate() + ")");
+            this.notifyStart();
             this.reader = this.onConnect();
             this.connection.addUsbSerialReader(this.reader);
-            this.notifyStart();
         } else {
             this.onConnectFailed();
         }
