@@ -114,4 +114,9 @@ public final class GpsSerialPacket implements SerialPacket {
         return d;
     }
 
+    @Override
+    public String toString() {
+        return this.readSentence();
+    }
+
 }
