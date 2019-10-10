@@ -2,7 +2,7 @@ package de.jlab.cardroid.car.ui;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.devices.serial.can.CanPacket;
+import de.jlab.cardroid.car.CanPacket;
 
 public final class SniffedCanPacket {
     private long id;

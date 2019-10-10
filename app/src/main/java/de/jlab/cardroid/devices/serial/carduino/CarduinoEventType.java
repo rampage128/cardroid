@@ -26,6 +26,10 @@ public enum CarduinoEventType {
         this.command = (byte)command;
     }
 
+    public byte getCommand() {
+        return this.command;
+    }
+
     public static CarduinoSerialPacket createPacket(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
         return CarduinoPacketType.createPacket(CarduinoPacketType.EVENT, event.command, payload);
     }

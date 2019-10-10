@@ -21,12 +21,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoCanDeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoLegacyDeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceDetector;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceDetector;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
-import de.jlab.cardroid.gps.GpsDataProvider;
+import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
+import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleHandler;
 import de.jlab.cardroid.rules.storage.EventRepository;
@@ -54,6 +51,8 @@ public final class DeviceService extends Service {
     private TimerTask disposalTask;
     private Handler uiHandler;
 
+    private DeviceObserver deviceObserver = new DeviceObserver();
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -72,9 +71,10 @@ public final class DeviceService extends Service {
         this.deviceIdentificationTask = new UsbDeviceIdentificationTask(
                 this,
                 new UsbDeviceDetectionObserver(),
-                new GpsUsbDeviceDetector(),
-                new CarduinoUsbDeviceDetector()
-                );
+                new UsbSerialDeviceDetector(
+                        new CarduinoSerialMatcher(),
+                        new GpsSerialMatcher()
+                ));
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -91,7 +91,6 @@ public final class DeviceService extends Service {
                 if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     this.usbDeviceDetached(device);
-                    this.disposeIfEmpty();
                 }
             }
         }
@@ -151,12 +150,7 @@ public final class DeviceService extends Service {
     private void usbDeviceAttached(@NonNull UsbDevice device) {
         Log.e(this.getClass().getSimpleName(), "Device attached " + device.getDeviceId());
 
-        // FIXME: skipping device identification for testing purposes. Change this back for production
-        //this.deviceIdentificationTask.identify(device);
-        CarduinoCanDeviceHandler handler = new CarduinoCanDeviceHandler(device, 115200, this);
-        handler.connectDevice();
-        this.devices.put(device.getDeviceId(), handler);
-        this.updateDataProvider(handler);
+        this.deviceIdentificationTask.identify(device);
     }
 
     private void usbDeviceDetached(@NonNull UsbDevice device) {
@@ -165,9 +159,9 @@ public final class DeviceService extends Service {
         DeviceHandler handler = this.devices.get(deviceId);
         if (handler != null) {
             handler.disconnectDevice();
-            this.stopDataProvider(handler);
         }
         this.devices.remove(deviceId);
+        this.disposeIfEmpty();
     }
 
     private void cancelDisposal() {
@@ -194,31 +188,38 @@ public final class DeviceService extends Service {
         this.uiHandler.post(runnable);
     }
 
-    private void stopDataProvider(DeviceHandler device) {
-        DeviceDataProvider provider = null;
-
-        if (device instanceof GpsUsbDeviceHandler) {
-            provider = this.dataProviders.get(GpsDataProvider.class);
-        }
-
-        if (provider != null) {
+    private void stopDataProvider(@NonNull DeviceHandler device) {
+        for (DeviceDataProvider provider : this.dataProviders.values()) {
             if (provider.usesDevice(device)) {
                 provider.stop();
-                // TODO: we might want to restart the provider with a different device?
             }
         }
     }
 
-    private void updateDataProvider(DeviceHandler device) {
-        Class[] features = device.getFeatures();
-        for (Class feature : features) {
-            DeviceDataProvider provider = this.dataProviders.get(feature);
-            if (provider == null) {
-                provider = DeviceDataProvider.createFrom(feature, this);
-                this.dataProviders.put(provider.getClass(), provider);
-            }
+    private DeviceDataProvider startDataProvider(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+        DeviceDataProvider provider = this.getDeviceProvider(feature);
+        if (provider != null) {
             provider.start(device);
         }
+        return provider;
+    }
+
+    private void deviceDetected(@NonNull DeviceHandler device) {
+        device.setDeviceObserver(this.deviceObserver);
+        device.connectDevice();
+        this.disposeIfEmpty();
+    }
+
+    private void deviceConnected(@NonNull DeviceHandler device) {
+        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" connected!");
+        DeviceService.this.devices.put(device.getDeviceId(), device);
+    }
+
+    private void deviceDisconnected(@NonNull DeviceHandler device) {
+        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" started!");
+        this.devices.remove(device.getDeviceId());
+        this.stopDataProvider(device);
+        this.disposeIfEmpty();
     }
 
     @Nullable
@@ -252,16 +253,28 @@ public final class DeviceService extends Service {
         }
     }
 
+    private class DeviceObserver implements de.jlab.cardroid.devices.DeviceObserver {
+        @Override
+        public void onStart(@NonNull DeviceHandler device) {
+            DeviceService.this.deviceConnected(device);
+        }
+
+        @Override
+        public DeviceDataProvider onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+            Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", device: " + device.getDeviceId());
+            return DeviceService.this.startDataProvider(feature, device);
+        }
+
+        @Override
+        public void onEnd(@NonNull DeviceHandler device) {
+            DeviceService.this.deviceDisconnected(device);
+        }
+    }
+
     private class UsbDeviceDetectionObserver implements UsbDeviceDetector.DetectionObserver {
         @Override
         public void deviceDetected(@NonNull DeviceHandler device) {
-            if (device.connectDevice()) {
-                Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" detected!");
-                DeviceService.this.devices.put(device.getDeviceId(), device);
-                DeviceService.this.updateDataProvider(device);
-            } else {
-                DeviceService.this.disposeIfEmpty();
-            }
+            DeviceService.this.deviceDetected(device);
         }
 
         @Override

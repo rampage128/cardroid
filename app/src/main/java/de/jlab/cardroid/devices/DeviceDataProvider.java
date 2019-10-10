@@ -8,10 +8,10 @@ import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.errors.ErrorDataProvider;
 import de.jlab.cardroid.gps.GpsDataProvider;
 
-public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
+public abstract class DeviceDataProvider {
 
     private DeviceService service;
-    private ArrayList<DeviceType> devices = new ArrayList<>();
+    private ArrayList<DeviceHandler> devices = new ArrayList<>();
 
     public DeviceDataProvider(@NonNull DeviceService service) {
         this.service = service;
@@ -27,10 +27,10 @@ public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
         return connectedDevices;
     }
 
-    public void start(@NonNull DeviceType device) {
+    public void start(@NonNull DeviceHandler device) {
         // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
         for (int i = 0; i < this.devices.size(); i++) {
-            DeviceType deviceToCheck = this.devices.get(i);
+            DeviceHandler deviceToCheck = this.devices.get(i);
             if (deviceToCheck.getDeviceId() == device.getDeviceId()) {
                 this.devices.set(i, deviceToCheck);
                 this.onUpdate(deviceToCheck, device, this.service);
@@ -57,13 +57,13 @@ public abstract class DeviceDataProvider<DeviceType extends DeviceHandler> {
         }
     }
 
-    protected ArrayList<DeviceType> getDevices() {
+    protected ArrayList<DeviceHandler> getDevices() {
         return this.devices;
     }
 
-    protected abstract void onUpdate(@NonNull DeviceType previousDevice, @NonNull DeviceType newDevice, @NonNull DeviceService service);
-    protected abstract void onStop(@NonNull DeviceType device, @NonNull DeviceService service);
-    protected abstract void onStart(@NonNull DeviceType device, @NonNull DeviceService service);
+    protected abstract void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service);
+    protected abstract void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service);
+    protected abstract void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service);
 
     @NonNull
     public static DeviceDataProvider createFrom(@NonNull Class providerType, @NonNull DeviceService service) {

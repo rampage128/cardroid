@@ -18,7 +18,7 @@ public class ErrorNotifier implements ErrorDataProvider.ErrorListener {
     private static final String CHANNEL_ID = "errors";
 
     private Context context;
-    private LinkedHashMap<Byte, Error> errors = new LinkedHashMap<>();
+    private LinkedHashMap<Integer, Error> errors = new LinkedHashMap<>();
 
     public ErrorNotifier(Context context) {
         this.context = context;
@@ -27,6 +27,8 @@ public class ErrorNotifier implements ErrorDataProvider.ErrorListener {
     @Override
     public void onError(Error error) {
         this.createNotificationChannel(context);
+
+        this.errors.put(error.getErrorNumber(), error);
 
         Error[] errors = this.errors.values().toArray(new Error[0]);
         Arrays.sort(errors, (e1, e2) -> (int)(e1.getLastOccurence() - e2.getLastOccurence()));

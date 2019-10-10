@@ -10,9 +10,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
-import de.jlab.cardroid.devices.serial.can.CanPacket;
+import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.utils.UsageStatistics;
 
@@ -20,7 +20,7 @@ import de.jlab.cardroid.utils.UsageStatistics;
  * @deprecated This is obsolete. We can add a button to CarMonitorActivity to toggle sniffing in packet view
  */
 @Deprecated
-public final class CanSnifferActivity extends AppCompatActivity implements CanDeviceHandler.CanPacketListener {
+public final class CanSnifferActivity extends AppCompatActivity implements CanObservable.CanPacketListener {
 
     private TextView bandwidthStatText;
     private TextView packetStatText;

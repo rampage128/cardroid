@@ -69,12 +69,7 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         //int revision = packet.readByte(2);
 
         if (major == PROTOCOL_MAJOR) {
-            try {
-                this.device.send(PACKET_CONNECTION_REQUEST);
-            } catch (IOException e) {
-                Log.e(this.getClass().getSimpleName(), "Error sending connection request", e);
-                this.device.disconnectDevice();
-            }
+            this.device.sendImmediately(PACKET_CONNECTION_REQUEST);
         } else {
             this.device.disconnectDevice();
         }

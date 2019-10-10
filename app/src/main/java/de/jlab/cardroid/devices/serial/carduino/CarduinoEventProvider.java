@@ -1,16 +1,14 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
-public final class CarduinoEventProvider extends DeviceDataProvider<CarduinoUsbDeviceHandler> {
+public final class CarduinoEventProvider extends DeviceDataProvider {
 
     private ArrayList<CarduinoEventParser.EventListener> externalListeners = new ArrayList<>();
 
@@ -25,15 +23,12 @@ public final class CarduinoEventProvider extends DeviceDataProvider<CarduinoUsbD
     }
 
     public void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
-        CarduinoSerialPacket eventPacket = CarduinoEventType.createPacket(event, payload);
-
-        ArrayList<CarduinoUsbDeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getDevices();
         for (int i = 0; i < devices.size(); i++) {
-            CarduinoUsbDeviceHandler device = devices.get(i);
-            try {
-                device.send(eventPacket);
-            } catch (Exception e) {
-                Log.e(this.getClass().getSimpleName(), "Error sending event \"" + event.getClass().getSimpleName() + "\" to device \"" + device.getDeviceId() + "\".");
+            DeviceHandler device = devices.get(i);
+            EventInteractable interactable = device.getInteractable(EventInteractable.class);
+            if (interactable != null) {
+                interactable.sendEvent(event.getCommand(), payload);
             }
         }
     }
@@ -46,20 +41,34 @@ public final class CarduinoEventProvider extends DeviceDataProvider<CarduinoUsbD
         this.externalListeners.remove(listener);
     }
 
-    @Override
-    protected void onUpdate(@NonNull CarduinoUsbDeviceHandler previousDevice, @NonNull CarduinoUsbDeviceHandler newDevice, @NonNull DeviceService service) {
-        previousDevice.removeEventListener(this.listener);
-        newDevice.addEventListener(this.listener);
+    private void deviceRemoved(@NonNull DeviceHandler device) {
+        EventObservable observable = device.getObservable(EventObservable.class);
+        if (observable != null) {
+            observable.removeEventListener(this.listener);
+        }
+    }
+
+    private void deviceAdded(@NonNull DeviceHandler device) {
+        EventObservable observable = device.getObservable(EventObservable.class);
+        if (observable != null) {
+            observable.addEventListener(this.listener);
+        }
     }
 
     @Override
-    protected void onStop(@NonNull CarduinoUsbDeviceHandler device, @NonNull DeviceService service) {
-        device.removeEventListener(this.listener);
+    protected void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service) {
+        this.deviceRemoved(previousDevice);
+        this.deviceAdded(newDevice);
     }
 
     @Override
-    protected void onStart(@NonNull CarduinoUsbDeviceHandler device, @NonNull DeviceService service) {
-        device.addEventListener(this.listener);
+    protected void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service) {
+        this.deviceRemoved(device);
+    }
+
+    @Override
+    protected void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service) {
+        this.deviceAdded(device);
     }
 
 }

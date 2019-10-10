@@ -6,21 +6,17 @@ import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 
-public abstract class UsbDeviceHandler implements DeviceHandler {
+public abstract class UsbDeviceHandler extends DeviceHandler {
 
     private UsbDevice device;
 
-    public UsbDeviceHandler(@NonNull UsbDevice device, @NonNull DeviceService service) {
+    public UsbDeviceHandler(@NonNull UsbDevice device) {
         this.device = device;
     }
 
     @Override
     public int getDeviceId() {
         return this.device.getDeviceId();
-    }
-
-    protected UsbDevice getUsbDevice() {
-        return this.device;
     }
 
 }

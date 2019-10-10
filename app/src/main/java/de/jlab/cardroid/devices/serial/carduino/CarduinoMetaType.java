@@ -16,6 +16,14 @@ public enum CarduinoMetaType {
         this.command = (byte)command;
     }
 
+    public boolean equals(byte type) {
+        return this.command == type;
+    }
+
+    public byte getType() {
+        return this.command;
+    }
+
     public static CarduinoSerialPacket createPacket(@NonNull CarduinoMetaType event, @Nullable byte[] payload) {
         return CarduinoPacketType.createPacket(CarduinoPacketType.META, event.command, payload);
     }

@@ -6,10 +6,8 @@ import android.util.SparseIntArray;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
-import de.jlab.cardroid.devices.serial.can.CanPacket;
 
-public class CanPacketDescriptor implements CanDeviceHandler.CanPacketListener {
+public class CanPacketDescriptor implements CanObservable.CanPacketListener {
 
     private long canId;
     private byte byteMask = 0x00;

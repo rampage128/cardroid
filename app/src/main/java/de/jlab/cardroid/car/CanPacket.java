@@ -1,4 +1,4 @@
-package de.jlab.cardroid.devices.serial.can;
+package de.jlab.cardroid.car;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
