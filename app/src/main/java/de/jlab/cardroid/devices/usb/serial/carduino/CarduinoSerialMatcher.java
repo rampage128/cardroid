@@ -12,10 +12,11 @@ import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 
 public final class CarduinoSerialMatcher implements UsbSerialDeviceDetector.SerialMatcher {
 
-    private static final String PATTERN = new StringBuilder()
+    private static final String PATTERN = new StringBuilder(".*")
             .append("\\").append((char)CarduinoSerialPacket.HEADER)
             .append((char)CarduinoPacketType.META.getType())
-            .append("[^\\}]*").append("\\").append((char)CarduinoSerialPacket.FOOTER).toString();
+            .append("[^\\}]*").append("\\").append((char)CarduinoSerialPacket.FOOTER)
+            .append(".*").toString();
 
     private String received = "";
 

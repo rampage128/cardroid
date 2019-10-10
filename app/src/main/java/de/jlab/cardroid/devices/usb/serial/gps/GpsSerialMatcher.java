@@ -10,7 +10,7 @@ import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 
 public final class GpsSerialMatcher implements UsbSerialDeviceDetector.SerialMatcher {
 
-    private static final String PATTERN = "\\$GP...,";
+    private static final String PATTERN = ".*\\$GP...,.*";
 
     private String received = "";
 
