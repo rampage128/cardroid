@@ -1,9 +1,7 @@
 package de.jlab.cardroid.devices.usb.serial;
 
 import android.app.Application;
-import android.bluetooth.BluetoothClass;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
@@ -18,12 +16,7 @@ import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.SerialPacket;
 import de.jlab.cardroid.devices.serial.SerialReader;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
 
 public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 

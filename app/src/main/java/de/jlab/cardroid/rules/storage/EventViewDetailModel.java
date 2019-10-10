@@ -2,8 +2,6 @@ package de.jlab.cardroid.rules.storage;
 
 import android.app.Application;
 
-import java.util.List;
-
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 

@@ -1,8 +1,5 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
-import android.util.Log;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;

@@ -21,7 +21,6 @@ import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
 
 
 public final class GpsDataProvider extends DeviceDataProvider {

@@ -2,7 +2,6 @@ package de.jlab.cardroid.devices.serial.gps;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
-import java.util.StringJoiner;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.serial.SerialPacket;

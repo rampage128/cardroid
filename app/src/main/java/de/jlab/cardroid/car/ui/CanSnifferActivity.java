@@ -9,11 +9,11 @@ import android.os.IBinder;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import de.jlab.cardroid.R;
 import de.jlab.cardroid.car.CanDataProvider;
 import de.jlab.cardroid.car.CanObservable;
-import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.car.CanPacket;
-import de.jlab.cardroid.R;
+import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.utils.UsageStatistics;
 
 /**

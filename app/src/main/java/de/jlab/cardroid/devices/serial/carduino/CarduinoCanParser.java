@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.collection.LongSparseArray;
 import de.jlab.cardroid.car.CanObservable;
-import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.car.CanPacket;
+import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
 public final class CarduinoCanParser extends CarduinoPacketParser implements CanObservable {

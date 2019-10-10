@@ -5,14 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.PowerManager;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.view.KeyEvent;
-import android.view.WindowManager;
 
 public class PowerManagementReceiver extends BroadcastReceiver {
 

@@ -6,13 +6,9 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoErrorParser;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventParser;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoFeatureDetector;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaParser;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketParser;

@@ -26,9 +26,9 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
 import de.jlab.cardroid.variables.Variable;
 
 /**

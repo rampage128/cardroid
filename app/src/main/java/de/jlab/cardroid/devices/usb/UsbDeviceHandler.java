@@ -4,7 +4,6 @@ import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.DeviceService;
 
 public abstract class UsbDeviceHandler extends DeviceHandler {
 

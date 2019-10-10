@@ -7,9 +7,8 @@ import android.hardware.usb.UsbManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
 import de.jlab.cardroid.devices.serial.SerialReader;
+import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
 
 public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> extends UsbDeviceHandler {
 
