@@ -27,7 +27,7 @@ public final class GpsSerialPacket implements SerialPacket {
         StringBuilder sentenceBuilder = new StringBuilder();
         sentenceBuilder.append("$");
         for (String token : this.tokens) {
-            sentenceBuilder.append(token);
+            sentenceBuilder.append(",").append(token);
         }
         return sentenceBuilder.toString();
     }
