@@ -36,6 +36,7 @@ public final class GpsPositionParser implements SerialReader.SerialPacketListene
     @Override
     public void onReceivePackets(GpsSerialPacket[] packets) {
         for (GpsSerialPacket packet : packets) {
+            // FIXME: It doesn't make sense to hand in the sentence like this, because parse() only returns true for every group of sentences.
             if (this.parse(packet)) {
                 for (PositionListener listener : positionListeners) {
                     listener.onUpdate(this.position, packet.readSentence());
