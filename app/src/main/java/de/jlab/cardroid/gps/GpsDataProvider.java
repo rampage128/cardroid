@@ -83,6 +83,7 @@ public final class GpsDataProvider extends DeviceDataProvider {
 
     @Override
     protected void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service) {
+        // FIXME: permissions are broken. The app currently never asks for permissions
         if (this.getConnectedDeviceCount() == 1) {
             this.locationManager = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
 
@@ -119,6 +120,7 @@ public final class GpsDataProvider extends DeviceDataProvider {
 
     private void updatePosition(@NonNull GpsPosition position) {
         if (position.hasValidLocation()) {
+            // FIXME: this can cause a crash if fine location permission is not granted
             GpsDataProvider.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position.getLocation());
             GpsDataProvider.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
         }
