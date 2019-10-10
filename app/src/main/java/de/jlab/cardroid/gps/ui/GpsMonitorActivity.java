@@ -194,7 +194,7 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), GpsDataProvider.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public void updateRawText(String rawData) {
