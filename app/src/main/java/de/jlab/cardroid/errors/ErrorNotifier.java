@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import de.jlab.cardroid.R;
 
-public class ErrorNotifier implements ErrorDataProvider.ErrorListener {
+public final class ErrorNotifier implements ErrorDataProvider.ErrorListener {
 
     private static final String CHANNEL_ID = "errors";
 

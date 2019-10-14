@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 
-public class CanPacketDescriptor implements CanObservable.CanPacketListener {
+public final class CanPacketDescriptor implements CanObservable.CanPacketListener {
 
     private long canId;
     private byte byteMask = 0x00;

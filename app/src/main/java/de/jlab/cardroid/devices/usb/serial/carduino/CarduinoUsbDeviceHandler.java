@@ -16,7 +16,7 @@ import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
 
-public class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<CarduinoSerialReader> {
+public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<CarduinoSerialReader> {
 
     private boolean isReady = false;
     private ArrayList<CarduinoPacketParser> packetParsers = new ArrayList<>();

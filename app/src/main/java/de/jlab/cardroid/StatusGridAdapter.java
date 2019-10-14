@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.LinkedHashMap;
 
-public class StatusGridAdapter extends BaseAdapter {
+public final class StatusGridAdapter extends BaseAdapter {
 
     private Context context;
     private LinkedHashMap<Integer, String> dataMap = new LinkedHashMap<>();

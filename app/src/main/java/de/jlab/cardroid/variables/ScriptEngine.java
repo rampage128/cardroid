@@ -5,7 +5,7 @@ import android.util.Log;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
-public class ScriptEngine {
+public final class ScriptEngine {
 
     private Scriptable scope;
 
