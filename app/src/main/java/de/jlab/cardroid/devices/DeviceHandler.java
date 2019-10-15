@@ -1,9 +1,12 @@
 package de.jlab.cardroid.devices;
 
+import android.app.Application;
+
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
 /* TODO add bluetooth support
  * - create a device wrapper to unify usb and bluetooth devices
@@ -60,6 +63,10 @@ public abstract class DeviceHandler {
         this.observer.onEnd(this);
     }
 
+    public final void notifyUidReceived(@NonNull DeviceUid uid) {
+        this.observer.deviceUidReceived(uid, this);
+    }
+
     public final DeviceDataProvider notifyFeatureDetected(@Nullable Class<? extends DeviceDataProvider> feature, @Nullable DeviceDataObservable observable, @Nullable Interactable interactable) {
         if (interactable != null) {
             this.addInteractable(interactable);
@@ -72,8 +79,10 @@ public abstract class DeviceHandler {
     }
 
     public abstract int getDeviceId();
+    public abstract DeviceUid requestNewUid(@NonNull Application app);
     public abstract boolean connectDevice();
     public abstract void disconnectDevice();
     public abstract boolean isConnected();
+    public abstract void allowCommunication();
 
 }

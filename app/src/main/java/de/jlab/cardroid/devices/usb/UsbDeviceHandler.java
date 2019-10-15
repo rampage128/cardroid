@@ -1,9 +1,11 @@
 package de.jlab.cardroid.devices.usb;
 
+import android.app.Application;
 import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public abstract class UsbDeviceHandler extends DeviceHandler {
 
@@ -16,6 +18,11 @@ public abstract class UsbDeviceHandler extends DeviceHandler {
     @Override
     public int getDeviceId() {
         return this.device.getDeviceId();
+    }
+
+    @Override
+    public DeviceUid requestNewUid(@NonNull Application app) {
+        return DeviceUid.fromUsbDevice(this.device);
     }
 
 }

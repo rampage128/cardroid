@@ -7,6 +7,7 @@ public enum CarduinoMetaType {
     CONNECTION_REQUEST(0x00),
     START_SNIFFING(0x0a),
     STOP_SNIFFING(0x0b),
+    SET_UID(0x49),
     CAR_DATA_DEFINITION(0x63),
     BAUD_RATE_REQUEST(0x72);
 

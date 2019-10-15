@@ -4,6 +4,7 @@ import android.app.Application;
 import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
 import de.jlab.cardroid.devices.serial.gps.GpsSerialReader;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
@@ -12,9 +13,12 @@ import de.jlab.cardroid.gps.GpsDataProvider;
 public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialReader> {
 
     private GpsPositionParser positionParser = new GpsPositionParser();
+    private DeviceUid uid;
 
     public GpsUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
+
+        this.uid = this.requestNewUid(app);
     }
 
     @Override
@@ -22,6 +26,7 @@ public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialR
         GpsSerialReader reader = new GpsSerialReader();
         reader.addSerialPacketListener(this.positionParser);
         this.notifyFeatureDetected(GpsDataProvider.class, this.positionParser, null);
+        this.notifyUidReceived(this.uid);
         return reader;
     }
 
@@ -33,4 +38,6 @@ public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialR
         reader.removeSerialPacketListener(this.positionParser);
     }
 
+    @Override
+    public void allowCommunication() {}
 }

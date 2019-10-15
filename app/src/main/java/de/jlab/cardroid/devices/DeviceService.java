@@ -19,6 +19,9 @@ import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.identification.DeviceUid;
+import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.devices.storage.DeviceRepository;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
@@ -257,6 +260,34 @@ public final class DeviceService extends Service {
         @Override
         public void onStart(@NonNull DeviceHandler device) {
             DeviceService.this.deviceConnected(device);
+        }
+
+        @Override
+        public void deviceUidReceived(@NonNull DeviceUid uid, @NonNull DeviceHandler device) {
+            DeviceRepository repo = new DeviceRepository(DeviceService.this.getApplication());
+            List<DeviceEntity> entities = repo.getSynchronous(uid.toString());
+
+            if (entities.isEmpty()) {
+                DeviceUid newUid = device.requestNewUid(DeviceService.this.getApplication());
+
+                Log.i(this.getClass().getSimpleName(), "Registering new device with id \"" + newUid.toString() + "\".");
+
+                if (!newUid.isUnique()) {
+                    // TODO show a warning to the user if device could not be uniquely identified (!newUid.isUnique())
+                    Log.w(this.getClass().getSimpleName(), "Device uid \"" + newUid.toString() + "\" is not guaranteed to be unique!");
+                }
+
+                DeviceEntity entity = new DeviceEntity(newUid.toString(), device.getClass().getSimpleName(), device.getClass());
+                repo.insert(entity);
+
+                new NewDeviceNotifier(DeviceService.this).notify(entity);
+            } else if (entities.size() == 1) {
+                device.allowCommunication();
+            } else {
+                // TODO handle case properly where more than one device entity are returned
+                Log.e(this.getClass().getSimpleName(), "More than one device registered with id \"" + uid.toString() + "\".");
+                device.disconnectDevice();
+            }
         }
 
         @Override
