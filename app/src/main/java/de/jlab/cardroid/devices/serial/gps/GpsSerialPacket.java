@@ -2,7 +2,6 @@ package de.jlab.cardroid.devices.serial.gps;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
-import java.util.StringJoiner;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.serial.SerialPacket;
@@ -27,7 +26,7 @@ public final class GpsSerialPacket implements SerialPacket {
         StringBuilder sentenceBuilder = new StringBuilder();
         sentenceBuilder.append("$");
         for (String token : this.tokens) {
-            sentenceBuilder.append(token);
+            sentenceBuilder.append(",").append(token);
         }
         return sentenceBuilder.toString();
     }
@@ -112,6 +111,11 @@ public final class GpsSerialPacket implements SerialPacket {
             catch (Exception e) { /* Intentionally left blank */ }
         }
         return d;
+    }
+
+    @Override
+    public String toString() {
+        return this.readSentence();
     }
 
 }

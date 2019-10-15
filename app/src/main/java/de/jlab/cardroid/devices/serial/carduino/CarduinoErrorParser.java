@@ -2,9 +2,14 @@ package de.jlab.cardroid.devices.serial.carduino;
 
 import java.util.ArrayList;
 
-public final class CarduinoErrorParser extends CarduinoPacketParser {
+import androidx.annotation.NonNull;
+import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.errors.ErrorObservable;
 
-    private ArrayList<ErrorListener> errorHandlers = new ArrayList<>();
+public final class CarduinoErrorParser extends CarduinoPacketParser implements ErrorObservable {
+
+    private DeviceHandler device;
+    private ArrayList<ErrorObservable.ErrorListener> errorHandlers = new ArrayList<>();
 
     @Override
     protected boolean shouldHandlePacket(CarduinoSerialPacket packet) {
@@ -15,22 +20,29 @@ public final class CarduinoErrorParser extends CarduinoPacketParser {
     protected void handlePacket(CarduinoSerialPacket packet) {
         int errorNumber = packet.getPacketId();
 
-        //Error[] errors = this.errors.values().toArray(new Error[0]);
-        //Arrays.sort(errors, (error1, error2) -> (int)(error1.getLastOccurence() - error2.getLastOccurence()));
-        for (ErrorListener handler : errorHandlers) {
-            handler.onError(errorNumber);
+        for (int i = 0; i < this.errorHandlers.size(); i++) {
+            this.errorHandlers.get(i).onError(errorNumber);
         }
     }
 
-    public void addListener(ErrorListener listener) {
+    @Override
+    public void addErrorListener(@NonNull ErrorListener listener) {
         this.errorHandlers.add(listener);
     }
 
-    public void removeListener(ErrorListener listener) {
+    @Override
+    public void removeErrorListener(@NonNull ErrorListener listener) {
         this.errorHandlers.remove(listener);
     }
 
-    public interface ErrorListener {
-        void onError(int errorNumber);
+    @Override
+    public void setDevice(@NonNull DeviceHandler device) {
+        this.device = device;
     }
+
+    @Override
+    public long getDeviceId() {
+        return this.device.getDeviceId();
+    }
+
 }

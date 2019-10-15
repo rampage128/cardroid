@@ -13,7 +13,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.serial.can.CanPacket;
+import de.jlab.cardroid.car.CanPacket;
 
 public final class CanView extends View {
 

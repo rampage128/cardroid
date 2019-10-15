@@ -2,8 +2,12 @@ package de.jlab.cardroid.car.ui;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.devices.serial.can.CanPacket;
+import de.jlab.cardroid.car.CanPacket;
 
+/**
+ * @deprecated The time dependency in this class can be introduces into CanPacket class, rendering this class obsolete.
+ */
+@Deprecated
 public final class SniffedCanPacket {
     private long id;
     private ArrayList<DataByte> payload = new ArrayList<>();

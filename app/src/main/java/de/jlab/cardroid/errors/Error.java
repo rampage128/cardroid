@@ -24,6 +24,10 @@ public final class Error {
         return this.count;
     }
 
+    public int getErrorNumber() {
+        return this.errorNumber;
+    }
+
     public String getErrorCode() {
         return String.format("%02X", this.errorNumber);
     }

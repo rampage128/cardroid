@@ -44,9 +44,10 @@ public abstract class SerialReader<PacketType extends SerialPacket> {
         this.byteStatistic.removeListener(listener);
     }
 
+    @NonNull
     protected abstract PacketType[] createPackets(@NonNull byte[] data);
 
     public interface SerialPacketListener<PacketType extends SerialPacket> {
-        void onReceivePackets(PacketType[] packets);
+        void onReceivePackets(@NonNull PacketType[] packets);
     }
 }

@@ -1,9 +1,9 @@
-package de.jlab.cardroid.devices.serial.can;
+package de.jlab.cardroid.car;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class CanPacket {
+public final class CanPacket {
 
     private long canId = 0;
     private byte[] data;

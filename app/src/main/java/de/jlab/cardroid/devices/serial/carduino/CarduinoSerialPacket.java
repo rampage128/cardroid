@@ -61,12 +61,11 @@ public final class CarduinoSerialPacket extends BinarySerialPacket {
         return super.readBytes(startIndex + OFFSET_PAYLOAD);
     }
 
-    public byte getPayloadSize() {
-        byte value = this.data[2];
-        if (value == FOOTER) {
+    public int getPayloadSize() {
+        if (this.data.length <= OFFSET_SIZE) {
             return 0;
         }
-        return value;
+        return this.data[OFFSET_SIZE] & 0xFF;
     }
 
     @Override
@@ -75,4 +74,24 @@ public final class CarduinoSerialPacket extends BinarySerialPacket {
         super.serialize(stream);
         stream.write(FOOTER);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append((char)HEADER).append(" ")
+                .append(CarduinoPacketType.getFromPacket(this)).append(String.format("(%02x) ", this.data[2]));
+
+        int payloadSize = this.getPayloadSize();
+        if (payloadSize > 0) {
+            builder.append(", payload (").append(payloadSize).append("): ");
+            for (int i = OFFSET_PAYLOAD; i < OFFSET_PAYLOAD + payloadSize; i++) {
+                builder.append(String.format("%02x ", this.data[i]));
+            }
+        }
+
+        builder.append((char)FOOTER);
+
+        return builder.toString();
+    }
+
 }

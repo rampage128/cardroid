@@ -2,7 +2,7 @@ package de.jlab.cardroid.variables;
 
 import java.util.HashMap;
 
-public class ObservableValueBag {
+public final class ObservableValueBag {
 
     private HashMap<String, ObservableValue> variables = new HashMap<>();
 

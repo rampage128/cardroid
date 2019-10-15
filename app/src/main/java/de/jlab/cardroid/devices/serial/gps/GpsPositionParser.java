@@ -2,14 +2,28 @@ package de.jlab.cardroid.devices.serial.gps;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.serial.SerialReader;
+import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
+import de.jlab.cardroid.gps.GpsObservable;
 
-public final class GpsPositionParser implements SerialReader.SerialPacketListener<GpsSerialPacket> {
+public final class GpsPositionParser implements SerialReader.SerialPacketListener<GpsSerialPacket>, GpsObservable {
 
+    private GpsUsbDeviceHandler device;
     private long lastPositionTime = 0;
     private GpsPosition position = new GpsPosition();
     private ArrayList<PositionListener> positionListeners = new ArrayList<>();
 
+    @Override
+    public void setDevice(@NonNull DeviceHandler device) {
+        this.device = (GpsUsbDeviceHandler)device;
+    }
+
+    @Override
+    public long getDeviceId() {
+        return this.device.getDeviceId();
+    }
 
     public void addPositionListener(PositionListener listener) {
         this.positionListeners.add(listener);
@@ -22,9 +36,10 @@ public final class GpsPositionParser implements SerialReader.SerialPacketListene
     @Override
     public void onReceivePackets(GpsSerialPacket[] packets) {
         for (GpsSerialPacket packet : packets) {
+            // FIXME: It doesn't make sense to hand in the sentence like this, because parse() only returns true for every group of sentences.
             if (this.parse(packet)) {
                 for (PositionListener listener : positionListeners) {
-                    listener.onUpdate(this.position, packet);
+                    listener.onUpdate(this.position, packet.readSentence());
                 }
             }
         }
@@ -45,10 +60,6 @@ public final class GpsPositionParser implements SerialReader.SerialPacketListene
         }
 
         return false;
-    }
-
-    public interface PositionListener {
-        void onUpdate(GpsPosition position, GpsSerialPacket packet);
     }
 
 }

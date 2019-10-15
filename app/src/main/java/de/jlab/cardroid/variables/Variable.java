@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 
-public class Variable implements ObservableValue.ValueObserver {
+public final class Variable implements ObservableValue.ValueObserver {
 
     private String name;
     private ObservableValue value;

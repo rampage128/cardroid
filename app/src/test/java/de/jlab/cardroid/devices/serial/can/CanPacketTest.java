@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 
+import de.jlab.cardroid.car.CanPacket;
+
 import static org.junit.Assert.*;
 
 class ComparisonData {

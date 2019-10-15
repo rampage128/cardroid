@@ -1,25 +1,28 @@
 package de.jlab.cardroid.devices.usb.serial;
 
+import android.app.Application;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.SerialReader;
+import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
 
 public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> extends UsbDeviceHandler {
 
     private ReaderType reader;
     private UsbSerialConnection connection;
+    private DeviceUid uid;
 
-    public UsbSerialDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull DeviceService service) {
-        super(device, service);
+    public UsbSerialDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
+        super(device);
 
-        UsbManager usbManager = (UsbManager)service.getSystemService(Context.USB_SERVICE);
+        UsbManager usbManager = (UsbManager)app.getSystemService(Context.USB_SERVICE);
         this.connection = new UsbSerialConnection(device, defaultBaudrate, usbManager);
+        this.uid = DeviceUid.fromUsbDevice(device);
     }
 
     @Override
@@ -31,7 +34,8 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
     public boolean connectDevice() {
         boolean isConnected = this.connection.connect();
         if (isConnected) {
-            Log.e(this.getClass().getSimpleName(), "Device connected " + this.getDeviceId());
+            Log.e(this.getClass().getSimpleName(), "Device connected " + this.getDeviceId() + " (" + this.connection.getBaudRate() + ")");
+            this.notifyStart();
             this.reader = this.onConnect();
             this.connection.addUsbSerialReader(this.reader);
         } else {
@@ -49,6 +53,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
             this.connection.disconnect();
         }
         this.onDisconnect(this.reader);
+        this.notifyEnd();
     }
 
     public void setBaudRate(int baudRate) {

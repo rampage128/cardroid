@@ -1,80 +1,108 @@
 package de.jlab.cardroid.devices.usb.serial.carduino;
 
+import android.app.Application;
 import android.hardware.usb.UsbDevice;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoErrorParser;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventParser;
+import de.jlab.cardroid.devices.identification.DeviceUid;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoFeatureDetector;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaParser;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketParser;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoUidGenerator;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
 
-public abstract class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<CarduinoSerialReader> {
+public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<CarduinoSerialReader> {
 
-    private CarduinoMetaParser metaParser;
-    private CarduinoErrorParser errorParser;
-    private CarduinoEventParser eventParser;
+    private boolean isReady = false;
+    private ArrayList<CarduinoPacketParser> packetParsers = new ArrayList<>();
+    private ArrayList<CarduinoSerialPacket> pendingPackets = new ArrayList<>();
+    private CarduinoMetaParser metaParser = null;
 
-    public CarduinoUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull DeviceService service) {
-        super(device, defaultBaudrate, service);
+    private byte[] carduinoId = null;
+
+    public CarduinoUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
+        super(device, defaultBaudrate, app);
     }
 
-    public void send(CarduinoSerialPacket packet) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        packet.serialize(bos);
-        this.send(bos.toByteArray());
+    public void send(CarduinoSerialPacket packet) {
+        if (!this.isReady) {
+            this.pendingPackets.add(packet);
+        } else {
+            this.sendImmediately(packet);
+        }
+    }
+
+    public void sendImmediately(CarduinoSerialPacket packet) {
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            packet.serialize(bos);
+            this.send(bos.toByteArray());
+        } catch (IOException e) {
+            Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()) + " for device " + this.getDeviceId());
+        }
     }
 
     @Override
     protected final CarduinoSerialReader onConnect() {
         CarduinoSerialReader reader = new CarduinoSerialReader();
 
-        this.eventParser = new CarduinoEventParser();
-        this.errorParser = new CarduinoErrorParser();
         this.metaParser = new CarduinoMetaParser(this, reader);
-        reader.addSerialPacketListener(this.metaParser);
-        reader.addSerialPacketListener(this.errorParser);
-        reader.addSerialPacketListener(this.eventParser);
-        this.onConnect(reader);
+
+        this.addPacketParser(new CarduinoFeatureDetector(this, reader), reader);
+        this.addPacketParser(this.metaParser, reader);
 
         return reader;
     }
 
-    public void addEventListener(CarduinoEventParser.EventListener listener) {
-        this.eventParser.addEventListener(listener);
+    public void addPacketParser(CarduinoPacketParser parser, CarduinoSerialReader reader) {
+        reader.addSerialPacketListener(parser);
     }
 
-    public void removeEventListener(CarduinoEventParser.EventListener listener) {
-        this.eventParser.removeEventListener(listener);
-    }
-
-    public void addErrorListener(CarduinoErrorParser.ErrorListener listener) {
-        this.errorParser.addListener(listener);
-    }
-
-    public void removeErrorListener(CarduinoErrorParser.ErrorListener listener) {
-        this.errorParser.removeListener(listener);
+    @Override
+    protected void onConnectFailed() {
+        // Nothing to do here
     }
 
     @Override
     protected final void onDisconnect(CarduinoSerialReader reader) {
-        reader.removeSerialPacketListener(this.metaParser);
-        reader.removeSerialPacketListener(this.errorParser);
-        reader.removeSerialPacketListener(this.eventParser);
-        this.metaParser = null;
-        this.errorParser = null;
-        this.eventParser = null;
-        this.onDisconnectCarduino(reader);
+        for (int i = 0; i < this.packetParsers.size(); i++) {
+            reader.removeSerialPacketListener(this.packetParsers.remove(i));
+        }
     }
 
-    protected abstract void onConnect(CarduinoSerialReader reader);
-    protected abstract void onDisconnectCarduino(CarduinoSerialReader reader);
+    public void onCarduinoIdReceived(@NonNull byte[] carduinoId) {
+        if (!Arrays.equals(this.carduinoId, carduinoId)) {
+            this.carduinoId = carduinoId;
+            this.notifyUidReceived(CarduinoUidGenerator.getUid(carduinoId));
+        }
+    }
 
-    public abstract void onHandshake(CarduinoSerialReader reader);
+    public void onHandshake(CarduinoSerialReader reader) {
+        this.isReady = true;
+        while (!this.pendingPackets.isEmpty()) {
+            this.sendImmediately(this.pendingPackets.remove(0));
+        }
+    }
+
+    @Override
+    public DeviceUid requestNewUid(@NonNull Application app) {
+        byte[] carduinoId = CarduinoUidGenerator.generateId(app).getBytes();
+        this.sendImmediately(CarduinoMetaType.createPacket(CarduinoMetaType.SET_UID, carduinoId));
+        return CarduinoUidGenerator.getUid(carduinoId);
+    }
+
+    @Override
+    public void allowCommunication() {
+        this.metaParser.allowHandshake();
+    }
 
 }

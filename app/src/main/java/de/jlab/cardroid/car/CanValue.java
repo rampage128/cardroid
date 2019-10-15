@@ -1,10 +1,9 @@
 package de.jlab.cardroid.car;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.serial.can.CanPacket;
 import de.jlab.cardroid.variables.ObservableValue;
 
-public class CanValue extends ObservableValue {
+public final class CanValue extends ObservableValue {
 
     public enum DataType {
         BIG_ENDIAN((bitIndex, bitLength, packet) -> packet.readBigEndian(bitIndex, bitLength)),

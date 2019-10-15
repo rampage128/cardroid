@@ -1,16 +1,17 @@
 package de.jlab.cardroid.devices.usb;
 
+import android.app.Application;
 import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
-public abstract class UsbDeviceHandler implements DeviceHandler {
+public abstract class UsbDeviceHandler extends DeviceHandler {
 
     private UsbDevice device;
 
-    public UsbDeviceHandler(@NonNull UsbDevice device, @NonNull DeviceService service) {
+    public UsbDeviceHandler(@NonNull UsbDevice device) {
         this.device = device;
     }
 
@@ -19,8 +20,9 @@ public abstract class UsbDeviceHandler implements DeviceHandler {
         return this.device.getDeviceId();
     }
 
-    protected UsbDevice getUsbDevice() {
-        return this.device;
+    @Override
+    public DeviceUid requestNewUid(@NonNull Application app) {
+        return DeviceUid.fromUsbDevice(this.device);
     }
 
 }

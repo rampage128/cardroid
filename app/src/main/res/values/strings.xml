@@ -203,9 +203,21 @@
     <!-- NOTIFICATIONS -->
     <string name="notification_channel_error_name">Errors</string>
     <string name="notification_channel_error_description">Display Errors from Carduino</string>
+    <string name="notification_channel_new_devices_name">New device detections</string>
+    <string name="notification_channel_new_devices_description">Display detection of previously unknown devices</string>
 
     <string name="notification_error_title">%1$d new Carduino errors</string>
     <string name="notification_error_text">Last error: %1$s</string>
+
+    <string name="notification_new_device_title">New device detected</string>
+    <string name="notification_new_device_text">Tap to set up %1$s</string>
+    <string name="notification_new_device_detail_uid">UID: %1$s</string>
+    <string name="notification_new_device_detail_type">Type: %1$s</string>
+
+    <!-- DEVICE TYPES -->
+    <string name="device_type_unknown">Unknown</string>
+    <string name="device_type_carduinousbdevicehandler">Carduino</string>
+    <string name="device_type_gpsusbdevicehandler">GPS</string>
 
     <!-- CARDUINO ERRORS -->
     <string name="carduino_error">%1$s: %2$s x%3$d</string>

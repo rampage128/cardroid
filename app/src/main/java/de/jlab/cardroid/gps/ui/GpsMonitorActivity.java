@@ -4,8 +4,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.format.DateUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -16,16 +16,15 @@ import android.widget.TextView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.gps.GpsSerialPacket;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 import de.jlab.cardroid.devices.serial.gps.GpsSatellite;
 import de.jlab.cardroid.gps.GpsDataProvider;
-import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
+import de.jlab.cardroid.gps.GpsObservable;
 
-public final class GpsMonitorActivity extends AppCompatActivity implements GpsPositionParser.PositionListener {
+public final class GpsMonitorActivity extends AppCompatActivity implements GpsObservable.PositionListener {
 
     private ScrollView rawDataScrollView;
     private TextView rawDataTextView;
@@ -167,13 +166,13 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsPo
     }
 
     @Override
-    public void onUpdate(GpsPosition position, GpsSerialPacket packet) {
+    public void onUpdate(GpsPosition position, String sentence) {
         this.sentenceCounter++;
 
         if (this.sentenceCounter > 1) {
             this.rawText.append("\n");
         }
-        this.rawText.append(packet.readSentence());
+        this.rawText.append(sentence);
         if (this.sentenceCounter >= 100) {
             this.rawText.replace(0, this.rawText.indexOf("\n") + 1, "");
         }
@@ -195,7 +194,7 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsPo
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), GpsDataProvider.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public void updateRawText(String rawData) {

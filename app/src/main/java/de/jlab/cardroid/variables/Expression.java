@@ -5,7 +5,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import java.util.ArrayList;
 
-public class Expression extends ObservableValue {
+public final class Expression extends ObservableValue {
 
     private ArrayList<VariableHandler> variableHandlers = new ArrayList<>();
 

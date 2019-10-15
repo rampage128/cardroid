@@ -3,13 +3,11 @@ package de.jlab.cardroid.rules.actions;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
-import android.view.KeyEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import androidx.annotation.RequiresApi;
 import de.jlab.cardroid.rules.properties.ActionPropertyEditor;
 import de.jlab.cardroid.rules.properties.OptionPropertyEditor;
 import de.jlab.cardroid.rules.properties.PropertyValue;

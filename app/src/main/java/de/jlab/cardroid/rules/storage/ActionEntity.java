@@ -3,7 +3,6 @@ package de.jlab.cardroid.rules.storage;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -11,7 +10,6 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import de.jlab.cardroid.rules.properties.Property;
-import de.jlab.cardroid.rules.properties.PropertyValue;
 
 import static androidx.room.ForeignKey.CASCADE;
 

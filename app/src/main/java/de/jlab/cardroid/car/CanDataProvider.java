@@ -5,21 +5,21 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.can.CanDeviceHandler;
 import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
 
-public final class CanDataProvider extends DeviceDataProvider<CanDeviceHandler> {
+public final class CanDataProvider extends DeviceDataProvider {
 
-    private ArrayList<CanDeviceHandler.CanPacketListener> externalListeners = new ArrayList<>();
+    private ArrayList<CanObservable.CanPacketListener> externalListeners = new ArrayList<>();
     private ArrayList<CanPacketDescriptor> packetDescriptors = new ArrayList<>();
     private boolean isSniffing = false;
 
     private DeviceService service;
 
-    private CanDeviceHandler.CanPacketListener listener = packet -> {
+    private CanObservable.CanPacketListener listener = packet -> {
         for (int i = 0; i < this.externalListeners.size(); i++) {
             this.externalListeners.get(i).onReceive(packet);
         }
@@ -239,77 +239,112 @@ public final class CanDataProvider extends DeviceDataProvider<CanDeviceHandler> 
         return value;
     }
 
-    public void addExternalListener(@NonNull CanDeviceHandler.CanPacketListener externalListener) {
+    public void addExternalListener(@NonNull CanObservable.CanPacketListener externalListener) {
         this.externalListeners.add(externalListener);
     }
 
-    public void removeExternalListener(@NonNull CanDeviceHandler.CanPacketListener externalListener) {
+    public void removeExternalListener(@NonNull CanObservable.CanPacketListener externalListener) {
         this.externalListeners.remove(externalListener);
     }
 
     public void subscribeCanId(CanPacketDescriptor descriptor) {
         this.packetDescriptors.add(descriptor);
-        ArrayList<CanDeviceHandler> devices = this.getDevices();
+        this.registerCanId(descriptor);
+    }
+
+    private void registerCanId(CanPacketDescriptor descriptor) {
+        ArrayList<DeviceHandler> devices = this.getDevices();
         for (int i = 0; i < devices.size(); i++) {
-            devices.get(i).registerCanId(descriptor);
+            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+            if (interactable != null) {
+                interactable.registerCanId(descriptor);
+            }
         }
     }
 
     public void unsubscribeCanId(CanPacketDescriptor descriptor) {
         this.packetDescriptors.remove(descriptor);
-        ArrayList<CanDeviceHandler> devices = this.getDevices();
+        this.unregisterCanId(descriptor);
+    }
+
+    private void unregisterCanId(CanPacketDescriptor descriptor) {
+        ArrayList<DeviceHandler> devices = this.getDevices();
         for (int i = 0; i < devices.size(); i++) {
-            devices.get(i).unregisterCanId(descriptor);
+            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+            if (interactable != null) {
+                interactable.unregisterCanId(descriptor);
+            }
         }
     }
 
     public void startCanSniffer() {
         this.isSniffing = true;
-        ArrayList<CanDeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getDevices();
         for (int i = 0; i < devices.size(); i++) {
-            devices.get(i).startSniffer();
+            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+            if (interactable != null) {
+                interactable.startSniffer();
+            }
         }
     }
 
     public void stopCanSniffer() {
         this.isSniffing = false;
-        ArrayList<CanDeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getDevices();
         for (int i = 0; i < devices.size(); i++) {
-            devices.get(i).stopSniffer();
+            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+            if (interactable != null) {
+                interactable.stopSniffer();
+            }
         }
     }
 
-    private void deviceRemoved(CanDeviceHandler device) {
-        device.removeCanListener(this.listener);
+    private void deviceRemoved(DeviceHandler device) {
         for (int i = 0; i < this.packetDescriptors.size(); i++) {
-            device.unregisterCanId(this.packetDescriptors.get(i));
+            this.unregisterCanId(this.packetDescriptors.get(i));
+        }
+        CanObservable observable = device.getObservable(CanObservable.class);
+        if (observable != null) {
+            observable.removeCanListener(this.listener);
         }
     }
 
-    private void deviceAdded(CanDeviceHandler device) {
-        device.addCanListener(this.listener);
+    private void deviceAdded(DeviceHandler device) {
+        CanObservable observable = device.getObservable(CanObservable.class);
+        if (observable != null) {
+            observable.addCanListener(this.listener);
+        }
+
         for (int i = 0; i < this.packetDescriptors.size(); i++) {
-            device.registerCanId(this.packetDescriptors.get(i));
+            this.registerCanId(this.packetDescriptors.get(i));
         }
         if (this.isSniffing) {
-            device.startSniffer();
+            ArrayList<DeviceHandler> devices = this.getDevices();
+            for (int i = 0; i < devices.size(); i++) {
+                CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+                if (interactable != null) {
+                    interactable.startSniffer();
+                }
+            }
         }
     }
 
     @Override
-    protected void onUpdate(@NonNull CanDeviceHandler previousDevice, @NonNull CanDeviceHandler newDevice, @NonNull DeviceService service) {
+    protected void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service) {
         this.deviceRemoved(previousDevice);
         this.deviceAdded(newDevice);
     }
 
     @Override
-    protected void onStop(@NonNull CanDeviceHandler device, @NonNull DeviceService service) {
+    protected void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service) {
         this.deviceRemoved(device);
-        this.service.hideOverlay();
+        if (this.getConnectedDeviceCount() < 1) {
+            this.service.hideOverlay();
+        }
     }
 
     @Override
-    protected void onStart(@NonNull CanDeviceHandler device, @NonNull DeviceService service) {
+    protected void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service) {
         this.deviceAdded(device);
         this.service.showOverlay();
     }

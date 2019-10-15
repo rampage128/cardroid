@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="serial_detection_baud_rates">
+        <item>115200</item>
+        <item>4800</item>
+        <item>9600</item>
+    </integer-array>
+</resources>

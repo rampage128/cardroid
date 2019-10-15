@@ -1,8 +1,5 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
-import android.util.Log;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;
@@ -11,9 +8,12 @@ import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 public final class CarduinoMetaParser extends CarduinoPacketParser {
 
     private static final byte PROTOCOL_MAJOR = 0x01;
+    private static final int OFFSET_CARDUINO_ID = 3;
+    private static final int LENGTH_CARDUINO_ID = 3;
 
     private CarduinoUsbDeviceHandler device;
     private CarduinoSerialReader reader;
+    private boolean allowConnection = false;
 
     private static final CarduinoSerialPacket PACKET_CONNECTION_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.CONNECTION_REQUEST, new byte[] { PROTOCOL_MAJOR });
     private static final CarduinoSerialPacket PACKET_BAUD_RATE_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.BAUD_RATE_REQUEST, ByteBuffer.allocate(4).putInt(115200).array());
@@ -33,7 +33,11 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         int eventType = packet.getPacketId();
 
         if (eventType == 0x00) {
-            this.requestConnection(packet);
+            this.carduinoIdReceived(packet.readBytes(OFFSET_CARDUINO_ID, LENGTH_CARDUINO_ID));
+
+            if (this.allowConnection) {
+                this.requestConnection(packet);
+            }
         }
         else if (eventType == 0x01) {
             this.acceptHandshake();
@@ -45,6 +49,17 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         else if (eventType == 0x03) {
             this.device.disconnectDevice();
         }
+        else if (eventType == 0x49) { // TODO: check out if this packet is obsolete
+            this.carduinoIdReceived(packet.readBytes(0, LENGTH_CARDUINO_ID));
+        }
+    }
+
+    private void carduinoIdReceived(@NonNull byte[] carduinoId) {
+        this.device.onCarduinoIdReceived(carduinoId);
+    }
+
+    public void allowHandshake() {
+        this.allowConnection = true;
     }
 
     private void acceptHandshake() {
@@ -69,12 +84,7 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         //int revision = packet.readByte(2);
 
         if (major == PROTOCOL_MAJOR) {
-            try {
-                this.device.send(PACKET_CONNECTION_REQUEST);
-            } catch (IOException e) {
-                Log.e(this.getClass().getSimpleName(), "Error sending connection request", e);
-                this.device.disconnectDevice();
-            }
+            this.device.sendImmediately(PACKET_CONNECTION_REQUEST);
         } else {
             this.device.disconnectDevice();
         }

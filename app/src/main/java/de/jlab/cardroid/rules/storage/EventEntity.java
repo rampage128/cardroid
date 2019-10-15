@@ -1,6 +1,5 @@
 package de.jlab.cardroid.rules.storage;
 
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 

@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 import de.jlab.cardroid.rules.actions.KillAppAction;
 import de.jlab.cardroid.rules.actions.MediaKeyAction;
-import de.jlab.cardroid.rules.actions.VolumeAdjustAction;
 import de.jlab.cardroid.rules.actions.StartAppAction;
 import de.jlab.cardroid.rules.actions.VoiceAction;
+import de.jlab.cardroid.rules.actions.VolumeAdjustAction;
 import de.jlab.cardroid.rules.actions.WifiToggleAction;
 import de.jlab.cardroid.rules.properties.ActionPropertyEditor;
 import de.jlab.cardroid.rules.properties.Property;
