@@ -39,8 +39,8 @@ public final class UsbSerialConnection {
         Log.e("PACKET", packetOutput.toString());
 
         bandWidthUsage.count(bytes.length);
-        for (SerialReader reader : readers) {
-            reader.onReceiveData(bytes);
+        for (int i = 0; i < this.readers.size(); i++) {
+            this.readers.get(i).onReceiveData(bytes);
         }
     };
 
