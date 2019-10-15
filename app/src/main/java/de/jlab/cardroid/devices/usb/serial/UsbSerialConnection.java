@@ -32,12 +32,6 @@ public final class UsbSerialConnection {
     private ArrayList<SerialReader> readers = new ArrayList<>();
 
     private UsbSerialInterface.UsbReadCallback readCallback = bytes -> {
-        StringBuilder packetOutput = new StringBuilder(this.device.getDeviceId() + ", " + this.hashCode() + " <-");
-        for (int i = 0; i < bytes.length; i++) {
-            packetOutput.append(String.format(" %02x", bytes[i]));
-        }
-        Log.e("PACKET", packetOutput.toString());
-
         bandWidthUsage.count(bytes.length);
         for (int i = 0; i < this.readers.size(); i++) {
             this.readers.get(i).onReceiveData(bytes);
@@ -133,12 +127,6 @@ public final class UsbSerialConnection {
             Log.e(this.getClass().getSimpleName(), "Can not send packet, device " + this.device.getDeviceId() + " is not connected!");
             return false;
         }
-
-        StringBuilder packet = new StringBuilder(this.device.getDeviceId() + " ->");
-        for (int i = 0; i < data.length; i++) {
-            packet.append(String.format(" %02x", data[i]));
-        }
-        Log.e("PACKET", packet.toString());
 
         this.serial.write(data);
         return true;
