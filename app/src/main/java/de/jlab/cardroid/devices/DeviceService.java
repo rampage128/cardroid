@@ -24,6 +24,7 @@ import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
+import de.jlab.cardroid.devices.usb.camera.UsbTv007DeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
@@ -77,7 +78,8 @@ public final class DeviceService extends Service {
                 new UsbSerialDeviceDetector(
                         new CarduinoSerialMatcher(),
                         new GpsSerialMatcher()
-                ));
+                ),
+                new UsbTv007DeviceDetector());
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }

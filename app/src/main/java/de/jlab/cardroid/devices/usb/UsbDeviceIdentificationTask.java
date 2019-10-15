@@ -5,6 +5,7 @@ import android.hardware.usb.UsbDevice;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -81,6 +82,7 @@ public final class UsbDeviceIdentificationTask {
         public DeviceDetectorInfo(@NonNull UsbDevice device, @NonNull XmlResourceParser parser) {
             this.device = device;
             this.parser = parser;
+            this.classNames = new HashSet<String>();
             parseDetectorList();
         }
 
@@ -93,7 +95,7 @@ public final class UsbDeviceIdentificationTask {
                         String nodeName = parser.getName();
                         if (nodeName.equals("usb-device")) {
                             boolean match = false;
-                            String vendorIdStr = parser.getAttributeIntValue(null, "vendor-id");
+                            String vendorIdStr = parser.getAttributeValue(null, "vendor-id");
                             String productIdStr = parser.getAttributeValue(null, "product-id");
                             if (vendorIdStr != null) {
                                 match = device.getVendorId() == Integer.parseInt(vendorIdStr);
@@ -104,13 +106,13 @@ public final class UsbDeviceIdentificationTask {
                                 match = match && device.getProductId() == Integer.parseInt(productIdStr);
                             }
                             if (match) {
-                                // parse all the detectors
+                                deviceMatchFound = true;
                             }
                         } else if (deviceMatchFound && nodeName.equals("detector")) {
                             classNames.add(parser.getAttributeValue(null, "class"));
                         }
-                        eventType = parser.next();
                     }
+                    eventType = parser.next();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

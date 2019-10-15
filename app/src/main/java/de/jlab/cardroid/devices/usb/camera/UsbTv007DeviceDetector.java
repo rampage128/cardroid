@@ -11,6 +11,6 @@ public class UsbTv007DeviceDetector extends UsbDeviceDetector {
 
     @Override
     protected boolean startIdentification(@NonNull UsbDevice device, @NonNull DeviceService service) {
-        
+        return false;
     }
 }
