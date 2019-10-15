@@ -6,13 +6,14 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
+import de.jlab.cardroid.storage.CardroidDatabase;
 
 public class EventRepository {
 
     private EventDao eventDao;
 
     public EventRepository(Application application) {
-        RulesDatabase db = RulesDatabase.getDatabase(application);
+        CardroidDatabase db = CardroidDatabase.getDatabase(application);
         this.eventDao = db.eventDao();
     }
 

@@ -4,13 +4,14 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
+import de.jlab.cardroid.storage.CardroidDatabase;
 
 public class ActionRepository {
 
     private ActionDao actionDao;
 
     public ActionRepository(Application application) {
-        RulesDatabase db = RulesDatabase.getDatabase(application);
+        CardroidDatabase db = CardroidDatabase.getDatabase(application);
         this.actionDao = db.actionDao();
     }
 
