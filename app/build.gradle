@@ -51,4 +51,5 @@ dependencies {
     implementation 'io.apisense:rhino-android:1.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
+    implementation 'com.github.estingala:usbtv007-android:master-SNAPSHOT'
 }

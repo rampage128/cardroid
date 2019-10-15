@@ -17,6 +17,7 @@
     <uses-feature android:name="android.hardware.usb.host"/>
 
     <application
+        tools:replace="android:allowBackup"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
