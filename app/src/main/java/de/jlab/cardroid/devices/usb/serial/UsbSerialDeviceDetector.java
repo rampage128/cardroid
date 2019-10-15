@@ -98,11 +98,13 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         @NonNull
         @Override
         protected SerialPacket[] createPackets(@NonNull byte[] data) {
-            int baudRate = UsbSerialDeviceDetector.this.baudRates[UsbSerialDeviceDetector.this.currentBaudRateIndex];
-            for (SerialMatcher matcher : matchers) {
-                DeviceHandler device = matcher.detect(data, this.device, baudRate, this.app);
-                if (device != null) {
-                    deviceDetected(device);
+            if (UsbSerialDeviceDetector.this.baudRates.length > UsbSerialDeviceDetector.this.currentBaudRateIndex) {
+                int baudRate = UsbSerialDeviceDetector.this.baudRates[UsbSerialDeviceDetector.this.currentBaudRateIndex];
+                for (SerialMatcher matcher : matchers) {
+                    DeviceHandler device = matcher.detect(data, this.device, baudRate, this.app);
+                    if (device != null) {
+                        deviceDetected(device);
+                    }
                 }
             }
 
