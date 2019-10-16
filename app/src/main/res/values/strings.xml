@@ -107,6 +107,9 @@
     <string name="pref_header_rules">Rules</string>
     <string name="pref_header_description_rules">Define rules for event based actionEntities</string>
 
+    <string name="pref_header_devices">Devices</string>
+    <string name="pref_header_description_devices">Manage connected devices</string>
+
     <!-- status grids -->
     <string name="status_unavailable">N/A</string>
     <string name="status_connection">Connection</string>

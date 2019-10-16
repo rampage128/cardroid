@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    android:showDividers="middle"
+    tools:context=".devices.ui.DeviceActivity">
+
+    <!--
+    This layout is a two-pane layout for the Devices
+    master/detail flow.
+    -->
+
+    <FrameLayout
+        android:id="@+id/list_container"
+        android:layout_width="@dimen/item_width"
+        android:layout_height="match_parent"
+        tools:context=".devices.ui.DeviceActivity"/>
+
+    <FrameLayout
+        android:id="@+id/detail_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3"/>
+
+</LinearLayout>
