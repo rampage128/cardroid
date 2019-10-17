@@ -21,6 +21,8 @@ import de.jlab.cardroid.devices.storage.DeviceEntity;
 
 public final class DeviceActivity extends AppCompatActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener {
 
+    public static final String EXTRA_DEVICE_ID = "deviceId";
+
     private boolean isTwoPane;
 
     private Fragment activeFragment;
@@ -45,6 +47,11 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
 
         if (savedInstanceState == null) {
             showList();
+        }
+
+        int deviceId = this.getIntent().getIntExtra(EXTRA_DEVICE_ID, 0);
+        if (deviceId > 0) {
+            this.showDevice(deviceId);
         }
 
         // TODO: Bind service to get connected devices and allow interaction
@@ -86,6 +93,10 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
                 .commit();
     }
 
+    private void showDevice(int deviceId) {
+        this.switchFragment(DeviceDetailFragment.newInstance(deviceId));
+    }
+
     private void switchFragment(Fragment fragment) {
         int container = this.isTwoPane ? R.id.detail_container : R.id.list_container;
 
@@ -98,7 +109,7 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
 
     @Override
     public void onDeviceSelected(DeviceEntity deviceEntity) {
-        this.switchFragment(DeviceDetailFragment.newInstance(deviceEntity.uid));
+        showDevice(deviceEntity.uid);
     }
 
     @Override
