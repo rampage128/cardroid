@@ -146,6 +146,54 @@
     <string name="car_status_packets">Packets per second</string>
     <string name="car_status_variables">Registered variables</string>
 
+    <!-- Device editor -->
+    <string name="title_device_list">Devices</string>
+    <string name="title_device_detail">Device %1$s</string>
+    <string name="title_device_rename">Rename Device</string>
+    <string name="device_name">Device Name</string>
+    <string name="action_device_disconnect">Disconnect</string>
+    <string name="action_device_disconnect_confirm">
+        <![CDATA[
+            <p>This will disconnect the device.</p>
+            <p>The device will only be reconnected after a power-cycle.</p>
+        ]]>
+    </string>
+    <string name="action_device_reset">Reset</string>
+    <string name="action_device_reset_confirm">
+        <![CDATA[
+            <p>This will reset the device to factory settings.</p>
+            <ul>
+                <li>The device will only be reconnected after a power-cycle.</li>
+                <li>The device will be detected as a new device.</li>
+                <li>All user settings associated to the device will not be associated to it anymore.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_reboot">Reboot</string>
+    <string name="action_device_reboot_confirm">
+        <![CDATA[
+            <p>This will reboot the device.</p>
+            <ul>
+                <li>Some devices might require a power-cycle to reconnect.</li>
+                <li>During operation this can lead to unexpected behaviour.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_delete">Delete</string>
+    <string name="action_device_delete_confirm">
+        <![CDATA[
+            <p>This will delete the device.</p>
+            <ul>
+                <li>All user settings associated to the device will not be associated to it anymore.</li>
+                <li>All device settings will be lost.</li>
+                <li>The device will be detected as new device on next connection.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_rename">Rename</string>
+    <string name="device_features">Device Features</string>
+    <string name="error_device_name_blank">Device name cannot be blank</string>
+
     <!-- Rule editor -->
     <string name="title_rule_list">Rules</string>
     <string name="edit_rule">Edit Rule</string>
@@ -218,6 +266,7 @@
     <string name="notification_new_device_detail_type">Type: %1$s</string>
 
     <!-- DEVICE TYPES -->
+    <string name="device_type">Device Type</string>
     <string name="device_type_unknown">Unknown</string>
     <string name="device_type_carduinousbdevicehandler">Carduino</string>
     <string name="device_type_gpsusbdevicehandler">GPS</string>
@@ -233,4 +282,7 @@
     <string name="carduino_error_33">CAN send buffer full</string>
     <string name="carduino_error_34">CAN send timeout</string>
     <string name="carduino_error_35">CAN control error</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

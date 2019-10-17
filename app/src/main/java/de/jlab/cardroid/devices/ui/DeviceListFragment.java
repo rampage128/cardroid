@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 
 /**
@@ -126,9 +128,11 @@ public final class DeviceListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(final DeviceListFragment.DeviceListAdapter.ViewHolder holder, int position) {
+            DeviceType type = DeviceType.get(mValues.get(position));
+
             holder.name.setText(mValues.get(position).displayName);
             holder.uid.setText(mValues.get(position).deviceUid);
-            holder.type.setText(mValues.get(position).className);
+            holder.type.setImageResource(type.getTypeIcon());
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);
@@ -142,13 +146,13 @@ public final class DeviceListFragment extends Fragment {
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView name;
             final TextView uid;
-            final TextView type;
+            final ImageView type;
 
             ViewHolder(View view) {
                 super(view);
                 this.name = view.findViewById(R.id.name);
                 this.uid = view.findViewById(R.id.uid);
-                this.type = view.findViewById(R.id.type);
+                this.type = view.findViewById(R.id.type_icon);
             }
         }
     }
