@@ -27,6 +27,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity android:name=".devices.ui.DeviceActivity"
+            android:label="@string/title_device_list"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
