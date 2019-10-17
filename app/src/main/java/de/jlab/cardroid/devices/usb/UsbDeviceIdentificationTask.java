@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,10 +31,7 @@ public final class UsbDeviceIdentificationTask {
         this.detectors.addAll(Arrays.asList(detectors));
         this.service = service;
         this.observer = observer;
-        this.filter = DeviceDetectorFilter.getCachedFilter();
-        if (this.filter == null) {
-             this.filter = DeviceDetectorFilter.initializeCachedFilter(this.service.getResources().getXml(R.xml.device_filter));
-        }
+        this.filter = DeviceDetectorFilter.getCachedFilter(() -> this.service.getResources().getXml(R.xml.device_filter));
     }
 
     public void identify(@NonNull UsbDevice device) {
@@ -92,12 +90,10 @@ class DeviceDetectorFilter {
 
     }
 
-    public static DeviceDetectorFilter getCachedFilter() {
-        return cachedFilter;
-    }
-
-    public static DeviceDetectorFilter initializeCachedFilter(@NonNull XmlResourceParser parser) {
-        cachedFilter = new DeviceDetectorFilter(parser);
+    public static DeviceDetectorFilter getCachedFilter(Supplier<XmlResourceParser> resourceProvider) {
+        if (cachedFilter == null) {
+            cachedFilter = new DeviceDetectorFilter(resourceProvider.get());
+        }
         return cachedFilter;
     }
 
