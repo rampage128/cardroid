@@ -25,12 +25,12 @@ public interface DeviceDao {
     List<DeviceEntity> getSynchronous(String deviceUid);
 
     @Insert
-    void insert(DeviceEntity... actionEntities);
+    void insert(DeviceEntity... deviceEntities);
 
     @Update
-    void update(DeviceEntity... actionEntities);
+    void update(DeviceEntity... deviceEntities);
 
     @Delete()
-    void delete(DeviceEntity... actionEntities);
+    void delete(DeviceEntity... deviceEntities);
 
 }
