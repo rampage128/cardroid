@@ -2,6 +2,7 @@ package de.jlab.cardroid.devices.storage;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -40,6 +41,10 @@ public final class DeviceEntity {
 
     @TypeConverters(DeviceFeatureConverters.class)
     public ArrayList<String> features;
+
+    public boolean isDeviceType(@NonNull DeviceHandler device) {
+        return device.getClass().getSimpleName().equals(this.className);
+    }
 
     public void addFeature(Class<? extends DeviceDataProvider> feature) {
         this.features.add(feature.getSimpleName());

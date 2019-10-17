@@ -281,6 +281,13 @@ public final class DeviceService extends Service {
             DeviceRepository repo = new DeviceRepository(DeviceService.this.getApplication());
             List<DeviceEntity> entities = repo.getSynchronous(uid.toString());
 
+            // Filter retrieved entities by device type in case the uid was not unique
+            for (Iterator<DeviceEntity> it = entities.iterator(); it.hasNext(); ) {
+                if (!it.next().isDeviceType(device)) {
+                    it.remove();
+                }
+            }
+
             if (entities.isEmpty()) {
                 DeviceUid newUid = device.requestNewUid(DeviceService.this.getApplication());
 
