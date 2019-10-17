@@ -38,12 +38,16 @@ public final class DeviceRepository {
         }
     }
 
-    public void insert(DeviceEntity... eventEntities) {
-        new insertAsyncTask(this.deviceDao).execute(eventEntities);
+    public void insert(DeviceEntity... deviceEntities) {
+        new insertAsyncTask(this.deviceDao).execute(deviceEntities);
     }
 
-    public void update(DeviceEntity... eventEntities) {
-        new updateAsyncTask(this.deviceDao).execute(eventEntities);
+    public void update(DeviceEntity... deviceEntities) {
+        new updateAsyncTask(this.deviceDao).execute(deviceEntities);
+    }
+
+    public void delete(DeviceEntity... deviceEntities) {
+        new deleteAsyncTask(this.deviceDao).execute(deviceEntities);
     }
 
     private static class getAsyncTask extends AsyncTask<String, Void, List<DeviceEntity>> {
@@ -83,6 +87,18 @@ public final class DeviceRepository {
         @Override
         protected Void doInBackground(final DeviceEntity... deviceEntities) {
             this.asyncTaskDao.update(deviceEntities);
+            return null;
+        }
+    }
+
+    private static class deleteAsyncTask extends AsyncTask<DeviceEntity, Void, Void> {
+        private DeviceDao asyncTaskDao;
+
+        deleteAsyncTask(DeviceDao dao) { this.asyncTaskDao = dao; }
+
+        @Override
+        protected Void doInBackground(DeviceEntity... deviceEntities) {
+            this.asyncTaskDao.delete(deviceEntities);
             return null;
         }
     }

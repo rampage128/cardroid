@@ -9,9 +9,9 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.util.SparseArray;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,7 +40,7 @@ public final class DeviceService extends Service {
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
 
-    private SparseArray<DeviceHandler> devices = new SparseArray<>();
+    private DeviceConnectionStore deviceStore = new DeviceConnectionStore();
 
     private HashMap<Class<? extends DeviceDataProvider>, DeviceDataProvider> dataProviders = new HashMap<>();
 
@@ -158,12 +158,10 @@ public final class DeviceService extends Service {
 
     private void usbDeviceDetached(@NonNull UsbDevice device) {
         Log.e(this.getClass().getSimpleName(), "Device detached " + device.getDeviceId());
-        int deviceId = device.getDeviceId();
-        DeviceHandler handler = this.devices.get(deviceId);
-        if (handler != null) {
-            handler.disconnectDevice();
+        DeviceConnection connection = this.deviceStore.remove(device);
+        if (connection != null) {
+            connection.getDevice().disconnectDevice();
         }
-        this.devices.remove(deviceId);
         this.disposeIfEmpty();
     }
 
@@ -177,14 +175,13 @@ public final class DeviceService extends Service {
         this.disposalTask = new TimerTask() {
             @Override
             public void run() {
-                if (DeviceService.this.devices.size() == 0) {
+                if (DeviceService.this.deviceStore.isEmpty()) {
                     DeviceService.this.stopSelf();
                 }
             }
         };
         this.timer.purge();
         this.timer.schedule(this.disposalTask, 20000);
-
     }
 
     private void runOnUiThread(Runnable runnable) {
@@ -215,12 +212,12 @@ public final class DeviceService extends Service {
 
     private void deviceConnected(@NonNull DeviceHandler device) {
         Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" connected!");
-        DeviceService.this.devices.put(device.getDeviceId(), device);
+        this.deviceStore.connect(device, this);
     }
 
     private void deviceDisconnected(@NonNull DeviceHandler device) {
         Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" started!");
-        this.devices.remove(device.getDeviceId());
+        this.deviceStore.remove(device);
         this.stopDataProvider(device);
         this.disposeIfEmpty();
     }
@@ -235,6 +232,23 @@ public final class DeviceService extends Service {
         @Nullable
         public <ProviderType extends DeviceDataProvider> ProviderType getDeviceProvider(@NonNull Class<ProviderType> type) {
             return DeviceService.this.getDeviceProvider(type);
+        }
+
+        public boolean disconnectDevice(@NonNull DeviceEntity descriptor) {
+            return DeviceService.this.deviceStore.disconnect(descriptor);
+        }
+
+        @Nullable
+        public DeviceConnection getDeviceConnection(DeviceEntity descriptor) {
+            return DeviceService.this.deviceStore.get(descriptor);
+        }
+
+        public void addConnectionObserver(@NonNull DeviceConnectionStore.DeviceConnectionObserver observer) {
+            DeviceService.this.deviceStore.addObserver(observer);
+        }
+
+        public void removeConnectionObserver(@NonNull DeviceConnectionStore.DeviceConnectionObserver observer) {
+            DeviceService.this.deviceStore.removeObserver(observer);
         }
 
         @NonNull
@@ -283,9 +297,12 @@ public final class DeviceService extends Service {
                 // Read entity again to retrieve it's database id
                 entity = repo.getSynchronous(newUid.toString()).get(0);
 
+                DeviceService.this.deviceStore.hydrate(device, entity);
+
                 new NewDeviceNotifier(DeviceService.this).notify(entity);
             } else if (entities.size() == 1) {
                 device.allowCommunication();
+                DeviceService.this.deviceStore.hydrate(device, entities.get(0));
             } else {
                 // TODO handle case properly where more than one device entity are returned
                 Log.e(this.getClass().getSimpleName(), "More than one device registered with id \"" + uid.toString() + "\".");
