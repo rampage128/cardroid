@@ -3,14 +3,18 @@ package de.jlab.cardroid.devices;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.devices.ui.DeviceActivity;
 
 public final class NewDeviceNotifier {
 
@@ -25,9 +29,16 @@ public final class NewDeviceNotifier {
     public void notify(@NonNull DeviceEntity deviceEntity) {
         this.createNotificationChannel(context);
 
-        // TODO: set notification tap action once device UI exists
+        Intent notificationIntent = new Intent(context, DeviceActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addNextIntentWithParentStack(notificationIntent);
+        notificationIntent.putExtra(DeviceActivity.EXTRA_DEVICE_ID, deviceEntity.uid);
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+
         Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
                 .setContentTitle(context.getString(R.string.notification_new_device_title))
                 .setContentText(context.getString(R.string.notification_new_device_text, deviceEntity.displayName))
                 .setStyle(new NotificationCompat.InboxStyle()

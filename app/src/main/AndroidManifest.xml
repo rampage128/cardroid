@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="de.jlab.cardroid">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="de.jlab.cardroid">
 
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission
         android:name="android.permission.ACCESS_MOCK_LOCATION"
-        tools:ignore="MockLocation"/>
+        tools:ignore="MockLocation" />
 
-    <uses-feature android:name="android.hardware.usb.host"/>
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <application
         tools:replace="android:allowBackup"
@@ -26,47 +26,56 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <activity android:name=".devices.ui.DeviceActivity"
+            android:label="@string/title_device_list"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.jlab.cardroid.SettingsActivity" />
+        </activity>
+
         <activity
             android:name=".rules.RuleActivity"
             android:label="@string/title_rule_list"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.jlab.cardroid.SettingsActivity"/>
+                android:value="de.jlab.cardroid.SettingsActivity" />
         </activity>
 
         <service
             android:name=".devices.DeviceService"
             android:exported="false"
-            android:launchMode="singleTop"/>
+            android:launchMode="singleTop" />
 
         <receiver
             android:name=".PowerManagementReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
-                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
             </intent-filter>
         </receiver>
         <receiver
             android:name=".devices.DeviceDisconnectedReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
             </intent-filter>
 
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"
-                android:resource="@xml/device_filter"/>
+                android:resource="@xml/device_filter" />
         </receiver>
 
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
@@ -75,9 +84,9 @@
             android:label="@string/pref_title_can_sniffer"
             android:launchMode="singleTop">
             <intent-filter>
-                <action android:name="your.action.string"/>
+                <action android:name="your.action.string" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
@@ -86,22 +95,19 @@
             android:launchMode="singleInstance"
             android:theme="@style/Theme.UserDialog">
             <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
 
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/device_filter"/>
+                android:resource="@xml/device_filter" />
         </activity>
         <activity
             android:name=".gps.ui.GpsMonitorActivity"
-            android:label="@string/pref_title_gps_monitor">
-        </activity>
-
+            android:label="@string/pref_title_gps_monitor" />
         <activity
             android:name=".car.ui.CarMonitorActivity"
-            android:label="@string/pref_title_car_monitor">
-        </activity>
+            android:label="@string/pref_title_car_monitor" />
     </application>
 
 </manifest>
