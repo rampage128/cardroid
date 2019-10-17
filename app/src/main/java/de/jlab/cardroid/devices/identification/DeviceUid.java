@@ -27,7 +27,7 @@ public class DeviceUid {
         String uidString = "";
 
         uidString += String.format("%04x", (short)device.getVendorId()).toUpperCase();
-        uidString += String.format("%04x", (short)device.getDeviceId()).toUpperCase();
+        uidString += String.format("%04x", (short)device.getProductId()).toUpperCase();
 
         String serialNumber = device.getSerialNumber();
         if (serialNumber != null) {
