@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import androidx.room.TypeConverter;
 
-public class DeviceFeatureConverters {
+public final class DeviceFeatureConverters {
 
     @TypeConverter
     public static ArrayList<String> fromString(String value) {
