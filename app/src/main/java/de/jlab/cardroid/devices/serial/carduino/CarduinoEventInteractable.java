@@ -1,7 +1,6 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
 public final class CarduinoEventInteractable implements EventInteractable {
@@ -19,7 +18,7 @@ public final class CarduinoEventInteractable implements EventInteractable {
     }
 
     @Override
-    public DeviceConnectionId getConnectionId() {
-        return this.device.getConnectionId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
 }

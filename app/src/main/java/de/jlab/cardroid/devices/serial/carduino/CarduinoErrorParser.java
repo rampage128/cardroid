@@ -3,8 +3,8 @@ package de.jlab.cardroid.devices.serial.carduino;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.errors.ErrorObservable;
 
 public final class CarduinoErrorParser extends CarduinoPacketParser implements ErrorObservable {
@@ -41,9 +41,9 @@ public final class CarduinoErrorParser extends CarduinoPacketParser implements E
         this.device = device;
     }
 
+    @Nullable
     @Override
-    public DeviceConnectionId getConnectionId() {
-        return this.device.getConnectionId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
-
 }

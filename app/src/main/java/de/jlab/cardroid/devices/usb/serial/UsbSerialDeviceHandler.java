@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.identification.DeviceUid;
@@ -14,58 +13,65 @@ import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
 public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> extends UsbDeviceHandler {
 
     private ReaderType reader;
-    private UsbSerialConnection connection;
+    private UsbSerialConnection serialPort;
     private DeviceUid uid;
 
     public UsbSerialDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
-        super(device);
+        super(device, app);
 
         UsbManager usbManager = (UsbManager)app.getSystemService(Context.USB_SERVICE);
-        this.connection = new UsbSerialConnection(device, defaultBaudrate, usbManager);
+        this.serialPort = new UsbSerialConnection(device, defaultBaudrate, usbManager);
         this.uid = DeviceUid.fromUsbDevice(device);
     }
 
     @Override
-    public boolean isConnected() {
-        return this.connection.isConnected();
-    }
-
-    @Override
-    public boolean connectDevice() {
-        boolean isConnected = this.connection.connect();
-        if (isConnected) {
-            Log.e(this.getClass().getSimpleName(), "Device connected " + this.getConnectionId() + " (" + this.connection.getBaudRate() + ")");
-            this.notifyStart();
-            this.reader = this.onConnect();
-            this.connection.addUsbSerialReader(this.reader);
+    public final void open() {
+        State newState = this.serialPort.connect() ? State.OPEN : State.INVALID;
+        if (newState == State.OPEN) {
+            this.reader = this.onOpenSuccess();
+            this.serialPort.addUsbSerialReader(this.reader);
         } else {
-            this.onConnectFailed();
+            this.onOpenFailed();
         }
-        return isConnected;
+        this.notifyStateChanged(newState);
     }
 
     @Override
-    public void disconnectDevice() {
-        Log.e(this.getClass().getSimpleName(), "Device disconnecting... " + this.getConnectionId());
-        this.connection.removeUsbSerialReader(this.reader);
-        if (this.connection.isConnected()) {
-            Log.e(this.getClass().getSimpleName(), "Device disconnected " + this.getConnectionId());
-            this.connection.disconnect();
+    public final void close() {
+        this.serialPort.removeUsbSerialReader(this.reader);
+        if (this.serialPort.isConnected()) {
+            this.serialPort.disconnect();
         }
-        this.onDisconnect(this.reader);
-        this.notifyEnd();
+        this.onClose(this.reader);
+        this.notifyStateChanged(State.INVALID);
     }
 
+    /**
+     * @deprecated TODO setBaudRate and send should probably be part of an interactable? Yes, no?
+     */
+    @Deprecated
     public void setBaudRate(int baudRate) {
-        this.connection.setBaudRate(baudRate);
+        this.serialPort.setBaudRate(baudRate);
     }
 
+    /**
+     * @deprecated TODO setBaudRate and send should probably be part of an interactable? Yes, no?
+     */
+    @Deprecated
     protected void send(byte[] data) {
-        this.connection.send(data);
+        this.serialPort.send(data);
     }
 
-    protected abstract ReaderType onConnect();
-    protected abstract void onConnectFailed();
-    protected abstract void onDisconnect(ReaderType reader);
+    @NonNull
+    protected final ReaderType getReader() {
+        if (this.reader == null) {
+            throw new IllegalStateException("Reader has not been initialized yet! Did you call getReader() before open()?");
+        }
+        return this.reader;
+    }
+
+    protected abstract ReaderType onOpenSuccess();
+    protected abstract void onOpenFailed();
+    protected abstract void onClose(ReaderType reader);
 
 }

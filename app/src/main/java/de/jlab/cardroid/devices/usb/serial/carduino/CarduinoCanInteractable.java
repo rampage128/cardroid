@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.CanPacketDescriptor;
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
 
 public final class CarduinoCanInteractable implements CanInteractable {
@@ -41,13 +40,13 @@ public final class CarduinoCanInteractable implements CanInteractable {
     }
 
     @Override
-    public DeviceConnectionId getConnectionId() {
-        return this.device.getConnectionId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
 
     private void sendCanIdRequest(long canId, byte mask) {
         byte[] payload = ByteBuffer.allocate(5).putInt((int)canId).put(mask).array();
-        Log.e(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.device.getConnectionId() + ".");
+        Log.e(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.device + ".");
         this.device.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
     }
 

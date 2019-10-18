@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,8 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
-import de.jlab.cardroid.devices.storage.DeviceEntity;
-import de.jlab.cardroid.devices.storage.DeviceRepository;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
 import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
@@ -41,7 +38,7 @@ public final class DeviceService extends Service {
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
 
-    private DeviceConnectionStore deviceStore = new DeviceConnectionStore();
+    private DeviceStore deviceStore = new DeviceStore();
 
     private HashMap<Class<? extends DeviceDataProvider>, DeviceDataProvider> dataProviders = new HashMap<>();
 
@@ -157,13 +154,12 @@ public final class DeviceService extends Service {
         this.deviceIdentificationTask.identify(device);
     }
 
-    private void usbDeviceDetached(@NonNull UsbDevice device) {
-        Log.e(this.getClass().getSimpleName(), "Device detached " + device.getDeviceId());
-        DeviceConnection connection = this.deviceStore.remove(DeviceConnectionId.fromUsbDevice(device));
-        if (connection != null) {
-            connection.getDevice().disconnectDevice();
+    private void usbDeviceDetached(@NonNull UsbDevice usbDevice) {
+        Log.e(this.getClass().getSimpleName(), "Device detached " + usbDevice.getDeviceId());
+        DeviceHandler device = this.deviceStore.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
+        if (device != null) {
+            device.close();
         }
-        this.disposeIfEmpty();
     }
 
     private void cancelDisposal() {
@@ -206,21 +202,26 @@ public final class DeviceService extends Service {
     }
 
     private void deviceDetected(@NonNull DeviceHandler device) {
-        device.setDeviceObserver(this.deviceObserver);
-        device.connectDevice();
+        device.addObserver(this.deviceObserver);
+        device.open();
         this.disposeIfEmpty();
     }
 
-    private void deviceConnected(@NonNull DeviceHandler device) {
-        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" connected!");
-        this.deviceStore.connect(device, this);
+    private void deviceReady(@NonNull DeviceHandler device) {
+        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" ready!");
+        this.deviceStore.add(device);
     }
 
-    private void deviceDisconnected(@NonNull DeviceHandler device) {
-        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" started!");
+    private void deviceInvalid(@NonNull DeviceHandler device) {
+        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" removed!");
         this.deviceStore.remove(device);
         this.stopDataProvider(device);
         this.disposeIfEmpty();
+    }
+
+    private void deviceFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+        Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", connection: " + device);
+        this.startDataProvider(feature, device);
     }
 
     @Nullable
@@ -235,21 +236,9 @@ public final class DeviceService extends Service {
             return DeviceService.this.getDeviceProvider(type);
         }
 
-        public boolean disconnectDevice(@NonNull DeviceEntity descriptor) {
-            return DeviceService.this.deviceStore.disconnect(descriptor);
-        }
-
         @Nullable
-        public DeviceConnection getDeviceConnection(DeviceEntity descriptor) {
-            return DeviceService.this.deviceStore.get(descriptor);
-        }
-
-        public void addConnectionObserver(@NonNull DeviceConnectionStore.DeviceConnectionObserver observer) {
-            DeviceService.this.deviceStore.addObserver(observer);
-        }
-
-        public void removeConnectionObserver(@NonNull DeviceConnectionStore.DeviceConnectionObserver observer) {
-            DeviceService.this.deviceStore.removeObserver(observer);
+        public DeviceHandler getDevice(@NonNull DeviceUid uid) {
+            return DeviceService.this.deviceStore.get(uid);
         }
 
         @NonNull
@@ -271,65 +260,20 @@ public final class DeviceService extends Service {
         }
     }
 
-    private class DeviceObserver implements de.jlab.cardroid.devices.DeviceObserver {
-        @Override
-        public void onStart(@NonNull DeviceHandler device) {
-            DeviceService.this.deviceConnected(device);
-        }
+    private class DeviceObserver implements DeviceHandler.Observer {
 
         @Override
-        public void deviceUidReceived(@NonNull DeviceUid uid, @NonNull DeviceHandler device) {
-            DeviceRepository repo = new DeviceRepository(DeviceService.this.getApplication());
-            List<DeviceEntity> entities = repo.getSynchronous(uid.toString());
-
-            // Filter retrieved entities by device type in case the uid was not unique
-            for (Iterator<DeviceEntity> it = entities.iterator(); it.hasNext(); ) {
-                if (!it.next().isDeviceType(device)) {
-                    it.remove();
-                }
-            }
-
-            if (entities.isEmpty()) {
-                DeviceUid newUid = device.requestNewUid(DeviceService.this.getApplication());
-
-                Log.i(this.getClass().getSimpleName(), "Registering new device with id \"" + newUid.toString() + "\".");
-
-                if (!newUid.isUnique()) {
-                    // TODO show a warning to the user if device could not be uniquely identified (!newUid.isUnique())
-                    Log.w(this.getClass().getSimpleName(), "Device uid \"" + newUid.toString() + "\" is not guaranteed to be unique!");
-                }
-
-                DeviceEntity entity = new DeviceEntity(newUid, getString(DeviceType.get(device.getClass()).getTypeName()), device.getClass());
-                repo.insert(entity);
-
-                // Read entity again to retrieve it's database id
-                entity = repo.getSynchronous(newUid.toString()).get(0);
-
-                DeviceService.this.deviceStore.hydrate(device, entity);
-
-                new NewDeviceNotifier(DeviceService.this).notify(entity);
-            } else if (entities.size() == 1) {
-                device.allowCommunication();
-                DeviceService.this.deviceStore.hydrate(device, entities.get(0));
-            } else {
-                // TODO handle case properly where more than one device entity are returned
-                Log.e(this.getClass().getSimpleName(), "More than one device registered with id \"" + uid.toString() + "\".");
-                device.disconnectDevice();
+        public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
+            if (state == DeviceHandler.State.READY) {
+                DeviceService.this.deviceReady(device);
+            } else if (state == DeviceHandler.State.INVALID) {
+                DeviceService.this.deviceInvalid(device);
             }
         }
 
         @Override
-        public DeviceDataProvider onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
-            Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", connection: " + device.getConnectionId());
-            DeviceConnection connection = DeviceService.this.deviceStore.get(device);
-            assert connection != null;
-            connection.addFeature(feature, getApplication());
-            return DeviceService.this.startDataProvider(feature, device);
-        }
-
-        @Override
-        public void onEnd(@NonNull DeviceHandler device) {
-            DeviceService.this.deviceDisconnected(device);
+        public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+            DeviceService.this.deviceFeatureDetected(feature, device);
         }
     }
 

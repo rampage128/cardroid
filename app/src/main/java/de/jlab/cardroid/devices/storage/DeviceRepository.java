@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.storage.CardroidDatabase;
 
 public final class DeviceRepository {
@@ -29,8 +31,8 @@ public final class DeviceRepository {
         return this.deviceDao.get(identifier);
     }
 
-    public List<DeviceEntity> getSynchronous(String deviceUid) {
-        return this.deviceDao.getSynchronous(deviceUid);
+    public List<DeviceEntity> getSynchronous(@NonNull DeviceUid deviceUid) {
+        return this.deviceDao.getSynchronous(deviceUid.toString());
     }
 
     public void insert(DeviceEntity... deviceEntities) {

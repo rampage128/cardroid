@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.identification.DeviceUid;
+import de.jlab.cardroid.devices.DeviceDataObservable;
+import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.Interactable;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoFeatureDetector;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaParser;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketParser;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoUidGenerator;
@@ -25,12 +27,14 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
     private boolean isReady = false;
     private ArrayList<CarduinoPacketParser> packetParsers = new ArrayList<>();
     private ArrayList<CarduinoSerialPacket> pendingPackets = new ArrayList<>();
-    private CarduinoMetaParser metaParser = null;
+    private Application app;
 
     private byte[] carduinoId = null;
 
     public CarduinoUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
+
+        this.app = app;
     }
 
     public void send(CarduinoSerialPacket packet) {
@@ -47,33 +51,42 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
             packet.serialize(bos);
             this.send(bos.toByteArray());
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()) + " for device " + this.getConnectionId());
+            Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()));
         }
     }
 
+    public void addDynamicFeature(@NonNull CarduinoPacketType type) {
+        Class<? extends DeviceDataProvider> providerType = type.getProviderType();
+        DeviceDataObservable observable = type.getObservable();
+        if (observable != null) {
+            this.addObservable(observable);
+        }
+        Interactable interactable = type.getInteractable();
+        if (interactable != null) {
+            this.addInteractable(interactable);
+        }
+        if (providerType != null) {
+            this.notifyFeatureDetected(providerType);
+        }
+        if (observable instanceof CarduinoPacketParser) {
+            getReader().addSerialPacketListener((CarduinoPacketParser)observable);
+        }
+
+    }
+
     @Override
-    protected final CarduinoSerialReader onConnect() {
+    protected CarduinoSerialReader onOpenSuccess() {
         CarduinoSerialReader reader = new CarduinoSerialReader();
-
-        this.metaParser = new CarduinoMetaParser(this, reader);
-
-        this.addPacketParser(new CarduinoFeatureDetector(this, reader), reader);
-        this.addPacketParser(this.metaParser, reader);
-
+        reader.addSerialPacketListener(new CarduinoFeatureDetector(this));
+        reader.addSerialPacketListener(new CarduinoMetaParser(this, this.app));
         return reader;
     }
 
-    public void addPacketParser(CarduinoPacketParser parser, CarduinoSerialReader reader) {
-        reader.addSerialPacketListener(parser);
-    }
+    @Override
+    protected void onOpenFailed() {}
 
     @Override
-    protected void onConnectFailed() {
-        // Nothing to do here
-    }
-
-    @Override
-    protected final void onDisconnect(CarduinoSerialReader reader) {
+    protected void onClose(CarduinoSerialReader reader) {
         for (int i = 0; i < this.packetParsers.size(); i++) {
             reader.removeSerialPacketListener(this.packetParsers.remove(i));
         }
@@ -82,28 +95,16 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
     public void onCarduinoIdReceived(@NonNull byte[] carduinoId) {
         if (!Arrays.equals(this.carduinoId, carduinoId)) {
             this.carduinoId = carduinoId;
-            this.notifyUidReceived(CarduinoUidGenerator.getUid(carduinoId));
+            this.setDeviceUid(CarduinoUidGenerator.getUid(carduinoId));
         }
     }
 
-    public void onHandshake(CarduinoSerialReader reader) {
+    public void onHandshake() {
+        this.notifyStateChanged(State.READY);
         this.isReady = true;
         while (!this.pendingPackets.isEmpty()) {
             this.sendImmediately(this.pendingPackets.remove(0));
         }
-    }
-
-    @Override
-    @NonNull
-    public DeviceUid requestNewUid(@NonNull Application app) {
-        byte[] carduinoId = CarduinoUidGenerator.generateId(app).getBytes();
-        this.sendImmediately(CarduinoMetaType.createPacket(CarduinoMetaType.SET_UID, carduinoId));
-        return CarduinoUidGenerator.getUid(carduinoId);
-    }
-
-    @Override
-    public void allowCommunication() {
-        this.metaParser.allowHandshake();
     }
 
 }

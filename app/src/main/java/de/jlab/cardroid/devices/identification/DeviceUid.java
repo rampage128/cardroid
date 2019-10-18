@@ -56,4 +56,8 @@ public final class DeviceUid {
         return this.uid;
     }
 
+    public boolean equals(@NonNull DeviceUid other) {
+        return this.uid.equals(other.uid);
+    }
+
 }

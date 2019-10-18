@@ -1,11 +1,12 @@
 package de.jlab.cardroid.devices;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
+import androidx.annotation.Nullable;
 
 public interface DeviceDataObservable {
 
     void setDevice(@NonNull DeviceHandler device);
-    DeviceConnectionId getConnectionId();
+    @Nullable
+    DeviceHandler getDevice();
 
 }

@@ -3,8 +3,8 @@ package de.jlab.cardroid.devices.serial.gps;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.serial.SerialReader;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
 import de.jlab.cardroid.gps.GpsObservable;
@@ -21,9 +21,10 @@ public final class GpsPositionParser implements SerialReader.SerialPacketListene
         this.device = (GpsUsbDeviceHandler)device;
     }
 
+    @Nullable
     @Override
-    public DeviceConnectionId getConnectionId() {
-        return this.device.getConnectionId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
 
     public void addPositionListener(PositionListener listener) {

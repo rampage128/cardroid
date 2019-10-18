@@ -21,13 +21,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.devices.DeviceConnection;
-import de.jlab.cardroid.devices.DeviceConnectionStore;
+import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
 
-public final class DeviceActivity extends AppCompatActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener, DeviceConnectionStore.DeviceConnectionObserver {
+public final class DeviceActivity extends AppCompatActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener {
 
     public static final String EXTRA_DEVICE_ID = "deviceId";
 
@@ -41,12 +40,13 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.addConnectionObserver(DeviceActivity.this);
+            // FIXME: we have to observe the devices somehow
+            //deviceService.addConnectionObserver(DeviceActivity.this);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.removeConnectionObserver(DeviceActivity.this);
+            //deviceService.removeConnectionObserver(DeviceActivity.this);
             deviceService = null;
         }
     };
@@ -152,14 +152,11 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     }
 
     @Override
-    public void onConnectionUpdate(DeviceConnection connection) {
-
-    }
-
-    @Override
     public void onDeviceDisconnect(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_disconnect, R.string.action_device_disconnect_confirm, R.string.action_device_disconnect, (dialog, which) -> {
-            if (this.deviceService.disconnectDevice(deviceEntity)) {
+            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            if (device != null) {
+                device.close();
                 Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_disconnect_success, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
             } else {
                 Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_disconnect_failure, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
@@ -186,7 +183,10 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     @Override
     public void onDeviceDeleted(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_delete, R.string.action_device_delete_confirm, R.string.action_device_delete, (dialog, which) -> {
-            this.deviceService.disconnectDevice(deviceEntity);
+            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            if (device != null) {
+                device.close();
+            }
 
             DeviceRepository repo = new DeviceRepository(getApplication());
             repo.delete(deviceEntity);

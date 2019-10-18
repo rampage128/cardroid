@@ -1,5 +1,7 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
+import android.app.Application;
+
 import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;
@@ -7,20 +9,23 @@ import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
 public final class CarduinoMetaParser extends CarduinoPacketParser {
 
+    private static final int MAX_ID_RETRIES = 3;
+
     private static final byte PROTOCOL_MAJOR = 0x01;
     private static final int OFFSET_CARDUINO_ID = 3;
     private static final int LENGTH_CARDUINO_ID = 3;
 
+    private Application app;
     private CarduinoUsbDeviceHandler device;
-    private CarduinoSerialReader reader;
-    private boolean allowConnection = false;
+    private boolean pingReceived = false;
+    private int idRetryCount = 0;
 
     private static final CarduinoSerialPacket PACKET_CONNECTION_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.CONNECTION_REQUEST, new byte[] { PROTOCOL_MAJOR });
     private static final CarduinoSerialPacket PACKET_BAUD_RATE_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.BAUD_RATE_REQUEST, ByteBuffer.allocate(4).putInt(115200).array());
 
-    public CarduinoMetaParser(@NonNull CarduinoUsbDeviceHandler device, @NonNull CarduinoSerialReader reader) {
+    public CarduinoMetaParser(@NonNull CarduinoUsbDeviceHandler device, @NonNull Application app) {
         this.device = device;
-        this.reader = reader;
+        this.app    = app;
     }
 
     @Override
@@ -32,12 +37,8 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
     protected void handlePacket(CarduinoSerialPacket packet) {
         int eventType = packet.getPacketId();
 
-        if (eventType == 0x00) {
-            this.carduinoIdReceived(packet.readBytes(OFFSET_CARDUINO_ID, LENGTH_CARDUINO_ID));
-
-            if (this.allowConnection) {
-                this.requestConnection(packet);
-            }
+        if (eventType == 0x00 && !this.pingReceived) {
+            this.pingReceived(packet);
         }
         else if (eventType == 0x01) {
             this.acceptHandshake();
@@ -47,23 +48,44 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
             this.device.setBaudRate(baudRate);
         }
         else if (eventType == 0x03) {
-            this.device.disconnectDevice();
+            this.device.close();
         }
-        else if (eventType == 0x49) { // TODO: check out if this packet is obsolete
-            this.carduinoIdReceived(packet.readBytes(0, LENGTH_CARDUINO_ID));
+        else if (eventType == 0x49) {
+            this.newIdReceived(packet);
         }
     }
 
-    private void carduinoIdReceived(@NonNull byte[] carduinoId) {
-        this.device.onCarduinoIdReceived(carduinoId);
+    private void pingReceived(@NonNull CarduinoSerialPacket packet) {
+        this.pingReceived = true;
+        byte[] carduinoId = packet.readBytes(OFFSET_CARDUINO_ID, LENGTH_CARDUINO_ID);
+        if (CarduinoUidGenerator.isValidId(carduinoId)) {
+            this.device.onCarduinoIdReceived(carduinoId);
+            this.requestConnection(packet);
+        } else {
+            this.requestNewId();
+        }
     }
 
-    public void allowHandshake() {
-        this.allowConnection = true;
+    private void newIdReceived(@NonNull CarduinoSerialPacket packet) {
+        byte[] carduinoId = packet.readBytes(0, LENGTH_CARDUINO_ID);
+        if (CarduinoUidGenerator.isValidId(carduinoId)) {
+            this.device.onCarduinoIdReceived(carduinoId);
+            this.requestConnection(packet);
+        } else if (this.idRetryCount < MAX_ID_RETRIES){
+            this.idRetryCount++;
+            this.requestNewId();
+        } else {
+            this.device.close();
+        }
+    }
+
+    private void requestNewId() {
+        byte[] newId = CarduinoUidGenerator.generateId(this.app).getBytes();
+        this.device.sendImmediately(CarduinoMetaType.createPacket(CarduinoMetaType.SET_UID, newId));
     }
 
     private void acceptHandshake() {
-        this.device.onHandshake(this.reader);
+        this.device.onHandshake();
             /* FIXME: per device baud-rate configuration has to be added!
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getService());
             String defaultBaudRateString = String.valueOf(device.getDefaultBaudrate());
@@ -86,7 +108,7 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         if (major == PROTOCOL_MAJOR) {
             this.device.sendImmediately(PACKET_CONNECTION_REQUEST);
         } else {
-            this.device.disconnectDevice();
+            this.device.close();
         }
     }
 
