@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.errors.ErrorObservable;
 
 public final class CarduinoErrorParser extends CarduinoPacketParser implements ErrorObservable {
@@ -41,8 +42,8 @@ public final class CarduinoErrorParser extends CarduinoPacketParser implements E
     }
 
     @Override
-    public long getDeviceId() {
-        return this.device.getDeviceId();
+    public DeviceConnectionId getConnectionId() {
+        return this.device.getConnectionId();
     }
 
 }

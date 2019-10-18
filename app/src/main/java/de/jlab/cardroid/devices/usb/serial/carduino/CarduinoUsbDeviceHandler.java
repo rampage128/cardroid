@@ -47,7 +47,7 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
             packet.serialize(bos);
             this.send(bos.toByteArray());
         } catch (IOException e) {
-            Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()) + " for device " + this.getDeviceId());
+            Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()) + " for device " + this.getConnectionId());
         }
     }
 
@@ -94,6 +94,7 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
     }
 
     @Override
+    @NonNull
     public DeviceUid requestNewUid(@NonNull Application app) {
         byte[] carduinoId = CarduinoUidGenerator.generateId(app).getBytes();
         this.sendImmediately(CarduinoMetaType.createPacket(CarduinoMetaType.SET_UID, carduinoId));

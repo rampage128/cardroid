@@ -7,6 +7,7 @@ import androidx.collection.LongSparseArray;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 
 public final class CarduinoCanParser extends CarduinoPacketParser implements CanObservable {
@@ -32,8 +33,8 @@ public final class CarduinoCanParser extends CarduinoPacketParser implements Can
     }
 
     @Override
-    public long getDeviceId() {
-        return this.device.getDeviceId();
+    public DeviceConnectionId getConnectionId() {
+        return this.device.getConnectionId();
     }
 
     @Override

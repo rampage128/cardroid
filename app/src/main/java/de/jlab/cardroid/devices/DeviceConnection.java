@@ -33,8 +33,8 @@ public final class DeviceConnection {
         return this.descriptor.uid == descriptor.uid;
     }
 
-    public boolean isDevice(@NonNull DeviceHandler device) {
-        return this.device.getDeviceId() == device.getDeviceId();
+    public boolean isPhysicalDevice(@NonNull DeviceHandler device) {
+        return this.device.getConnectionId().equals(device.getConnectionId());
     }
 
     public boolean isConnected() {

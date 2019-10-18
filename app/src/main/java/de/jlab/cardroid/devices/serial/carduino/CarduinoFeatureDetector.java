@@ -41,7 +41,7 @@ public final class CarduinoFeatureDetector extends CarduinoPacketParser {
                 this.device.addPacketParser((CarduinoPacketParser)observable, this.reader);
             }
         } else {
-            Log.e(this.getClass().getSimpleName(), "Device " + this.device.getDeviceId() + " registered unknown feature: " + new String(new byte[] { rawPacketType }));
+            Log.e(this.getClass().getSimpleName(), "Device \"" + this.device.getConnectionId() + "\" registered unknown feature: " + new String(new byte[] { rawPacketType }));
         }
     }
 }

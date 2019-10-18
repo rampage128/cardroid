@@ -34,6 +34,7 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     private boolean isTwoPane;
 
     private Fragment activeFragment;
+    private Fragment listFragment;
 
     private DeviceService.DeviceServiceBinder deviceService;
     private ServiceConnection connection = new ServiceConnection() {
@@ -120,6 +121,9 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
 
     private void showList() {
         DeviceListFragment fragment = DeviceListFragment.newInstance();
+        if (this.isTwoPane) {
+            this.listFragment = fragment;
+        }
 
         this.activeFragment = fragment;
 

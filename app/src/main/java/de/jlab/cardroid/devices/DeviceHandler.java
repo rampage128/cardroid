@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 
 /* TODO add bluetooth support
@@ -78,10 +79,9 @@ public abstract class DeviceHandler {
         return provider;
     }
 
-    // FIXME: this has to be replaced with a ConnectionId getConnectionId() method
-    // The method should return getDeviceName() for usb devices and mac address for BT devices
-    // ConnectionId will be a simple ValueObject containing a String to match on
-    public abstract int getDeviceId();
+    @NonNull
+    public abstract DeviceConnectionId getConnectionId();
+    @NonNull
     public abstract DeviceUid requestNewUid(@NonNull Application app);
     public abstract boolean connectDevice();
     public abstract void disconnectDevice();

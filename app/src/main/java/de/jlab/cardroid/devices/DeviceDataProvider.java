@@ -31,7 +31,7 @@ public abstract class DeviceDataProvider {
         // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
         for (int i = 0; i < this.devices.size(); i++) {
             DeviceHandler deviceToCheck = this.devices.get(i);
-            if (deviceToCheck.getDeviceId() == device.getDeviceId()) {
+            if (deviceToCheck.getConnectionId().equals(device.getConnectionId())) {
                 this.devices.set(i, deviceToCheck);
                 this.onUpdate(deviceToCheck, device, this.service);
                 return;
@@ -44,7 +44,7 @@ public abstract class DeviceDataProvider {
 
     public boolean usesDevice(DeviceHandler device) {
         for (int i = 0; i < this.devices.size(); i++) {
-            if (this.devices.get(i).getDeviceId() == device.getDeviceId()) {
+            if (this.devices.get(i).getConnectionId().equals(device.getConnectionId())) {
                 return true;
             }
         }

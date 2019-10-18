@@ -1,24 +1,24 @@
 package de.jlab.cardroid.devices;
 
 import android.content.Context;
-import android.hardware.usb.UsbDevice;
-import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 
 public final class DeviceConnectionStore {
 
-    private SparseArray<DeviceConnection> entries = new SparseArray<>();
+    private HashMap<DeviceConnectionId, DeviceConnection> entries = new HashMap<>();
     private ArrayList<DeviceConnectionObserver> observers = new ArrayList<>();
 
     public void addObserver(@NonNull DeviceConnectionObserver observer) {
         this.observers.add(observer);
-        for (int i = 0; i < this.entries.size(); i++) {
-            observer.onConnectionUpdate(this.entries.valueAt(i));
+        for (DeviceConnection deviceConnection : this.entries.values()) {
+            observer.onConnectionUpdate(deviceConnection);
         }
     }
 
@@ -34,7 +34,7 @@ public final class DeviceConnectionStore {
 
     public void connect(@NonNull DeviceHandler device, @NonNull Context context) {
         DeviceConnection connection = new DeviceConnection(device, context);
-        this.entries.put(device.getDeviceId(), connection);
+        this.entries.put(device.getConnectionId(), connection);
         notifyObservers(connection);
     }
 
@@ -49,7 +49,7 @@ public final class DeviceConnectionStore {
     }
 
     public void hydrate(@NonNull DeviceHandler device, @NonNull DeviceEntity descriptor) {
-        DeviceConnection connection = this.entries.get(device.getDeviceId());
+        DeviceConnection connection = this.entries.get(device.getConnectionId());
         if (connection != null) {
             connection.updateDescriptor(descriptor);
             notifyObservers(connection);
@@ -62,13 +62,12 @@ public final class DeviceConnectionStore {
 
     @Nullable
     public DeviceConnection get(@NonNull DeviceHandler device) {
-        return this.entries.get(device.getDeviceId());
+        return this.entries.get(device.getConnectionId());
     }
 
     @Nullable
     public DeviceConnection get(@NonNull DeviceEntity descriptor) {
-        for (int i = 0; i < this.entries.size(); i++) {
-            DeviceConnection connection = this.entries.get(this.entries.keyAt(i));
+        for (DeviceConnection connection : this.entries.values()) {
             if (connection.isDevice(descriptor)) {
                 return connection;
             }
@@ -77,13 +76,9 @@ public final class DeviceConnectionStore {
         return null;
     }
 
-    // FIXME: This will clash with BT devices. We should replace int getDeviceId() with String getConnectionId()
-    // String getConnectionId() could return the deviceName for usb devices and the mac-address for bt devices.
     @Nullable
-    public DeviceConnection remove(@NonNull UsbDevice device) {
-        int deviceId = device.getDeviceId();
-        DeviceConnection connection = this.entries.get(deviceId);
-        this.entries.remove(deviceId);
+    public DeviceConnection remove(@NonNull DeviceConnectionId connectionId) {
+        DeviceConnection connection = this.entries.remove(connectionId);
         if (connection != null) {
             notifyObservers(connection);
         }
@@ -92,9 +87,7 @@ public final class DeviceConnectionStore {
 
     @Nullable
     public DeviceConnection remove(@NonNull DeviceHandler device) {
-        int deviceId = device.getDeviceId();
-        DeviceConnection connection = this.entries.get(deviceId);
-        this.entries.remove(deviceId);
+        DeviceConnection connection = this.entries.remove(device.getConnectionId());
         if (connection != null) {
             notifyObservers(connection);
         }

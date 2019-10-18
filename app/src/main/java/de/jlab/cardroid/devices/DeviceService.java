@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
@@ -158,7 +159,7 @@ public final class DeviceService extends Service {
 
     private void usbDeviceDetached(@NonNull UsbDevice device) {
         Log.e(this.getClass().getSimpleName(), "Device detached " + device.getDeviceId());
-        DeviceConnection connection = this.deviceStore.remove(device);
+        DeviceConnection connection = this.deviceStore.remove(DeviceConnectionId.fromUsbDevice(device));
         if (connection != null) {
             connection.getDevice().disconnectDevice();
         }
@@ -319,7 +320,7 @@ public final class DeviceService extends Service {
 
         @Override
         public DeviceDataProvider onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
-            Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", device: " + device.getDeviceId());
+            Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", connection: " + device.getConnectionId());
             DeviceConnection connection = DeviceService.this.deviceStore.get(device);
             assert connection != null;
             connection.addFeature(feature, getApplication());

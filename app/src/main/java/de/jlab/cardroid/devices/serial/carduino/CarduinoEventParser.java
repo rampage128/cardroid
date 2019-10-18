@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 
 public final class CarduinoEventParser extends CarduinoPacketParser implements EventObservable {
 
@@ -36,7 +37,7 @@ public final class CarduinoEventParser extends CarduinoPacketParser implements E
     }
 
     @Override
-    public long getDeviceId() {
-        return this.device.getDeviceId();
+    public DeviceConnectionId getConnectionId() {
+        return this.device.getConnectionId();
     }
 }
