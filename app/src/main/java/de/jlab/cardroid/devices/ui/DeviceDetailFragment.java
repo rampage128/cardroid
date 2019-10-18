@@ -112,7 +112,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
                 resetButton.setAlpha(isInteractableDevice ? 1f : .25f);
 
                 displayNameText.setText(deviceEntity.displayName);
-                uidText.setText(deviceEntity.deviceUid);
+                uidText.setText(deviceEntity.deviceUid.toString());
                 typeIcon.setImageResource(type.getTypeIcon());
 
                 adapter.setFeatures(deviceEntity.features);

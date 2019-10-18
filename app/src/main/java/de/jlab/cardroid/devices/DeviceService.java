@@ -299,7 +299,7 @@ public final class DeviceService extends Service {
                     Log.w(this.getClass().getSimpleName(), "Device uid \"" + newUid.toString() + "\" is not guaranteed to be unique!");
                 }
 
-                DeviceEntity entity = new DeviceEntity(newUid.toString(), getString(DeviceType.get(device.getClass()).getTypeName()), device.getClass());
+                DeviceEntity entity = new DeviceEntity(newUid, getString(DeviceType.get(device.getClass()).getTypeName()), device.getClass());
                 repo.insert(entity);
 
                 // Read entity again to retrieve it's database id

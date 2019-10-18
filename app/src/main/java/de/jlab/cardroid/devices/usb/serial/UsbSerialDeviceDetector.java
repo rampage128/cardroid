@@ -78,8 +78,10 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
             this.timer.cancel();
             this.timer = null;
         }
-        this.connection.removeUsbSerialReader(this.reader);
-        this.connection.disconnect();
+        if (this.connection != null) {
+            this.connection.removeUsbSerialReader(this.reader);
+            this.connection.disconnect();
+        }
         this.connection = null;
         this.reader = null;
         this.currentBaudRateIndex = 0;

@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import de.jlab.cardroid.devices.DeviceDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
 @Entity(tableName = "devices")
 public final class DeviceEntity {
@@ -20,7 +21,7 @@ public final class DeviceEntity {
         this.features = new ArrayList<>();
     }
 
-    public DeviceEntity(String deviceUid, String displayName, Class<? extends DeviceHandler> deviceClass) {
+    public DeviceEntity(DeviceUid deviceUid, String displayName, Class<? extends DeviceHandler> deviceClass) {
         this();
         this.deviceUid = deviceUid;
         this.displayName = displayName;
@@ -33,13 +34,14 @@ public final class DeviceEntity {
     @ColumnInfo(name = "display_name")
     public String displayName;
 
+    @TypeConverters(DeviceConverters.class)
     @ColumnInfo(name = "device_uid")
-    public String deviceUid;
+    public DeviceUid deviceUid;
 
     @ColumnInfo(name = "class_name")
     public String className;
 
-    @TypeConverters(DeviceFeatureConverters.class)
+    @TypeConverters(DeviceConverters.class)
     public ArrayList<String> features;
 
     public boolean isDeviceType(@NonNull DeviceHandler device) {

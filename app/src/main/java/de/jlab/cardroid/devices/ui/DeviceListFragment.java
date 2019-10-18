@@ -131,7 +131,7 @@ public final class DeviceListFragment extends Fragment {
             DeviceType type = DeviceType.get(mValues.get(position));
 
             holder.name.setText(mValues.get(position).displayName);
-            holder.uid.setText(mValues.get(position).deviceUid);
+            holder.uid.setText(mValues.get(position).deviceUid.toString());
             holder.type.setImageResource(type.getTypeIcon());
 
             holder.itemView.setTag(mValues.get(position));
