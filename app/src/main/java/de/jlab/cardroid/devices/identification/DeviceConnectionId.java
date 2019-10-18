@@ -31,4 +31,9 @@ public final class DeviceConnectionId {
         return this.connectionId.hashCode();
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return this.connectionId;
+    }
 }

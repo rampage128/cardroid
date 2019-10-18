@@ -95,6 +95,12 @@ public abstract class DeviceHandler {
     public abstract void open();
     public abstract void close();
 
+    @NonNull
+    @Override
+    public String toString() {
+        return this.descriptor.deviceUid + "@" + this.connectionId;
+    }
+
     //////////////////////////////////////////////////////////
     // Internal stuff meant to be called by implementations //
     //////////////////////////////////////////////////////////
