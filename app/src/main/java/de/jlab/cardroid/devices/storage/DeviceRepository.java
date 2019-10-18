@@ -3,7 +3,6 @@ package de.jlab.cardroid.devices.storage;
 import android.app.Application;
 import android.os.AsyncTask;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
@@ -31,11 +30,7 @@ public final class DeviceRepository {
     }
 
     public List<DeviceEntity> getSynchronous(String deviceUid) {
-        try {
-            return new getAsyncTask(this.deviceDao).execute(deviceUid).get();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
+        return this.deviceDao.getSynchronous(deviceUid);
     }
 
     public void insert(DeviceEntity... deviceEntities) {
@@ -48,19 +43,6 @@ public final class DeviceRepository {
 
     public void delete(DeviceEntity... deviceEntities) {
         new deleteAsyncTask(this.deviceDao).execute(deviceEntities);
-    }
-
-    private static class getAsyncTask extends AsyncTask<String, Void, List<DeviceEntity>> {
-        private DeviceDao asyncTaskDao;
-
-        getAsyncTask(DeviceDao dao) {
-            this.asyncTaskDao = dao;
-        }
-
-        protected List<DeviceEntity> doInBackground(final String... deviceUids) {
-            return this.asyncTaskDao.getSynchronous(deviceUids[0]);
-        }
-
     }
 
     private static class insertAsyncTask extends AsyncTask<DeviceEntity, Void, Void> {
