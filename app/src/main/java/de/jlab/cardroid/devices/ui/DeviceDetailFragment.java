@@ -2,9 +2,7 @@ package de.jlab.cardroid.devices.ui;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +11,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
+import java.util.List;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -84,6 +85,12 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         if (getArguments() != null) {
             int deviceEntityId = getArguments().getInt(ARG_DEVICE_ID, 0);
             assert this.getActivity() != null;
+
+            RecyclerView recyclerView = rootView.findViewById(R.id.feature_list);
+            assert recyclerView != null;
+            final DeviceDetailFragment.DeviceFeatureAdapter adapter = new DeviceDetailFragment.DeviceFeatureAdapter((DeviceDetailInteractionListener) this.getActivity());
+            recyclerView.setAdapter(adapter);
+
             this.model = ViewModelProviders.of(this).get(DeviceDetailViewModel.class);
             this.model.getDeviceEntity(deviceEntityId).observe(this, deviceEntity -> {
                 DeviceDetailFragment.this.deviceEntity = deviceEntity;
@@ -107,6 +114,8 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
                 displayNameText.setText(deviceEntity.displayName);
                 uidText.setText(deviceEntity.deviceUid);
                 typeIcon.setImageResource(type.getTypeIcon());
+
+                adapter.setFeatures(deviceEntity.features);
             });
         }
 
@@ -178,6 +187,60 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         }
     }
 
+    public static class DeviceFeatureAdapter extends RecyclerView.Adapter<DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder> {
+
+        private final DeviceDetailInteractionListener listener;
+        private List<String> mValues;
+        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String item = (String) view.getTag();
+                listener.onFeatureSelected(item);
+            }
+        };
+
+        DeviceFeatureAdapter(DeviceDetailInteractionListener listener) {
+            this.listener = listener;
+        }
+
+        public void setFeatures(List<String> features){
+            mValues = features;
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(android.R.layout.simple_list_item_1, parent, false);
+            return new DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull final DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder holder, int position) {
+            String feature = mValues.get(position);
+
+            holder.nameView.setText(feature);
+
+            holder.itemView.setTag(feature);
+            holder.itemView.setOnClickListener(mOnClickListener);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mValues != null ? mValues.size() : 0;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            final TextView nameView;
+
+            ViewHolder(View view) {
+                super(view);
+                this.nameView = (TextView)view;
+            }
+        }
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -193,5 +256,6 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         void onDeviceReboot(DeviceEntity deviceEntity);
         void onDeviceReset(DeviceEntity deviceEntity);
         void onDeviceDeleted(DeviceEntity deviceEntity);
+        void onFeatureSelected(String featureName);
     }
 }

@@ -202,4 +202,10 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }
+
+    @Override
+    public void onFeatureSelected(String featureName) {
+        // TODO: implement feature selection (open activity for provider)
+        Snackbar.make(findViewById(R.id.list_container), "Feature selection not implemented yet!", Snackbar.LENGTH_LONG).show();
+    }
 }
