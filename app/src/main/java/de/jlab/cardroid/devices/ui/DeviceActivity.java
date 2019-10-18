@@ -1,8 +1,12 @@
 package de.jlab.cardroid.devices.ui;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.Html;
 import android.view.MenuItem;
 
@@ -17,7 +21,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
+import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.devices.storage.DeviceRepository;
 
 public final class DeviceActivity extends AppCompatActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener {
 
@@ -26,6 +33,23 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     private boolean isTwoPane;
 
     private Fragment activeFragment;
+    private Fragment listFragment;
+
+    private DeviceService.DeviceServiceBinder deviceService;
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            deviceService = (DeviceService.DeviceServiceBinder) service;
+            // FIXME: we have to observe the devices somehow
+            //deviceService.addConnectionObserver(DeviceActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            //deviceService.removeConnectionObserver(DeviceActivity.this);
+            deviceService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +77,20 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
         if (deviceId > 0) {
             this.showDevice(deviceId);
         }
+    }
 
-        // TODO: Bind service to get connected devices and allow interaction
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        this.getApplicationContext().unbindService(this.connection);
     }
 
     @Override
@@ -85,6 +121,9 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
 
     private void showList() {
         DeviceListFragment fragment = DeviceListFragment.newInstance();
+        if (this.isTwoPane) {
+            this.listFragment = fragment;
+        }
 
         this.activeFragment = fragment;
 
@@ -115,8 +154,13 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     @Override
     public void onDeviceDisconnect(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_disconnect, R.string.action_device_disconnect_confirm, R.string.action_device_disconnect, (dialog, which) -> {
-            // TODO: implement device disconnect
-            Snackbar.make(findViewById(R.id.list_container), "Disconnect not implemented yet!", Snackbar.LENGTH_LONG).show();
+            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            if (device != null) {
+                device.close();
+                Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_disconnect_success, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_disconnect_failure, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
+            }
         });
     }
 
@@ -139,8 +183,16 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     @Override
     public void onDeviceDeleted(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_delete, R.string.action_device_delete_confirm, R.string.action_device_delete, (dialog, which) -> {
-            // TODO: implement device deletion
-            Snackbar.make(findViewById(R.id.list_container), "Delete not implemented yet!", Snackbar.LENGTH_LONG).show();
+            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            if (device != null) {
+                device.close();
+            }
+
+            DeviceRepository repo = new DeviceRepository(getApplication());
+            repo.delete(deviceEntity);
+
+            // TODO: maybe add undo button to snackbar (only if device is not reset as well)?
+            Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_delete_success, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
             getSupportFragmentManager().beginTransaction().remove(this.activeFragment).commit();
             showList();
         });
@@ -153,5 +205,11 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
                 .setPositiveButton(positiveButtonText, onSuccess)
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    @Override
+    public void onFeatureSelected(String featureName) {
+        // TODO: implement feature selection (open activity for provider)
+        Snackbar.make(findViewById(R.id.list_container), "Feature selection not implemented yet!", Snackbar.LENGTH_LONG).show();
     }
 }

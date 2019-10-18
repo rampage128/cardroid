@@ -62,11 +62,11 @@ public final class CanPacket {
         if (order == ByteOrder.LITTLE_ENDIAN) {
             //swap bytes in the result
             if (bitLength <= 8) {
-                return (byte)result;
+                return (byte)result & 0xFF;
             } else if (bitLength <= 16) {
-                return Short.reverseBytes((short)result);
+                return Short.reverseBytes((short)result) & 0xFFFF;
             } else if (bitLength <= 32) {
-                return Integer.reverseBytes((int)result);
+                return Integer.reverseBytes((int)result) & 0xFFFFFFFFL;
             } else {
                 return Long.reverseBytes(result);
             }

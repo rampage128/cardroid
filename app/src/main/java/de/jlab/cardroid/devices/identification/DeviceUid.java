@@ -6,7 +6,7 @@ import android.hardware.usb.UsbDevice;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class DeviceUid {
+public final class DeviceUid {
 
     private String uid;
 
@@ -27,7 +27,7 @@ public class DeviceUid {
         String uidString = "";
 
         uidString += String.format("%04x", (short)device.getVendorId()).toUpperCase();
-        uidString += String.format("%04x", (short)device.getDeviceId()).toUpperCase();
+        uidString += String.format("%04x", (short)device.getProductId()).toUpperCase();
 
         String serialNumber = device.getSerialNumber();
         if (serialNumber != null) {
@@ -54,6 +54,10 @@ public class DeviceUid {
     @Override
     public String toString() {
         return this.uid;
+    }
+
+    public boolean equals(@NonNull DeviceUid other) {
+        return this.uid.equals(other.uid);
     }
 
 }

@@ -3,6 +3,7 @@ package de.jlab.cardroid.devices.serial.carduino;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
@@ -31,9 +32,10 @@ public final class CarduinoCanParser extends CarduinoPacketParser implements Can
         this.device = (CarduinoUsbDeviceHandler)device;
     }
 
+    @Nullable
     @Override
-    public long getDeviceId() {
-        return this.device.getDeviceId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
 
     @Override

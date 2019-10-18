@@ -40,9 +40,13 @@ public final class CarduinoUidGenerator {
         return carduinoId;
     }
 
+    public static boolean isValidId(@NonNull byte[] carduinoId) {
+        return new String(carduinoId).matches(ID_PATTERN);
+    }
+
     public static DeviceUid getUid(@NonNull byte[] carduinoId) {
         String idString = new String(carduinoId);
-        if (!idString.matches(ID_PATTERN)) {
+        if (!isValidId(carduinoId)) {
             throw new IllegalArgumentException("Carduino IDs must match the pattern \"" + ID_PATTERN + "\". Found \"" + idString + "\"");
         }
         return new DeviceUid("c4rdu1n0-" + idString);

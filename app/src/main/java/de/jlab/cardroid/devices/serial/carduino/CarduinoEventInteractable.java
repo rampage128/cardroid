@@ -18,7 +18,7 @@ public final class CarduinoEventInteractable implements EventInteractable {
     }
 
     @Override
-    public long getDeviceId() {
-        return this.device.getDeviceId();
+    public DeviceHandler getDevice() {
+        return this.device;
     }
 }

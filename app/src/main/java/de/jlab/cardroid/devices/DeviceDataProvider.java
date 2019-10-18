@@ -20,7 +20,7 @@ public abstract class DeviceDataProvider {
     public int getConnectedDeviceCount() {
         int connectedDevices = 0;
         for(int i = 0; i < this.devices.size(); i++) {
-            if (this.devices.get(i).isConnected()) {
+            if (this.devices.get(i).getState() == DeviceHandler.State.READY) {
                 connectedDevices++;
             }
         }
@@ -31,7 +31,7 @@ public abstract class DeviceDataProvider {
         // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
         for (int i = 0; i < this.devices.size(); i++) {
             DeviceHandler deviceToCheck = this.devices.get(i);
-            if (deviceToCheck.getDeviceId() == device.getDeviceId()) {
+            if (deviceToCheck.equals(device)) {
                 this.devices.set(i, deviceToCheck);
                 this.onUpdate(deviceToCheck, device, this.service);
                 return;
@@ -44,7 +44,7 @@ public abstract class DeviceDataProvider {
 
     public boolean usesDevice(DeviceHandler device) {
         for (int i = 0; i < this.devices.size(); i++) {
-            if (this.devices.get(i).getDeviceId() == device.getDeviceId()) {
+            if (this.devices.get(i).equals(device)) {
                 return true;
             }
         }

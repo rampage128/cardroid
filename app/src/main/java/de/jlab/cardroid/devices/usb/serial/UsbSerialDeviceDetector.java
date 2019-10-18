@@ -50,6 +50,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
                     currentBaudRateIndex++;
                     if (currentBaudRateIndex < baudRates.length) {
                         connection.setBaudRate(baudRates[currentBaudRateIndex]);
+                        UsbSerialDeviceDetector.this.reader.clear();
                     } else {
                         detectionFailed();
                     }
@@ -77,8 +78,10 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
             this.timer.cancel();
             this.timer = null;
         }
-        this.connection.removeUsbSerialReader(this.reader);
-        this.connection.disconnect();
+        if (this.connection != null) {
+            this.connection.removeUsbSerialReader(this.reader);
+            this.connection.disconnect();
+        }
         this.connection = null;
         this.reader = null;
         this.currentBaudRateIndex = 0;
@@ -93,6 +96,12 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         public DetectionSerialReader(@NonNull UsbDevice device, @NonNull Application app) {
             this.device = device;
             this.app = app;
+        }
+
+        public void clear() {
+            for (SerialMatcher matcher : matchers) {
+                matcher.clear();
+            }
         }
 
         @NonNull
@@ -115,6 +124,8 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
     public interface SerialMatcher {
         @Nullable
         DeviceHandler detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
+
+        void clear();
     }
 
 }

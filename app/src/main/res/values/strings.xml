@@ -158,6 +158,8 @@
             <p>The device will only be reconnected after a power-cycle.</p>
         ]]>
     </string>
+    <string name="action_device_disconnect_success">Device %1$s successfully disconnected</string>
+    <string name="action_device_disconnect_failure">Device %1$s could not be disconnected</string>
     <string name="action_device_reset">Reset</string>
     <string name="action_device_reset_confirm">
         <![CDATA[
@@ -190,6 +192,7 @@
             </ul>
         ]]>
     </string>
+    <string name="action_device_delete_success">Device %1$s successfully deleted</string>
     <string name="action_device_rename">Rename</string>
     <string name="device_features">Device Features</string>
     <string name="error_device_name_blank">Device name cannot be blank</string>
@@ -282,7 +285,4 @@
     <string name="carduino_error_33">CAN send buffer full</string>
     <string name="carduino_error_34">CAN send timeout</string>
     <string name="carduino_error_35">CAN control error</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

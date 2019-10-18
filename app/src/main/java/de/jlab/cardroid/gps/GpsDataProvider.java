@@ -72,10 +72,14 @@ public final class GpsDataProvider extends DeviceDataProvider {
         this.deviceRemoved(device);
         if (this.getConnectedDeviceCount() < 1) {
             if (this.checkGpsPermissions(service) && this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
-                this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
-                this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
-                this.locationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
-                this.locationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
+                try {
+                    this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
+                    this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
+                    this.locationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
+                    this.locationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
+                } catch (IllegalArgumentException e) {
+                    Log.e(this.getClass().getSimpleName(), "Error disabling GPS provider", e);
+                }
             }
         }
     }

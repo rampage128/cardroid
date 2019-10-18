@@ -18,26 +18,25 @@ public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialR
     public GpsUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
 
-        this.uid = this.requestNewUid(app);
+        this.uid = DeviceUid.fromUsbDevice(device);
     }
 
     @Override
-    protected GpsSerialReader onConnect() {
+    protected GpsSerialReader onOpenSuccess() {
         GpsSerialReader reader = new GpsSerialReader();
         reader.addSerialPacketListener(this.positionParser);
-        this.notifyFeatureDetected(GpsDataProvider.class, this.positionParser, null);
-        this.notifyUidReceived(this.uid);
+        this.setDeviceUid(this.uid);
+        this.addObservable(this.positionParser);
+        this.notifyFeatureDetected(GpsDataProvider.class);
         return reader;
     }
 
     @Override
-    protected void onConnectFailed() {}
+    protected void onOpenFailed() {}
 
     @Override
-    protected void onDisconnect(GpsSerialReader reader) {
+    protected void onClose(GpsSerialReader reader) {
         reader.removeSerialPacketListener(this.positionParser);
     }
 
-    @Override
-    public void allowCommunication() {}
 }

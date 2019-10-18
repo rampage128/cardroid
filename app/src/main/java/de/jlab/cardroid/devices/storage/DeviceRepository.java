@@ -3,10 +3,11 @@ package de.jlab.cardroid.devices.storage;
 import android.app.Application;
 import android.os.AsyncTask;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.storage.CardroidDatabase;
 
 public final class DeviceRepository {
@@ -30,33 +31,20 @@ public final class DeviceRepository {
         return this.deviceDao.get(identifier);
     }
 
-    public List<DeviceEntity> getSynchronous(String deviceUid) {
-        try {
-            return new getAsyncTask(this.deviceDao).execute(deviceUid).get();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
+    public List<DeviceEntity> getSynchronous(@NonNull DeviceUid deviceUid) {
+        return this.deviceDao.getSynchronous(deviceUid.toString());
     }
 
-    public void insert(DeviceEntity... eventEntities) {
-        new insertAsyncTask(this.deviceDao).execute(eventEntities);
+    public void insert(DeviceEntity... deviceEntities) {
+        new insertAsyncTask(this.deviceDao).execute(deviceEntities);
     }
 
-    public void update(DeviceEntity... eventEntities) {
-        new updateAsyncTask(this.deviceDao).execute(eventEntities);
+    public void update(DeviceEntity... deviceEntities) {
+        new updateAsyncTask(this.deviceDao).execute(deviceEntities);
     }
 
-    private static class getAsyncTask extends AsyncTask<String, Void, List<DeviceEntity>> {
-        private DeviceDao asyncTaskDao;
-
-        getAsyncTask(DeviceDao dao) {
-            this.asyncTaskDao = dao;
-        }
-
-        protected List<DeviceEntity> doInBackground(final String... deviceUids) {
-            return this.asyncTaskDao.getSynchronous(deviceUids[0]);
-        }
-
+    public void delete(DeviceEntity... deviceEntities) {
+        new deleteAsyncTask(this.deviceDao).execute(deviceEntities);
     }
 
     private static class insertAsyncTask extends AsyncTask<DeviceEntity, Void, Void> {
@@ -83,6 +71,18 @@ public final class DeviceRepository {
         @Override
         protected Void doInBackground(final DeviceEntity... deviceEntities) {
             this.asyncTaskDao.update(deviceEntities);
+            return null;
+        }
+    }
+
+    private static class deleteAsyncTask extends AsyncTask<DeviceEntity, Void, Void> {
+        private DeviceDao asyncTaskDao;
+
+        deleteAsyncTask(DeviceDao dao) { this.asyncTaskDao = dao; }
+
+        @Override
+        protected Void doInBackground(DeviceEntity... deviceEntities) {
+            this.asyncTaskDao.delete(deviceEntities);
             return null;
         }
     }

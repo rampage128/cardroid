@@ -53,6 +53,7 @@ public final class Expression extends ObservableValue {
                 ScriptableObject.putProperty(Expression.this.scope, this.name, newValue);
                 Expression.this.change(Expression.this.evaluate());
             };
+            ScriptableObject.putProperty(Expression.this.scope, this.name, value.getValue());
             value.addObserver(this.listener);
         }
     }
