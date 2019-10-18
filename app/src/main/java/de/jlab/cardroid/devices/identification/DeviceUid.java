@@ -60,4 +60,8 @@ public final class DeviceUid {
         return this.uid.equals(other.uid);
     }
 
+    @Override
+    public int hashCode() {
+        return this.uid.hashCode();
+    }
 }
