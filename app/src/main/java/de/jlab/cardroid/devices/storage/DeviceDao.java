@@ -18,10 +18,10 @@ public interface DeviceDao {
     @Query("SELECT * FROM devices")
     LiveData<List<DeviceEntity>> getAll();
 
-    @Query("SELECT * FROM devices WHERE uid =:uid")
+    @Query("SELECT * FROM devices WHERE uid = :uid")
     LiveData<DeviceEntity> get(int uid);
 
-    @Query("SELECT * FROM devices WHERE device_uid =:deviceUid")
+    @Query("SELECT * FROM devices WHERE device_uid = :deviceUid")
     List<DeviceEntity> getSynchronous(String deviceUid);
 
     @Insert
