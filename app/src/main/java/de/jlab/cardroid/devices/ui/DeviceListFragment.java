@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -126,7 +127,7 @@ public final class DeviceListFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
-        if (this.getContext() != null) {
+        if (this.deviceService != null && this.getContext() != null) {
             this.getContext().getApplicationContext().unbindService(this.connection);
         }
     }
@@ -135,9 +136,12 @@ public final class DeviceListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (this.getContext() != null) {
-            this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
-        }
+        final Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            if (this.getContext() != null) {
+                this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
+            }
+        }, 500);
     }
 
     private void onDeviceSelected(DeviceEntity deviceEntity) {
