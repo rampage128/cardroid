@@ -227,7 +227,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
     public void onPause() {
         super.onPause();
 
-        if (this.getContext() != null) {
+        if (this.deviceService != null && this.getContext() != null) {
             this.getContext().getApplicationContext().unbindService(this.connection);
         }
     }
