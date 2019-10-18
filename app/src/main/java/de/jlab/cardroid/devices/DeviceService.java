@@ -320,6 +320,9 @@ public final class DeviceService extends Service {
         @Override
         public DeviceDataProvider onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
             Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", device: " + device.getDeviceId());
+            DeviceConnection connection = DeviceService.this.deviceStore.get(device);
+            assert connection != null;
+            connection.addFeature(feature, getApplication());
             return DeviceService.this.startDataProvider(feature, device);
         }
 
