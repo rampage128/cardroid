@@ -66,7 +66,7 @@ public final class CanPacket {
             } else if (bitLength <= 16) {
                 return Short.reverseBytes((short)result) & 0xFFFF;
             } else if (bitLength <= 32) {
-                return Integer.reverseBytes((int)result) & 0xFFFFFFFF;
+                return Integer.reverseBytes((int)result) & 0xFFFFFFFFL;
             } else {
                 return Long.reverseBytes(result);
             }
