@@ -23,4 +23,9 @@ public final class GpsSerialMatcher implements UsbSerialDeviceDetector.SerialMat
         }
         return null;
     }
+
+    @Override
+    public void clear() {
+        this.received = "";
+    }
 }

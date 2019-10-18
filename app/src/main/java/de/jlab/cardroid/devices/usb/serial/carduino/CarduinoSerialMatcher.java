@@ -29,4 +29,9 @@ public final class CarduinoSerialMatcher implements UsbSerialDeviceDetector.Seri
         }
         return null;
     }
+
+    @Override
+    public void clear() {
+        this.received = "";
+    }
 }
