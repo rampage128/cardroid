@@ -6,7 +6,7 @@ import android.hardware.usb.UsbDevice;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class DeviceConnectionId {
+public final class DeviceConnectionId {
 
     private String connectionId;
 

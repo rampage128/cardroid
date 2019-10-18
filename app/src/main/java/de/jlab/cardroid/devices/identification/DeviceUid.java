@@ -6,7 +6,7 @@ import android.hardware.usb.UsbDevice;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class DeviceUid {
+public final class DeviceUid {
 
     private String uid;
 
