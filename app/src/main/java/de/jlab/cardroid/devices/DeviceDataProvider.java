@@ -31,6 +31,7 @@ public abstract class DeviceDataProvider {
         // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
         for (int i = 0; i < this.devices.size(); i++) {
             DeviceHandler deviceToCheck = this.devices.get(i);
+            // FIXME should this check be "isPhysicalDevice(device)" ???
             if (deviceToCheck.equals(device)) {
                 this.devices.set(i, device);
                 this.onUpdate(deviceToCheck, device, this.service);
