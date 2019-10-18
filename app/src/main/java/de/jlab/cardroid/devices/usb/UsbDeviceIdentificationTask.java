@@ -25,13 +25,13 @@ public final class UsbDeviceIdentificationTask {
 
     private int activeDetectorIndex = 0;
     private UsbDevice activeDevice;
-    private DeviceDetectorFilter filter;
+    private Filter filter;
 
     public UsbDeviceIdentificationTask(@NonNull DeviceService service, @NonNull UsbDeviceDetector.DetectionObserver observer, @NonNull UsbDeviceDetector ...detectors) {
         this.detectors.addAll(Arrays.asList(detectors));
         this.service = service;
         this.observer = observer;
-        this.filter = DeviceDetectorFilter.getCachedFilter(() -> this.service.getResources().getXml(R.xml.device_filter));
+        this.filter = Filter.get(() -> this.service.getResources().getXml(R.xml.device_filter));
     }
 
     public void identify(@NonNull UsbDevice device) {
@@ -74,88 +74,88 @@ public final class UsbDeviceIdentificationTask {
             UsbDeviceIdentificationTask.this.identifyAgain();
         }
     }
-}
+    static class Filter {
 
-class DeviceDetectorFilter {
+        private static Filter cachedFilter = null;
 
-    private static DeviceDetectorFilter cachedFilter = null;
+        private XmlResourceParser parser;
+        Set<DeviceInfo> devicesInfo;
 
-    private XmlResourceParser parser;
-    Set<DeviceDetectorInfo> devicesInfo;
+        private Filter(@NonNull XmlResourceParser parser) {
+            this.parser = parser;
+            this.devicesInfo = new HashSet<>();
+            parseDetectorList();
 
-    private DeviceDetectorFilter(@NonNull XmlResourceParser parser) {
-        this.parser = parser;
-        this.devicesInfo = new HashSet<>();
-        parseDetectorList();
-
-    }
-
-    public static DeviceDetectorFilter getCachedFilter(Supplier<XmlResourceParser> resourceProvider) {
-        if (cachedFilter == null) {
-            cachedFilter = new DeviceDetectorFilter(resourceProvider.get());
         }
-        return cachedFilter;
-    }
 
-    private void parseDetectorList() {
-        int eventType = -1;
-        boolean deviceMatchFound = false;
-        DeviceDetectorInfo currentDeviceInfo = null;
-        while (eventType != XmlResourceParser.END_DOCUMENT) {
-            try {
-                if (parser.getEventType() == XmlResourceParser.START_TAG) {
-                    String nodeName = parser.getName();
-                    if (nodeName.equals("usb-device")) {
-                        String vendorIdStr = parser.getAttributeValue(null, "vendor-id");
-                        String productIdStr = parser.getAttributeValue(null, "product-id");
-                        currentDeviceInfo = new DeviceDetectorInfo(Integer.parseInt(vendorIdStr), productIdStr != null ? Integer.parseInt(productIdStr) : null);
-                        this.devicesInfo.add(currentDeviceInfo);
-                    } else if (nodeName.equals("detector")) {
-                        currentDeviceInfo.addClassName(parser.getAttributeValue(null, "class"));
+        public static Filter get(Supplier<XmlResourceParser> resourceProvider) {
+            if (cachedFilter == null) {
+                cachedFilter = new Filter(resourceProvider.get());
+            }
+            return cachedFilter;
+        }
+
+        private void parseDetectorList() {
+            int eventType = -1;
+            boolean deviceMatchFound = false;
+            DeviceInfo currentDeviceInfo = null;
+            while (eventType != XmlResourceParser.END_DOCUMENT) {
+                try {
+                    if (parser.getEventType() == XmlResourceParser.START_TAG) {
+                        String nodeName = parser.getName();
+                        if (nodeName.equals("usb-device")) {
+                            String vendorIdStr = parser.getAttributeValue(null, "vendor-id");
+                            String productIdStr = parser.getAttributeValue(null, "product-id");
+                            currentDeviceInfo = new DeviceInfo(Integer.parseInt(vendorIdStr), productIdStr != null ? Integer.parseInt(productIdStr) : null);
+                            this.devicesInfo.add(currentDeviceInfo);
+                        } else if (nodeName.equals("detector")) {
+                            currentDeviceInfo.addClassName(parser.getAttributeValue(null, "class"));
+                        }
                     }
-                }
-                eventType = parser.next();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public boolean isValidDetector(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
-        for (DeviceDetectorInfo info: devicesInfo) {
-            if (info.matches(device, detector)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private class DeviceDetectorInfo {
-        Integer vendorId;
-        Integer productId;
-        private Set<String> classNames;
-        public DeviceDetectorInfo(@NonNull Integer vendorId, @Nullable Integer productId) {
-            this.vendorId = vendorId;
-            this.productId = productId;
-            this.classNames = new HashSet<String>();
-        }
-
-        public void addClassName(@NonNull String className) {
-            this.classNames.add(className);
-        }
-
-        public boolean matches(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
-            boolean match = false;
-            if (vendorId.equals(device.getVendorId())) {
-                match = true;
-                if (productId != null) {
-                    match = match && productId.equals(device.getProductId());
+                    eventType = parser.next();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-            if (match) {
-                return classNames.contains(detector.getClass().getSimpleName());
+        }
+
+        public boolean isValidDetector(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
+            for (DeviceInfo info: devicesInfo) {
+                if (info.matches(device, detector)) {
+                    return true;
+                }
             }
             return false;
         }
+
+        private class DeviceInfo {
+            Integer vendorId;
+            Integer productId;
+            private Set<String> classNames;
+            public DeviceInfo(@NonNull Integer vendorId, @Nullable Integer productId) {
+                this.vendorId = vendorId;
+                this.productId = productId;
+                this.classNames = new HashSet<String>();
+            }
+
+            public void addClassName(@NonNull String className) {
+                this.classNames.add(className);
+            }
+
+            public boolean matches(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
+                boolean match = false;
+                if (vendorId.equals(device.getVendorId())) {
+                    match = true;
+                    if (productId != null) {
+                        match = match && productId.equals(device.getProductId());
+                    }
+                }
+                if (match) {
+                    return classNames.contains(detector.getClass().getSimpleName());
+                }
+                return false;
+            }
+        }
     }
 }
+
