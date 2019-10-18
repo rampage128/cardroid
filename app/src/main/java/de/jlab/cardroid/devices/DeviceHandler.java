@@ -78,6 +78,8 @@ public abstract class DeviceHandler {
         return provider;
     }
 
+    // FIXME: this has to be replaced with a String getConnectionId() method
+    // The method should return getDeviceName() for usb devices and mac address for BT devices
     public abstract int getDeviceId();
     public abstract DeviceUid requestNewUid(@NonNull Application app);
     public abstract boolean connectDevice();
