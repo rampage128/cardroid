@@ -47,7 +47,9 @@ public final class DeviceEntity {
     }
 
     public void addFeature(Class<? extends DeviceDataProvider> feature) {
-        this.features.add(feature.getSimpleName());
+        if (!this.features.contains(feature.getSimpleName())) {
+            this.features.add(feature.getSimpleName());
+        }
     }
 
 }
