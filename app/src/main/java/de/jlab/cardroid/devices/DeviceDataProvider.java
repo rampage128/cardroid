@@ -32,7 +32,7 @@ public abstract class DeviceDataProvider {
         for (int i = 0; i < this.devices.size(); i++) {
             DeviceHandler deviceToCheck = this.devices.get(i);
             if (deviceToCheck.equals(device)) {
-                this.devices.set(i, deviceToCheck);
+                this.devices.set(i, device);
                 this.onUpdate(deviceToCheck, device, this.service);
                 return;
             }
