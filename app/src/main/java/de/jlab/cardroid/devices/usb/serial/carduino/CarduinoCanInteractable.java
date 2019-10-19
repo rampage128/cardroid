@@ -46,7 +46,7 @@ public final class CarduinoCanInteractable implements CanInteractable {
 
     private void sendCanIdRequest(long canId, byte mask) {
         byte[] payload = ByteBuffer.allocate(5).putInt((int)canId).put(mask).array();
-        Log.e(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.device + ".");
+        Log.d(this.getClass().getSimpleName(), "Send request " + String.format("%02x", canId) + " to device " + this.device + ".");
         this.device.send(CarduinoMetaType.createPacket(CarduinoMetaType.CAR_DATA_DEFINITION, payload));
     }
 

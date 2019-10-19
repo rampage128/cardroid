@@ -243,6 +243,14 @@ public final class DeviceService extends Service {
             return DeviceService.this.deviceStore.get(uid);
         }
 
+        public void subscribeDeviceStore(@NonNull DeviceHandler.Observer observer) {
+            DeviceService.this.deviceStore.subscribe(observer);
+        }
+
+        public void unsubscribeDeviceStore(@NonNull DeviceHandler.Observer observer) {
+            DeviceService.this.deviceStore.unsubscribe(observer);
+        }
+
         @NonNull
         public VariableStore getVariableStore() {
             return DeviceService.this.variableStore;

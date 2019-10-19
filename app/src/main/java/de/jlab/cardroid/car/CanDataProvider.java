@@ -333,6 +333,7 @@ public final class CanDataProvider extends DeviceDataProvider {
     protected void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service) {
         this.deviceRemoved(previousDevice);
         this.deviceAdded(newDevice);
+        this.service.showOverlay();
     }
 
     @Override

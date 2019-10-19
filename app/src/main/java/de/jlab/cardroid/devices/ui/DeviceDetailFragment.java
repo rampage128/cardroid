@@ -1,7 +1,12 @@
 package de.jlab.cardroid.devices.ui;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +19,15 @@ import android.widget.TextView;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
@@ -32,13 +41,37 @@ import de.jlab.cardroid.utils.ui.DialogUtils;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements View.OnClickListener {
+public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, DeviceHandler.Observer {
     private static final String ARG_DEVICE_ID = "deviceId";
 
     private DeviceDetailViewModel model;
     private DeviceEntity deviceEntity;
+    private boolean isDeviceOnline = false;
 
     private DeviceDetailInteractionListener mListener;
+
+    private Button rebootButton;
+    private Button resetButton;
+    private Button disconnectButton;
+
+    private DeviceService.DeviceServiceBinder deviceService;
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            deviceService = (DeviceService.DeviceServiceBinder) service;
+            deviceService.subscribeDeviceStore(DeviceDetailFragment.this);
+            // FIXME: we have to observe the devices somehow
+            //deviceService.addConnectionObserver(DeviceActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            //deviceService.removeConnectionObserver(DeviceActivity.this);
+            deviceService.unsubscribeDeviceStore(DeviceDetailFragment.this);
+            deviceService = null;
+        }
+    };
+
 
     public DeviceDetailFragment() {
         // Required empty public constructor
@@ -73,10 +106,11 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         TextView displayNameText = rootView.findViewById(R.id.display_name);
         TextView uidText = rootView.findViewById(R.id.uid);
         ImageView typeIcon = rootView.findViewById(R.id.type_icon);
-        Button rebootButton = rootView.findViewById(R.id.action_device_reboot);
-        Button resetButton = rootView.findViewById(R.id.action_device_reset);
+        this.rebootButton = rootView.findViewById(R.id.action_device_reboot);
+        this.resetButton = rootView.findViewById(R.id.action_device_reset);
+        this.disconnectButton = rootView.findViewById(R.id.action_device_disconnect);
 
-        rootView.findViewById(R.id.action_device_disconnect).setOnClickListener(this);
+        disconnectButton.setOnClickListener(this);
         rebootButton.setOnClickListener(this);
         resetButton.setOnClickListener(this);
         rootView.findViewById(R.id.action_device_delete).setOnClickListener(this);
@@ -104,12 +138,15 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
                 // TODO: Disable reboot, reset and disconnect button if device is not connected
                 // TODO: Device interactability should be determined with an Interactable directly from the device
-                boolean isInteractableDevice = deviceEntity.className.equals(CarduinoUsbDeviceHandler.class.getSimpleName());
+                boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDeviceHandler.class.getSimpleName());
 
                 rebootButton.setEnabled(isInteractableDevice);
                 resetButton.setEnabled(isInteractableDevice);
+                disconnectButton.setEnabled(isDeviceOnline);
                 rebootButton.setAlpha(isInteractableDevice ? 1f : .25f);
                 resetButton.setAlpha(isInteractableDevice ? 1f : .25f);
+                disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
+
 
                 displayNameText.setText(deviceEntity.displayName);
                 uidText.setText(deviceEntity.deviceUid.toString());
@@ -146,6 +183,36 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
     }
 
     @Override
+    public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
+        if (this.deviceEntity != null && device.isDevice(this.deviceEntity.deviceUid)) {
+            if (state == DeviceHandler.State.READY) {
+                this.isDeviceOnline = true;
+            } else {
+                this.isDeviceOnline = false;
+            }
+
+            if (this.getActivity() != null) {
+                this.getActivity().runOnUiThread(() -> {
+                    boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDeviceHandler.class.getSimpleName());
+
+                    rebootButton.setEnabled(isInteractableDevice);
+                    resetButton.setEnabled(isInteractableDevice);
+                    disconnectButton.setEnabled(isDeviceOnline);
+                    rebootButton.setAlpha(isInteractableDevice ? 1f : .25f);
+                    resetButton.setAlpha(isInteractableDevice ? 1f : .25f);
+                    disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
+                });
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof DeviceDetailInteractionListener) {
@@ -154,6 +221,27 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
             throw new RuntimeException(context.toString()
                     + " must implement DeviceDetailInteractionListener");
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (this.deviceService != null && this.getContext() != null) {
+            this.getContext().getApplicationContext().unbindService(this.connection);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        final Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            if (this.getContext() != null) {
+                this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
+            }
+        }, 500);
     }
 
     @Override

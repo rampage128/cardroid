@@ -34,16 +34,9 @@ public final class CanPacketDescriptor implements CanObservable.CanPacketListene
         for (int i = startByteIndex; i <= endByteIndex; i++) {
             this.byteMask |= 1 << (7 - i);
         }
-
-        StringBuilder sb = new StringBuilder("Recalculated byte mask for " + String.format("%02x", this.getCanId()) + " (" + startByteIndex + " -> " + endByteIndex + "): ");
-        for (int i = 0; i < 8; i++) {
-            sb.append((this.byteMask >> (7 - i)) & 0x01);
-        }
-        Log.e(this.getClass().getSimpleName(), sb.toString());
     }
 
     private void recalculateOffsets() {
-        Log.e(this.getClass().getSimpleName(), "Recalculating bit offsets for: " + String.format("%02x", this.getCanId()));
         for (int i = 0; i < this.values.size(); i++) {
             CanValue value = this.values.get(i);
             int bitIndex = value.getBitIndex();
@@ -52,7 +45,6 @@ public final class CanPacketDescriptor implements CanObservable.CanPacketListene
             int byteOffset = byteCount * -1;
             int bitOffset = (byteOffset * 8);
             this.bitOffsets.put(value.getBitIndex(), bitOffset);
-            Log.e(this.getClass().getSimpleName(), "Recalculating bit offset: " + bitIndex + " " + bitOffset + " = " + (bitIndex + bitOffset) + " (start byte: " + startByteIndex + ", unused bytes before: " + byteCount + ", byte offset: " + byteOffset + ")");
         }
     }
 
