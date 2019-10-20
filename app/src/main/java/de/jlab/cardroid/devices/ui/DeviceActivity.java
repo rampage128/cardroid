@@ -23,6 +23,7 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
 
@@ -208,8 +209,10 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     }
 
     @Override
-    public void onFeatureSelected(String featureName) {
-        // TODO: implement feature selection (open activity for provider)
-        Snackbar.make(findViewById(R.id.list_container), "Feature selection not implemented yet!", Snackbar.LENGTH_LONG).show();
+    public void onFeatureSelected(FeatureType feature) {
+        Intent intent = feature.getIntent(this);
+        if (intent != null) {
+            startActivity(intent);
+        }
     }
 }

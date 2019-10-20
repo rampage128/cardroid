@@ -276,6 +276,19 @@
     <string name="device_type_carduinousbdevicehandler">Carduino</string>
     <string name="device_type_gpsusbdevicehandler">GPS</string>
 
+    <!-- DEVICE FEATURES -->
+    <string name="device_feature">Device Feature</string>
+    <string name="device_feature_unknown">Unknown feature</string>
+    <string name="device_feature_unknown_description">This feature is unknown/unsupported</string>
+    <string name="device_feature_errors">Errors</string>
+    <string name="device_feature_errors_description">Can notify the user about external problems</string>
+    <string name="device_feature_location">GPS</string>
+    <string name="device_feature_location_description">Provides location information to the system</string>
+    <string name="device_feature_events">Events</string>
+    <string name="device_feature_events_description">Sends events that can trigger user defined rules</string>
+    <string name="device_feature_can">CAN</string>
+    <string name="device_feature_can_description">Sends CAN-bus data which can be used in Variables</string>
+
     <!-- CARDUINO ERRORS -->
     <string name="carduino_error">%1$s: %2$s x%3$d</string>
     <string name="carduino_error_unknown">Unknown error</string>
