@@ -28,6 +28,13 @@
                 android:targetClass="de.jlab.cardroid.rules.RuleActivity" />
     </header>
 
+    <header
+        android:icon="@drawable/ic_pref_devices"
+        android:title="@string/pref_camera"
+        android:summary="@string/pref_camera_description">
+        <intent android:targetPackage="de.jlab.cardroid"
+            android:targetClass="de.jlab.cardroid.camera.ui.CameraViewActivity" />
+    </header>
 
     <header
         android:fragment="de.jlab.cardroid.SettingsActivity$GpsPreferenceFragment"
