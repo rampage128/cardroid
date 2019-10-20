@@ -17,7 +17,6 @@
     <uses-feature android:name="android.hardware.usb.host" />
 
     <application
-        tools:replace="android:allowBackup"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
@@ -25,16 +24,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
-
-        <activity android:name=".devices.ui.DeviceActivity"
+        tools:ignore="GoogleAppIndexingWarning"
+        tools:replace="android:allowBackup">
+        <activity android:name=".camera.ui.CameraViewActivity"></activity>
+        <activity
+            android:name=".devices.ui.DeviceActivity"
             android:label="@string/title_device_list"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.jlab.cardroid.SettingsActivity" />
         </activity>
-
         <activity
             android:name=".rules.RuleActivity"
             android:label="@string/title_rule_list"
