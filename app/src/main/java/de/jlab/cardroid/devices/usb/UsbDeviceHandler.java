@@ -11,6 +11,8 @@ public abstract class UsbDeviceHandler extends DeviceHandler {
 
     private UsbDevice device;
 
+    protected UsbDevice getUsbDevice() { return this.device; }
+
     public UsbDeviceHandler(@NonNull UsbDevice device, @NonNull Application app) {
         super(app);
         this.device = device;

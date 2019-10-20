@@ -1,8 +1,12 @@
 package de.jlab.cardroid.devices;
 
+import android.graphics.Camera;
+
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+
+import de.jlab.cardroid.camera.CameraDataProvider;
 import de.jlab.cardroid.car.CanDataProvider;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.errors.ErrorDataProvider;
@@ -79,6 +83,9 @@ public abstract class DeviceDataProvider {
         }
         if (providerType.equals(ErrorDataProvider.class)) {
             return new ErrorDataProvider(service);
+        }
+        if (providerType.equals(CameraDataProvider.class)) {
+            return new CameraDataProvider(service);
         }
 
         throw new IllegalArgumentException("Provider \"" + providerType.getSimpleName() + "\" is not registered in DeviceDataProvider.");
