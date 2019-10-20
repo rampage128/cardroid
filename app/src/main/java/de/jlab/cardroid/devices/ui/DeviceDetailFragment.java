@@ -16,11 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.ImageViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +28,7 @@ import de.jlab.cardroid.devices.DeviceDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
+import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
 import de.jlab.cardroid.utils.ui.DialogUtils;
@@ -46,6 +46,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
     private DeviceDetailViewModel model;
     private DeviceEntity deviceEntity;
+    private DeviceHandler device;
     private boolean isDeviceOnline = false;
 
     private DeviceDetailInteractionListener mListener;
@@ -152,7 +153,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
                 uidText.setText(deviceEntity.deviceUid.toString());
                 typeIcon.setImageResource(type.getTypeIcon());
 
-                adapter.setFeatures(deviceEntity.features);
+                adapter.setFeatures(FeatureType.get(deviceEntity));
             });
         }
 
@@ -203,6 +204,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
                     disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
                 });
             }
+            this.device = device;
         }
     }
 
@@ -278,12 +280,13 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
     public static class DeviceFeatureAdapter extends RecyclerView.Adapter<DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder> {
 
         private final DeviceDetailInteractionListener listener;
-        private List<String> mValues;
+        private FeatureType[] mValues;
+        private DeviceHandler device;
+        private DeviceService.DeviceServiceBinder deviceService;
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String item = (String) view.getTag();
-                listener.onFeatureSelected(item);
+                listener.onFeatureSelected((FeatureType) view.getTag());
             }
         };
 
@@ -291,24 +294,43 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
             this.listener = listener;
         }
 
-        public void setFeatures(List<String> features){
+        public void setFeatures(FeatureType[] features) {
             mValues = features;
             notifyDataSetChanged();
+        }
+
+        public void setDevice(DeviceHandler device) {
+            this.device = device;
+        }
+
+        public void setService(DeviceService.DeviceServiceBinder service) {
+            this.deviceService = service;
         }
 
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(android.R.layout.simple_list_item_1, parent, false);
+                    .inflate(R.layout.listitem_feature, parent, false);
             return new DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull final DeviceDetailFragment.DeviceFeatureAdapter.ViewHolder holder, int position) {
-            String feature = mValues.get(position);
+            FeatureType feature = mValues[position];
 
-            holder.nameView.setText(feature);
+            holder.name.setText(feature.getTypeName());
+            holder.description.setText(feature.getTypeDescription());
+            holder.icon.setImageResource(feature.getTypeIcon());
+
+            if (this.device != null && this.deviceService != null) {
+                DeviceDataProvider provider = this.deviceService.getDeviceProvider(feature.getProviderClass());
+                if (provider != null && provider.usesDevice(this.device)) {
+                    holder.status.setBackgroundResource(R.color.colorPrimaryDark);
+                } else {
+                    holder.status.setBackgroundResource(R.color.colorDeviceUnavailable);
+                }
+            }
 
             holder.itemView.setTag(feature);
             holder.itemView.setOnClickListener(mOnClickListener);
@@ -316,15 +338,21 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
         @Override
         public int getItemCount() {
-            return mValues != null ? mValues.size() : 0;
+            return mValues != null ? mValues.length : 0;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView nameView;
+            final TextView name;
+            final TextView description;
+            final ImageView icon;
+            final View status;
 
             ViewHolder(View view) {
                 super(view);
-                this.nameView = (TextView)view;
+                this.name = view.findViewById(R.id.name);
+                this.description = view.findViewById(R.id.description);
+                this.icon = view.findViewById(R.id.icon);
+                this.status = view.findViewById(R.id.active);
             }
         }
     }
@@ -344,6 +372,6 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         void onDeviceReboot(DeviceEntity deviceEntity);
         void onDeviceReset(DeviceEntity deviceEntity);
         void onDeviceDeleted(DeviceEntity deviceEntity);
-        void onFeatureSelected(String featureName);
+        void onFeatureSelected(FeatureType feature);
     }
 }
