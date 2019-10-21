@@ -1,6 +1,5 @@
 package de.jlab.cardroid.car;
 
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
@@ -22,8 +21,8 @@ public final class CanPacketDescriptor implements CanObservable.CanPacketListene
     public void addCanValue(@NonNull CanValue value) {
         this.values.add(value);
 
-        int startByteIndex = (int)Math.floor((value.getBitIndex() + 1) / 8f);
-        int endByteIndex = startByteIndex + (int)Math.floor((value.getBitLength() - 1) / 8);
+        int startByteIndex = value.getBitIndex() / 8;
+        int endByteIndex = (value.getBitIndex() + value.getBitLength() - 1) / 8;
 
         this.recalculateByteMask(startByteIndex, endByteIndex);
         this.compressedPacketLength = getByteCountUntil(8);
