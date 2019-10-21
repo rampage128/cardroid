@@ -61,13 +61,10 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
             deviceService.subscribeDeviceStore(DeviceDetailFragment.this);
-            // FIXME: we have to observe the devices somehow
-            //deviceService.addConnectionObserver(DeviceActivity.this);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            //deviceService.removeConnectionObserver(DeviceActivity.this);
             deviceService.unsubscribeDeviceStore(DeviceDetailFragment.this);
             deviceService = null;
         }

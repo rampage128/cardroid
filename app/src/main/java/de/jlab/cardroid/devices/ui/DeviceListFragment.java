@@ -53,13 +53,10 @@ public final class DeviceListFragment extends Fragment {
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
             deviceService.subscribeDeviceStore(adapter);
-            // FIXME: we have to observe the devices somehow
-            //deviceService.addConnectionObserver(DeviceActivity.this);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            //deviceService.removeConnectionObserver(DeviceActivity.this);
             deviceService.unsubscribeDeviceStore(adapter);
             deviceService = null;
         }
