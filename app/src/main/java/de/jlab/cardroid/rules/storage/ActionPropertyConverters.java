@@ -1,37 +1,17 @@
 package de.jlab.cardroid.rules.storage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import androidx.arch.core.util.Function;
 import androidx.room.TypeConverter;
 import de.jlab.cardroid.rules.properties.Property;
+import de.jlab.cardroid.utils.storage.ValueConverter;
 
 public class ActionPropertyConverters {
 
-
-    private static final ValueConverter<String, Object, Function<String, Boolean>, Function<String, Object>> DESERIALIZER = new ValueConverter<>();
-    static {
-        DESERIALIZER.addConversion((s) -> s.equals("null"), (s)->null);
-        DESERIALIZER.addConversion((s) -> s.equals("true") || s.equals("false"), Boolean::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d+"), Integer::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d+L"), Long::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d*\\.\\d+D"), Double::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("[-+]?\\d*\\.\\d+F"), Float::valueOf);
-        DESERIALIZER.addConversion((s) -> s.matches("\".*\""), (s) -> s.substring(1, s.length()-1));
-    }
-
-    private static final ValueConverter<Object, String, Function<Object, Boolean>, Function<Object, String>> SERIALIZER = new ValueConverter<>();
-    static {
-        SERIALIZER.addConversion((o) -> o == null, (o) -> "null");
-        SERIALIZER.addConversion((o) -> o instanceof Boolean, (o) -> Boolean.toString((Boolean) o));
-        SERIALIZER.addConversion((o) -> o instanceof Integer, (o) -> Integer.toString((Integer) o));
-        SERIALIZER.addConversion((o) -> o instanceof Long, (o) -> Long.toString((Long) o) + "L");
-        SERIALIZER.addConversion((o) -> o instanceof Double, (o) -> Long.toString((Long) o) + "D");
-        SERIALIZER.addConversion((o) -> o instanceof Float, (o) -> Long.toString((Long) o) + "F");
-        SERIALIZER.addConversion((o) -> o instanceof String, (o) -> "\"" + o.toString() + "\"");
-    }
+    private static final ValueConverter<String, Object, Function<String, Boolean>, Function<String, Object>> DESERIALIZER = ValueConverter.deserializer();
+    private static final ValueConverter<Object, String, Function<Object, Boolean>, Function<Object, String>> SERIALIZER = ValueConverter.serializer();
 
     @TypeConverter
     public static List<Property<?>> stringToProperties(String data) {
@@ -66,28 +46,6 @@ public class ActionPropertyConverters {
         }
 
         return output.toString();
-    }
-
-    private static class ValueConverter<I, O, P extends Function<I, Boolean>, F extends Function<I, O>> {
-
-        private HashMap<P, F> conversionMap = new HashMap<>();
-
-        public void addConversion(P predicate, F function) {
-            this.conversionMap.put(predicate, function);
-        }
-
-        public O convert(I input) {
-            for (P predicate : this.conversionMap.keySet()) {
-                F function = this.conversionMap.get(predicate);
-                assert function != null;
-                if (predicate.apply(input)) {
-                    return function.apply(input);
-                }
-            }
-            String className = input != null ? input.getClass().getSimpleName() : "NullPointer";
-            throw new UnsupportedOperationException("Cannot convert " + className + " \"" + input + "\"!");
-        }
-
     }
 
 }
