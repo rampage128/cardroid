@@ -99,15 +99,15 @@ public final class CanDataProvider extends DeviceDataProvider {
                 new CanValue(14, 1, CanValue.DataType.FLAG, 0)
         ));
         descriptor.addCanValue(this.registerCanVariable(
-                "hvacIsAirductWindshield", "value == 0xA0 || value == 0xA8",
+                "hvacIsAirductWindshield", "value == 0xA0 || value == 0xA8 ? 1 : 0",
                 new CanValue(16, 8, CanValue.DataType.BIG_ENDIAN, 0)
         ));
         descriptor.addCanValue(this.registerCanVariable(
-                "hvacIsAirductFace", "value == 0x88 || value == 0x90",
+                "hvacIsAirductFace", "value == 0x88 || value == 0x90 ? 1 : 0",
                 new CanValue(16, 8, CanValue.DataType.BIG_ENDIAN, 0)
         ));
         descriptor.addCanValue(this.registerCanVariable(
-                "hvacIsAirductFeet", "value == 0x90 || value == 0x98 || value == 0xA0",
+                "hvacIsAirductFeet", "value == 0x90 || value == 0x98 || value == 0xA0 ? 1 : 0",
                 new CanValue(16, 8, CanValue.DataType.BIG_ENDIAN, 0)
         ));
         descriptor.addCanValue(this.registerCanVariable(

@@ -117,10 +117,10 @@ public class OverlayWindow {
     private Variable.VariableChangeListener bubbleListener = (oldValue, newValue, name) -> {
         switch(name) {
             case "hvacTargetTemperature":
-                this.temperature = ((Double)newValue).floatValue();
+                this.temperature = ((Number)newValue).floatValue();
                 break;
             case "hvacFanLevel":
-                this.fanLevel = ((Double)newValue).intValue();
+                this.fanLevel = ((Number)newValue).intValue();
                 break;
         }
         updateUi();
@@ -129,28 +129,28 @@ public class OverlayWindow {
     private Variable.VariableChangeListener fullChangeListener = (oldValue, newValue, name) -> {
         switch(name) {
             case "hvacIsAirductFace":
-                this.isDuctFace = (Boolean)newValue;
+                this.isDuctFace = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsAirductFeet":
-                this.isDuctFeet = (Boolean)newValue;
+                this.isDuctFeet = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsAirductWindshield":
-                this.isDuctWindshield = (Boolean)newValue;
+                this.isDuctWindshield = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsAcOn":
-                this.isAcOn = (Long)newValue == 1;
+                this.isAcOn = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsRecirculation":
-                this.isRecirculation = (Long)newValue == 1;
+                this.isRecirculation = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsAutomatic":
-                this.isAutomatic = (Long)newValue == 1;
+                this.isAutomatic = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsRearWindowHeating":
-                this.isRearWindowHeating = (Long)newValue == 1;
+                this.isRearWindowHeating = ((Number)newValue).intValue() == 1;
                 break;
             case "hvacIsWindshieldHeating":
-                this.isWindshieldHeating = (Long)newValue == 1;
+                this.isWindshieldHeating = ((Number)newValue).intValue() == 1;
                 break;
         }
         updateUi();
