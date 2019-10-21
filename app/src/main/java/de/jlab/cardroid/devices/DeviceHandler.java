@@ -133,7 +133,7 @@ public abstract class DeviceHandler {
             }
 
             this.descriptor = new DeviceEntity(uid, this.app.getString(DeviceType.get(this.getClass()).getTypeName()), this.getClass());
-            repo.insert(this.descriptor);
+            repo.insertSynchronous(this.descriptor);
 
             // TODO figure out if we need to read entity again to retrieve it's database id
             this.descriptor = repo.getSynchronous(uid).get(0);

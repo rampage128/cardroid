@@ -35,6 +35,10 @@ public final class DeviceRepository {
         return this.deviceDao.getSynchronous(deviceUid.toString());
     }
 
+    public void insertSynchronous(@NonNull DeviceEntity... deviceEntities) {
+        this.deviceDao.insert(deviceEntities);
+    }
+
     public void insert(DeviceEntity... deviceEntities) {
         new insertAsyncTask(this.deviceDao).execute(deviceEntities);
     }
