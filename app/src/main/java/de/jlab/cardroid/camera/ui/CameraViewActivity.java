@@ -22,9 +22,11 @@ import de.jlab.cardroid.devices.DeviceService;
 public class CameraViewActivity extends AppCompatActivity implements CameraDataProvider.CameraProviderListener, GLSurfaceView.Renderer {
 
     private GLSurfaceView cameraView;
-    private CameraDataProvider cameraProvider;
 
     private DeviceService.DeviceServiceBinder serviceBinder;
+    boolean surfaceReady = false;
+    boolean attached = false;
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             CameraViewActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder) service;
@@ -56,13 +58,18 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_view);
         cameraView = findViewById(R.id.camera_view);
-
+        // TODO: get these from the provider
+        cameraView.getHolder().setFixedSize(720, 240);
+        cameraView.setEGLContextClientVersion(2);
+        cameraView.setRenderer(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         this.getApplicationContext().unbindService(this.serviceConnection);
+        surfaceReady = false;
+        attached = false;
     }
 
     @Override
@@ -98,6 +105,13 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        if (surfaceReady && !attached && this.serviceBinder != null) {
+            CameraDataProvider cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
+            if (cameraProvider != null) {
+                cameraProvider.attachToGLContext(GLES20.GL_TEXTURE1);
+                attached = true;
+            }
+        }
         // Clear the color buffer
         // TODO: Is this the cause of the initial swirl?
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
