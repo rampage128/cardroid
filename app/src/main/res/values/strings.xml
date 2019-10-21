@@ -209,13 +209,8 @@
 
     <!-- event names -->
     <string name="event_unknown">Unknown event (%1$d)</string>
-    <string name="event_1">Carduino booted</string>
-    <string name="event_2">Carduino sleep</string>
-    <string name="event_3">Carduino wake up</string>
-
-    <string name="event_4">Carduino connected</string>
-    <string name="event_5">Carduino disconnected</string>
-
+    <string name="event_1">Device ready</string>
+    <string name="event_2">Device closing</string>
 
     <!-- ACTIONS -->
     <string name="media_key_action">Media Key</string>
