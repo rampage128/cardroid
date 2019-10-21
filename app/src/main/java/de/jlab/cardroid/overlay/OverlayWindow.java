@@ -20,15 +20,19 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
+import de.jlab.cardroid.car.CanDataProvider;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
+import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.variables.Variable;
 
 /**
@@ -61,6 +65,9 @@ public class OverlayWindow {
     private boolean isAcOn = false;
     private boolean isRearWindowHeating = false;
     private int fanLevel = 0;
+
+    private Timer broadCastTimer;
+    private AcCanController acController = new AcCanController();
 
     private Runnable stopFanInteraction = new Runnable() {
         @Override
@@ -239,25 +246,25 @@ public class OverlayWindow {
                 if (eventProvider != null) {
                     switch (view.getId()) {
                         case R.id.offButton:
-                            sendEvent(CarduinoEventType.CC_OFF_BUTTON, null);
+                            acController.pushOffButton();
                             break;
                         case R.id.wshButton:
-                            sendEvent(CarduinoEventType.CC_WSH_BUTTON, null);
+                            acController.pushWindshieldButton();
                             break;
                         case R.id.rwhButton:
-                            sendEvent(CarduinoEventType.CC_RWH_BUTTON, null);
+                            acController.pushRearHeaterButton();
                             break;
                         case R.id.recirculationButton:
-                            sendEvent(CarduinoEventType.CC_RECIRCULATION_BUTTON, null);
+                            acController.pushRecirculationButton();
                             break;
                         case R.id.modeButton:
-                            sendEvent(CarduinoEventType.CC_MODE_BUTTON, null);
+                            acController.pushModeButton();
                             break;
                         case R.id.autoButton:
-                            sendEvent(CarduinoEventType.CC_AUTO_BUTTON, null);
+                            acController.pushAutoButton();
                             break;
                         case R.id.acButton:
-                            sendEvent(CarduinoEventType.CC_AC_BUTTON, null);
+                            acController.pushAcButton();
                             break;
                     }
                 }
@@ -292,7 +299,7 @@ public class OverlayWindow {
 
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
-                sendEvent(CarduinoEventType.CC_FAN_LEVEL, new byte[]{(byte) Math.max(seekBar.getProgress(), 1)});
+                acController.changeFanLevel((byte) Math.max(seekBar.getProgress(), 1));
                 uiHandler.postDelayed(stopFanInteraction, 1000);
             }
         });
@@ -317,7 +324,7 @@ public class OverlayWindow {
             @Override
             public void onStopTrackingTouch(SeekArc seekBar) {
                 float temperature = seekBar.getProgress() / 2f + OverlayWindow.this.minTemp;
-                sendEvent(CarduinoEventType.CC_TEMPERATURE, new byte[]{(byte) (temperature * 2)});
+                acController.changeTargetTemperature((byte) (temperature * 2));
                 uiHandler.postDelayed(stopTempInteraction, 1000);
             }
         });
@@ -326,6 +333,24 @@ public class OverlayWindow {
         viewHolder.detailView.setVisibility(View.GONE);
         updateUi();
         this.attachBubbleData();
+        startBroadCast();
+    }
+
+    private void startBroadCast() {
+        this.broadCastTimer = new Timer();
+        this.broadCastTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                CanDataProvider provider = service.getDeviceProvider(CanDataProvider.class);
+                acController.broadcast(provider);
+            }
+        }, 0, 250);
+    }
+
+    private void stopBroadCast() {
+        if (this.broadCastTimer != null) {
+            this.broadCastTimer.cancel();
+        }
     }
 
     private void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
@@ -468,6 +493,7 @@ public class OverlayWindow {
     }
 
     public void destroy() {
+        stopBroadCast();
         if (this.isAttached) {
             this.windowManager.removeView(this.viewHolder.rootView);
             this.isAttached = false;
