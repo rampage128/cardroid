@@ -84,7 +84,7 @@ public class UsbTv007GLProcessor {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextureName);
 
         // Clear Background
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     public void detach() {
@@ -92,12 +92,22 @@ public class UsbTv007GLProcessor {
     }
 
     public void drawFrame(@NonNull UsbTvFrame frame) {
+
+        if (attachedTexId == Integer.MIN_VALUE) {
+            return;
+        }
+
+        // Clear the color buffer
+        // TODO: Is this the cause of the initial swirl?
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
         // User Shader Program
         GLES20.glUseProgram(shaderProgramId);
 
         // Set up Vertex Buffers
         posVertexBuf.position(0);
         GLES20.glVertexAttribPointer(positionAttr, 2, GLES20.GL_FLOAT, false, 0,posVertexBuf);
+
         texVertexBuf.position(0);
         GLES20.glVertexAttribPointer(textureAttr, 2, GLES20.GL_FLOAT, false, 0, texVertexBuf);
 
