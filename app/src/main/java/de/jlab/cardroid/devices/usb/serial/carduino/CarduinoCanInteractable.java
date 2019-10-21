@@ -9,6 +9,7 @@ import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.CanPacketDescriptor;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
+import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 
 public final class CarduinoCanInteractable implements CanInteractable {
 
@@ -22,6 +23,12 @@ public final class CarduinoCanInteractable implements CanInteractable {
     @Override
     public void unregisterCanId(@NonNull CanPacketDescriptor descriptor) {
         this.sendCanIdRequest(descriptor.getCanId(), (byte)0x00);
+    }
+
+    @Override
+    public void sendPacket(int canId, byte[] data) {
+        ByteBuffer payload = ByteBuffer.allocate(4 + data.length).putInt(canId).put(data);
+        this.device.send(CarduinoPacketType.createPacket(CarduinoPacketType.CAN, (byte)0x00, payload.array()));
     }
 
     @Override

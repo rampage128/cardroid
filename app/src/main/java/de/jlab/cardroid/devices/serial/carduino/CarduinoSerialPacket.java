@@ -79,7 +79,7 @@ public final class CarduinoSerialPacket extends BinarySerialPacket {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append((char)HEADER).append(" ")
-                .append(CarduinoPacketType.getFromPacket(this)).append(String.format("(%02x) ", this.data[2]));
+                .append(CarduinoPacketType.getFromPacket(this)).append(String.format("(%02x) ", this.data[1]));
 
         int payloadSize = this.getPayloadSize();
         if (payloadSize > 0) {

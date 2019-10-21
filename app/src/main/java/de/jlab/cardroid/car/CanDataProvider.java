@@ -247,6 +247,16 @@ public final class CanDataProvider extends DeviceDataProvider {
         this.externalListeners.remove(externalListener);
     }
 
+    public void sendPacket(int canId, byte[] data) {
+        ArrayList<DeviceHandler> devices = this.getDevices();
+        for (int i = 0; i < devices.size(); i++) {
+            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
+            if (interactable != null) {
+                interactable.sendPacket(canId, data);
+            }
+        }
+    }
+
     public void subscribeCanId(CanPacketDescriptor descriptor) {
         this.packetDescriptors.add(descriptor);
         this.registerCanId(descriptor);
