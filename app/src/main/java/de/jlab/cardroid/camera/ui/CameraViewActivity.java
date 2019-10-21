@@ -38,15 +38,18 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
     };
 
     private void bindDataProvider() {
-        cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
+        CameraDataProvider cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
         if (cameraProvider != null) {
             cameraProvider.setFrameListener(this);
+
         }
     }
 
     private void unbindDataProvider() {
-        cameraProvider.setFrameListener(null);
-    }
+        CameraDataProvider cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
+        if (cameraProvider != null) {
+            cameraProvider.setFrameListener(null);
+        }    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,15 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        cameraProvider.attachToGLContext(GLES20.GL_TEXTURE1);
+        this.surfaceReady = true;
+        if (this.serviceBinder == null) {
+            return;
+        }
+        CameraDataProvider cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
+        if (cameraProvider != null) {
+            cameraProvider.attachToGLContext(GLES20.GL_TEXTURE1);
+            attached = true;
+        }
     }
 
     @Override
@@ -91,6 +102,12 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
         // TODO: Is this the cause of the initial swirl?
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // TODO: maybe we should get the actual rendered frame (if there was any)
-        cameraProvider.updateImage();
+        if (this.serviceBinder == null) {
+            return;
+        }
+        CameraDataProvider cameraProvider = this.serviceBinder.getDeviceProvider(CameraDataProvider.class);
+        if (cameraProvider != null) {
+            cameraProvider.updateImage();
+        }
     }
 }

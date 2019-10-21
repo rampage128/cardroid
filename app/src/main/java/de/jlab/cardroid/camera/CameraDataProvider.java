@@ -54,7 +54,9 @@ public class CameraDataProvider extends DeviceDataProvider implements CameraObse
         } catch (InterruptedException e) {
             return;
         }
-        drawingEngine.drawFrame(frame);
+        if (frame != null) {
+            drawingEngine.drawFrame(frame);
+        }
     }
 
 
@@ -73,7 +75,7 @@ public class CameraDataProvider extends DeviceDataProvider implements CameraObse
 
     protected void deviceConnected(@NonNull DeviceHandler device) {
         UsbTv007FrameReceiver receiver = (UsbTv007FrameReceiver) device.getObservable(CameraObservable.class);
-        receiver.removeFrameListener(this);
+        receiver.addFrameListener(this);
         this.device = device;
     }
 
@@ -100,13 +102,13 @@ public class CameraDataProvider extends DeviceDataProvider implements CameraObse
             try {
                 queuedFrames.poll(100, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                frame.returnFrame();
                 return;
             }
             queuedFrames.offer(frame);
         }
-        frame.returnFrame();
-        this.listener.onFrameUpdate();
+        if (this.listener != null) {
+            this.listener.onFrameUpdate();
+        }
     }
 
     public interface CameraProviderListener {
