@@ -37,6 +37,7 @@ public final class Variable implements ObservableValue.ValueObserver {
 
     public void addChangeListener(@NonNull VariableChangeListener listener) {
         this.listeners.add(listener);
+        listener.onChange(this.value.getValue(), this.value.getValue(), this.name);
     }
 
     public void removeChangeListener(@NonNull VariableChangeListener listener) {
