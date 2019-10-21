@@ -19,7 +19,6 @@ import de.jlab.cardroid.devices.camera.UsbTv007FrameReceiver;
 
 public class CameraDataProvider extends DeviceDataProvider implements CameraObservable.FrameListener {
 
-    private DeviceHandler device;
     private CameraProviderListener listener;
     private BlockingQueue<UsbTvFrame> queuedFrames;
     private UsbTv007GLProcessor drawingEngine;
@@ -66,17 +65,13 @@ public class CameraDataProvider extends DeviceDataProvider implements CameraObse
     }
 
     protected void deviceDisconnected(@NonNull DeviceHandler device) {
-        if (this.device.equals(device)) {
-            UsbTv007FrameReceiver receiver = (UsbTv007FrameReceiver) device.getObservable(CameraObservable.class);
-            receiver.removeFrameListener(this);
-            this.device = null;
-        }
+        UsbTv007FrameReceiver receiver = (UsbTv007FrameReceiver) device.getObservable(CameraObservable.class);
+        receiver.removeFrameListener(this);
     }
 
     protected void deviceConnected(@NonNull DeviceHandler device) {
         UsbTv007FrameReceiver receiver = (UsbTv007FrameReceiver) device.getObservable(CameraObservable.class);
         receiver.addFrameListener(this);
-        this.device = device;
     }
 
     @Override
