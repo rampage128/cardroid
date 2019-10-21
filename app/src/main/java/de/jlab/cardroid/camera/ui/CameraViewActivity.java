@@ -2,6 +2,7 @@ package de.jlab.cardroid.camera.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActionBar;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.WindowManager;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -96,11 +98,13 @@ public class CameraViewActivity extends AppCompatActivity implements CameraDataP
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        //Center the screen in a 4/3 ratio
-        // TODO: we should get access to the current video stream frame ratio
-        int maxWidth = Math.min(height * 4 / 3, width);
-        int maxHeight = maxWidth * 3 / 4;
-        GLES20.glViewport((width - maxWidth) / 2, (height - maxHeight) / 2, maxWidth, maxHeight);
+//        //Center the screen in a 4/3 ratio
+//        // TODO: we should get access to the current video stream frame ratio
+//        int w = this.getWindow().getDecorView().getWidth();
+//        int h = this.getWindow().getDecorView().getHeight();
+//        int maxWidth = Math.min(h * 4 / 3, w);
+//        int maxHeight = maxWidth * 3 / 4;
+        GLES20.glViewport(0, 0, width, height);
     }
 
     @Override
