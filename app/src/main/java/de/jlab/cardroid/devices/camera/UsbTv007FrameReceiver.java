@@ -50,7 +50,9 @@ public class UsbTv007FrameReceiver implements CameraObservable, UsbTv.onFrameRec
 
     @Override
     public void onFrameReceived(UsbTvFrame frame) {
-        //Log.e(this.getClass().getSimpleName(), "frame received");
+        for (FrameListener listener: listeners) {
+            listener.processFrame(frame);
+        }
         frame.returnFrame();
     }
 }
