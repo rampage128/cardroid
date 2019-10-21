@@ -12,7 +12,7 @@ import de.jlab.cardroid.errors.ErrorDataProvider;
 public enum CarduinoPacketType {
     META(0x61, null, null, null),
     CAN(0x62, CanDataProvider.class, new CarduinoCanParser(), new CarduinoCanInteractable()),
-    EVENT(0x63, CarduinoEventProvider.class, new CarduinoEventParser(), null),
+    EVENT(0x63, CarduinoEventProvider.class, new CarduinoEventParser(), new CarduinoEventInteractable()),
     ERROR(0x65, ErrorDataProvider.class, new CarduinoErrorParser(), null);
 
     private byte type;
