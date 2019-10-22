@@ -16,18 +16,19 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.HashMap;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.ImageViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
+import de.jlab.cardroid.devices.Feature;
+import de.jlab.cardroid.devices.FeatureConnection;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
@@ -46,7 +47,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
     private DeviceDetailViewModel model;
     private DeviceEntity deviceEntity;
-    private DeviceHandler device;
+    private DeviceDetailFragment.DeviceFeatureAdapter adapter;
     private boolean isDeviceOnline = false;
 
     private DeviceDetailInteractionListener mListener;
@@ -120,7 +121,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
             RecyclerView recyclerView = rootView.findViewById(R.id.feature_list);
             assert recyclerView != null;
-            final DeviceDetailFragment.DeviceFeatureAdapter adapter = new DeviceDetailFragment.DeviceFeatureAdapter((DeviceDetailInteractionListener) this.getActivity());
+            this.adapter = new DeviceDetailFragment.DeviceFeatureAdapter((DeviceDetailInteractionListener) this.getActivity());
             recyclerView.setAdapter(adapter);
 
             this.model = ViewModelProviders.of(this).get(DeviceDetailViewModel.class);
@@ -201,14 +202,17 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
                     disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
                 });
             }
-            this.device = device;
         }
     }
 
-    @Nullable
     @Override
-    public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+    public void onFeatureAvailable(@NonNull Feature feature) {
+        this.adapter.addActiveFeature(feature);
+    }
 
+    @Override
+    public void onFeatureUnavailable(@NonNull Feature feature) {
+        this.adapter.removeActiveFeature(feature);
     }
 
     @Override
@@ -278,8 +282,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
         private final DeviceDetailInteractionListener listener;
         private FeatureType[] mValues;
-        private DeviceHandler device;
-        private DeviceService.DeviceServiceBinder deviceService;
+        private HashMap<String, Feature> activeFeatures = new HashMap<>();
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -296,12 +299,12 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
             notifyDataSetChanged();
         }
 
-        public void setDevice(DeviceHandler device) {
-            this.device = device;
+        public void addActiveFeature(@NonNull Feature feature) {
+            this.activeFeatures.put(feature.getClass().getCanonicalName(), feature);
         }
 
-        public void setService(DeviceService.DeviceServiceBinder service) {
-            this.deviceService = service;
+        public void removeActiveFeature(@NonNull Feature feature) {
+            this.activeFeatures.remove(feature.getClass().getCanonicalName());
         }
 
         @NonNull
@@ -320,13 +323,10 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
             holder.description.setText(feature.getTypeDescription());
             holder.icon.setImageResource(feature.getTypeIcon());
 
-            if (this.device != null && this.deviceService != null) {
-                DeviceDataProvider provider = this.deviceService.getDeviceProvider(feature.getProviderClass());
-                if (provider != null && provider.usesDevice(this.device)) {
-                    holder.status.setBackgroundResource(R.color.colorPrimaryDark);
-                } else {
-                    holder.status.setBackgroundResource(R.color.colorDeviceUnavailable);
-                }
+            if (this.activeFeatures.containsKey(feature.getClass().getSimpleName())) {
+                holder.status.setBackgroundResource(R.color.colorPrimaryDark);
+            } else {
+                holder.status.setBackgroundResource(R.color.colorDeviceUnavailable);
             }
 
             holder.itemView.setTag(feature);

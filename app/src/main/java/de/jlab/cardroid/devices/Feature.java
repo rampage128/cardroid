@@ -1,7 +1,6 @@
 package de.jlab.cardroid.devices;
 
-
-public interface Interactable {
+public interface Feature {
 
     void setDevice(DeviceHandler device);
     DeviceHandler getDevice();

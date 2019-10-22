@@ -19,11 +19,17 @@ public final class DeviceStore {
             }
         }
 
-        @Nullable
         @Override
-        public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
+        public void onFeatureAvailable(@NonNull Feature feature) {
             for (int i = 0; i < observers.size(); i++) {
-                observers.get(i).onFeatureDetected(feature, device);
+                observers.get(i).onFeatureAvailable(feature);
+            }
+        }
+
+        @Override
+        public void onFeatureUnavailable(@NonNull Feature feature) {
+            for (int i = 0; i < observers.size(); i++) {
+                observers.get(i).onFeatureUnavailable(feature);
             }
         }
     };

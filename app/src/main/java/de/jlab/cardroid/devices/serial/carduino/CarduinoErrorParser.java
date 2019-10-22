@@ -27,12 +27,12 @@ public final class CarduinoErrorParser extends CarduinoPacketParser implements E
     }
 
     @Override
-    public void addErrorListener(@NonNull ErrorListener listener) {
+    public void addListener(@NonNull ErrorListener listener) {
         this.errorHandlers.add(listener);
     }
 
     @Override
-    public void removeErrorListener(@NonNull ErrorListener listener) {
+    public void removeListener(@NonNull ErrorListener listener) {
         this.errorHandlers.remove(listener);
     }
 

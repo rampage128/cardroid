@@ -1,14 +1,16 @@
 package de.jlab.cardroid.errors;
 
-import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceDataObservable;
+import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.ObservableFeature;
 
-public interface ErrorObservable extends DeviceDataObservable {
+public interface ErrorObservable extends ObservableFeature<ErrorObservable.ErrorListener> {
 
-    void addErrorListener(@NonNull ErrorListener listener);
-    void removeErrorListener(@NonNull ErrorListener listener);
+    @Override
+    default Class<? extends DeviceDataProvider> getProviderClass() {
+        return ErrorDataProvider.class;
+    }
 
-    interface ErrorListener {
+    interface ErrorListener extends ObservableFeature.Listener {
         void onError(int errorNumber);
     }
 

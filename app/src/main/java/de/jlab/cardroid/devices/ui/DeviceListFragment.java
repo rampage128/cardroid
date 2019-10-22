@@ -29,6 +29,7 @@ import de.jlab.cardroid.devices.DeviceDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 
@@ -186,9 +187,11 @@ public final class DeviceListFragment extends Fragment {
             }
         }
 
-        @Nullable
         @Override
-        public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {}
+        public void onFeatureAvailable(@NonNull Feature feature) {}
+
+        @Override
+        public void onFeatureUnavailable(@NonNull Feature feature) {}
 
         @Override
         public DeviceListFragment.DeviceListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

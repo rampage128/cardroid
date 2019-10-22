@@ -27,11 +27,11 @@ public final class GpsPositionParser implements SerialReader.SerialPacketListene
         return this.device;
     }
 
-    public void addPositionListener(PositionListener listener) {
+    public void addListener(@NonNull PositionListener listener) {
         this.positionListeners.add(listener);
     }
 
-    public void removePositionListener(PositionListener listener) {
+    public void removeListener(@NonNull PositionListener listener) {
         this.positionListeners.remove(listener);
     }
 

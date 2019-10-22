@@ -1,8 +1,8 @@
 package de.jlab.cardroid.car;
 
-import de.jlab.cardroid.devices.Interactable;
+import de.jlab.cardroid.devices.Feature;
 
-public interface CanInteractable extends Interactable {
+public interface CanInteractable extends Feature {
     void registerCanId(CanPacketDescriptor descriptor);
     void unregisterCanId(CanPacketDescriptor descriptor);
     void sendPacket(int canId, byte[] data);

@@ -23,11 +23,13 @@ public final class CarduinoEventParser extends CarduinoPacketParser implements E
         }
     }
 
-    public void addEventListener(@NonNull EventListener listener) {
+    @Override
+    public void addListener(@NonNull EventListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeEventListener(@NonNull EventListener listener) {
+    @Override
+    public void removeListener(@NonNull EventListener listener) {
         this.listeners.remove(listener);
     }
 

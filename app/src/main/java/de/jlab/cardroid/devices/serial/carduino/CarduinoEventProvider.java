@@ -23,10 +23,10 @@ public final class CarduinoEventProvider extends DeviceDataProvider {
     }
 
     public void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             DeviceHandler device = devices.get(i);
-            EventInteractable interactable = device.getInteractable(EventInteractable.class);
+            EventInteractable interactable = device.getFeature(EventInteractable.class);
             if (interactable != null) {
                 interactable.sendEvent(event.getCommand(), payload);
             }

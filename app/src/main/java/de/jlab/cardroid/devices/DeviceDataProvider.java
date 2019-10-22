@@ -1,5 +1,7 @@
 package de.jlab.cardroid.devices;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -8,64 +10,61 @@ import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.errors.ErrorDataProvider;
 import de.jlab.cardroid.gps.GpsDataProvider;
 
-public abstract class DeviceDataProvider {
+public abstract class DeviceDataProvider<FT extends ObservableFeature> {
 
     private DeviceService service;
-    private ArrayList<DeviceHandler> devices = new ArrayList<>();
+    private ArrayList<FT> features = new ArrayList<>();
+    private Class<FT> featureType;
 
     public DeviceDataProvider(@NonNull DeviceService service) {
         this.service = service;
+        this.featureType = (Class<FT>) ((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    public int getConnectedDeviceCount() {
-        int connectedDevices = 0;
-        for(int i = 0; i < this.devices.size(); i++) {
-            if (this.devices.get(i).getState() == DeviceHandler.State.READY) {
-                connectedDevices++;
-            }
-        }
-        return connectedDevices;
+    public int getFeatureCount() {
+        return this.features.size();
     }
 
-    public void start(@NonNull DeviceHandler device) {
-        // Device connections are threaded, so if the exact same device (by id) already provides data, we replace it and call update
-        for (int i = 0; i < this.devices.size(); i++) {
-            DeviceHandler deviceToCheck = this.devices.get(i);
-            // FIXME should this check be "isPhysicalDevice(device)" ???
-            if (deviceToCheck.equals(device)) {
-                this.devices.set(i, device);
-                this.onUpdate(deviceToCheck, device, this.service);
-                return;
-            }
+    public void start(@NonNull FT feature) {
+        if (!this.featureType.isInstance(feature)) {
+            return;
         }
 
-        this.devices.add(device);
-        this.onStart(device, this.service);
-    }
-
-    public boolean usesDevice(DeviceHandler device) {
-        for (int i = 0; i < this.devices.size(); i++) {
-            if (this.devices.get(i).equals(device)) {
-                return true;
-            }
+        if (this.features.contains(feature)) {
+            return;
         }
-        return false;
-    }
 
-    public void stop() {
-        for (int i = 0; i < this.devices.size(); i++) {
-            this.onStop(this.devices.get(i), this.service);
+        this.features.add(feature);
+
+        // TODO: get device config for this provider from DB and decide if feature should be used
+        this.onStart(feature, this.service);
+
+        if (this.features.size() == 1) {
+            this.onCreate(this.service);
         }
     }
 
-    protected ArrayList<DeviceHandler> getDevices() {
-        return this.devices;
+    public void stop(@NonNull FT feature) {
+        if (!this.featureType.isInstance(feature)) {
+            return;
+        }
+
+        if (this.features.remove(feature)) {
+            this.onStop(feature, this.service);
+        }
+
+        if (this.features.isEmpty()) {
+            this.onDispose(this.service);
+        }
     }
 
-    protected abstract void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service);
-    protected abstract void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service);
-    protected abstract void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service);
+    protected abstract void onStop(@NonNull FT feature, @NonNull DeviceService service);
+    protected abstract void onStart(@NonNull FT feature, @NonNull DeviceService service);
+    protected abstract void onCreate(@NonNull DeviceService service);
+    protected abstract void onDispose(@NonNull DeviceService service);
 
+    // TODO: Move this to a ProviderType enum or maybe even better FeatureType?
     @NonNull
     public static DeviceDataProvider createFrom(@NonNull Class providerType, @NonNull DeviceService service) {
         if (providerType.equals(GpsDataProvider.class)) {

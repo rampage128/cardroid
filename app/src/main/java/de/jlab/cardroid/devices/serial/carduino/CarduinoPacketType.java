@@ -2,34 +2,22 @@ package de.jlab.cardroid.devices.serial.carduino;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.car.CanDataProvider;
-import de.jlab.cardroid.devices.DeviceDataObservable;
-import de.jlab.cardroid.devices.DeviceDataProvider;
-import de.jlab.cardroid.devices.Interactable;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoCanInteractable;
-import de.jlab.cardroid.errors.ErrorDataProvider;
 
 public enum CarduinoPacketType {
-    META(0x61, null, null, null),
-    CAN(0x62, CanDataProvider.class, new CarduinoCanParser(), new CarduinoCanInteractable()),
-    EVENT(0x63, CarduinoEventProvider.class, new CarduinoEventParser(), new CarduinoEventInteractable()),
-    ERROR(0x65, ErrorDataProvider.class, new CarduinoErrorParser(), null);
+    META(0x61),
+    // TODO: Split CarduinoCanInteractable into CanMessageInteractable and CanFilterInteractable
+    CAN(0x62, new CarduinoCanParser(), new CarduinoCanInteractable()),
+    EVENT(0x63, new CarduinoEventParser(), new CarduinoEventInteractable()),
+    ERROR(0x65, new CarduinoErrorParser());
 
     private byte type;
-    private Class<? extends DeviceDataProvider> providerType;
-    private CarduinoPacketParser parser;
-    private Interactable interactable;
+    private Feature[] features;
 
-    CarduinoPacketType(int type, @Nullable Class<? extends DeviceDataProvider> providerType, @Nullable CarduinoPacketParser parser, @Nullable Interactable interactable) {
+    CarduinoPacketType(int type, @Nullable Feature... features) {
         this.type = (byte)type;
-        this.providerType = providerType;
-        this.parser = parser;
-        this.interactable = interactable;
-    }
-
-    @Nullable
-    public CarduinoPacketParser getParser() {
-        return this.parser;
+        this.features = features;
     }
 
     public byte getType() {
@@ -37,21 +25,8 @@ public enum CarduinoPacketType {
     }
 
     @Nullable
-    public DeviceDataObservable getObservable() {
-        if (this.parser instanceof DeviceDataObservable) {
-            return (DeviceDataObservable)this.parser;
-        }
-        return null;
-    }
-
-    @Nullable
-    public Interactable getInteractable() {
-        return this.interactable;
-    }
-
-    @Nullable
-    public Class<? extends DeviceDataProvider> getProviderType() {
-        return this.providerType;
+    public Feature[] getFeatures() {
+        return this.features;
     }
 
     public boolean equals(byte type) {

@@ -185,20 +185,24 @@ public final class DeviceService extends Service {
         this.uiHandler.post(runnable);
     }
 
-    private void stopDataProvider(@NonNull DeviceHandler device) {
-        for (DeviceDataProvider provider : this.dataProviders.values()) {
-            if (provider.usesDevice(device)) {
-                provider.stop();
+    private void stopDataProvider(@NonNull ObservableFeature<? extends ObservableFeature.Listener> feature) {
+        Class<? extends DeviceDataProvider> providerClass = feature.getProviderClass();
+        if (providerClass != null) {
+            DeviceDataProvider provider = this.getDeviceProvider(providerClass);
+            if (provider != null) {
+                provider.stop(feature);
             }
         }
     }
 
-    private DeviceDataProvider startDataProvider(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
-        DeviceDataProvider provider = this.getDeviceProvider(feature);
-        if (provider != null) {
-            provider.start(device);
+    private void startDataProvider(@NonNull ObservableFeature<? extends ObservableFeature.Listener> feature) {
+        Class<? extends DeviceDataProvider> providerClass = feature.getProviderClass();
+        if (providerClass != null) {
+            DeviceDataProvider provider = this.getDeviceProvider(providerClass);
+            if (provider != null) {
+                provider.start(feature);
+            }
         }
-        return provider;
     }
 
     private void deviceDetected(@NonNull DeviceHandler device) {
@@ -215,13 +219,7 @@ public final class DeviceService extends Service {
     private void deviceInvalid(@NonNull DeviceHandler device) {
         Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" removed!");
         this.deviceStore.remove(device);
-        this.stopDataProvider(device);
         this.disposeIfEmpty();
-    }
-
-    private void deviceFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
-        Log.e(this.getClass().getSimpleName(), "Device feature detected: " + feature.getSimpleName() + ", connection: " + device);
-        this.startDataProvider(feature, device);
     }
 
     @Nullable
@@ -280,8 +278,17 @@ public final class DeviceService extends Service {
         }
 
         @Override
-        public void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device) {
-            DeviceService.this.deviceFeatureDetected(feature, device);
+        public void onFeatureAvailable(@NonNull Feature feature) {
+            if (feature instanceof ObservableFeature) {
+                DeviceService.this.startDataProvider((ObservableFeature<? extends ObservableFeature.Listener>)feature);
+            }
+        }
+
+        @Override
+        public void onFeatureUnavailable(@NonNull Feature feature) {
+            if (feature instanceof ObservableFeature) {
+                DeviceService.this.stopDataProvider((ObservableFeature<? extends ObservableFeature.Listener>)feature);
+            }
         }
     }
 

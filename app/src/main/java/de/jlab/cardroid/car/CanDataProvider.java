@@ -11,7 +11,7 @@ import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
 
-public final class CanDataProvider extends DeviceDataProvider {
+public final class CanDataProvider extends DeviceDataProvider<CanObservable> {
 
     private ArrayList<CanObservable.CanPacketListener> externalListeners = new ArrayList<>();
     private ArrayList<CanPacketDescriptor> packetDescriptors = new ArrayList<>();
@@ -248,7 +248,7 @@ public final class CanDataProvider extends DeviceDataProvider {
     }
 
     public void sendPacket(int canId, byte[] data) {
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
             if (interactable != null) {
@@ -263,7 +263,7 @@ public final class CanDataProvider extends DeviceDataProvider {
     }
 
     private void registerCanId(CanPacketDescriptor descriptor) {
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
             if (interactable != null) {
@@ -278,7 +278,7 @@ public final class CanDataProvider extends DeviceDataProvider {
     }
 
     private void unregisterCanId(CanPacketDescriptor descriptor) {
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
             if (interactable != null) {
@@ -289,7 +289,7 @@ public final class CanDataProvider extends DeviceDataProvider {
 
     public void startCanSniffer() {
         this.isSniffing = true;
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
             if (interactable != null) {
@@ -300,7 +300,7 @@ public final class CanDataProvider extends DeviceDataProvider {
 
     public void stopCanSniffer() {
         this.isSniffing = false;
-        ArrayList<DeviceHandler> devices = this.getDevices();
+        ArrayList<DeviceHandler> devices = this.getFeature();
         for (int i = 0; i < devices.size(); i++) {
             CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
             if (interactable != null) {
@@ -309,7 +309,7 @@ public final class CanDataProvider extends DeviceDataProvider {
         }
     }
 
-    private void deviceRemoved(DeviceHandler device) {
+    private void deviceRemoved(@NonNull DeviceHandler device) {
         for (int i = 0; i < this.packetDescriptors.size(); i++) {
             this.unregisterCanId(this.packetDescriptors.get(i));
         }
@@ -319,7 +319,7 @@ public final class CanDataProvider extends DeviceDataProvider {
         }
     }
 
-    private void deviceAdded(DeviceHandler device) {
+    private void deviceAdded(@NonNull DeviceHandler device) {
         CanObservable observable = device.getObservable(CanObservable.class);
         if (observable != null) {
             observable.addCanListener(this.listener);
@@ -329,7 +329,7 @@ public final class CanDataProvider extends DeviceDataProvider {
             this.registerCanId(this.packetDescriptors.get(i));
         }
         if (this.isSniffing) {
-            ArrayList<DeviceHandler> devices = this.getDevices();
+            ArrayList<DeviceHandler> devices = this.getFeature();
             for (int i = 0; i < devices.size(); i++) {
                 CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
                 if (interactable != null) {
@@ -337,6 +337,28 @@ public final class CanDataProvider extends DeviceDataProvider {
                 }
             }
         }
+    }
+
+    @Override
+    protected void onStop(@NonNull CanObservable feature, @NonNull DeviceService service) {
+        assert feature.getDevice() != null;
+        this.deviceRemoved(feature.getDevice());
+    }
+
+    @Override
+    protected void onStart(@NonNull CanObservable feature, @NonNull DeviceService service) {
+        assert feature.getDevice() != null;
+        this.deviceAdded(feature.getDevice());
+    }
+
+    @Override
+    protected void onCreate(@NonNull DeviceService service) {
+        this.service.showOverlay();
+    }
+
+    @Override
+    protected void onDispose(@NonNull DeviceService service) {
+        this.service.hideOverlay();
     }
 
     @Override
@@ -348,7 +370,7 @@ public final class CanDataProvider extends DeviceDataProvider {
 
     @Override
     protected void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service) {
-        this.deviceRemoved(device);
+
         if (this.getConnectedDeviceCount() < 1) {
             this.service.hideOverlay();
         }
@@ -356,7 +378,7 @@ public final class CanDataProvider extends DeviceDataProvider {
 
     @Override
     protected void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service) {
-        this.deviceAdded(device);
+
         this.service.showOverlay();
     }
 

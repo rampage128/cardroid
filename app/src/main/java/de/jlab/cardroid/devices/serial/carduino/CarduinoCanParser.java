@@ -19,11 +19,11 @@ public final class CarduinoCanParser extends CarduinoPacketParser implements Can
     private ArrayList<CanObservable.CanPacketListener> listeners = new ArrayList<>();
     private LongSparseArray<CanPacket> canPackets = new LongSparseArray<>();
 
-    public void addCanListener(CanObservable.CanPacketListener listener) {
+    public void addListener(@NonNull CanObservable.CanPacketListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeCanListener(CanObservable.CanPacketListener listener) {
+    public void removeListener(@NonNull CanObservable.CanPacketListener listener) {
         this.listeners.remove(listener);
     }
 

@@ -33,7 +33,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
         } else {
             this.onOpenFailed();
         }
-        this.notifyStateChanged(newState);
+        this.setState(newState);
     }
 
     @Override
@@ -43,7 +43,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
             this.serialPort.disconnect();
         }
         this.onClose(this.reader);
-        this.notifyStateChanged(State.INVALID);
+        this.setState(State.INVALID);
     }
 
     /**
