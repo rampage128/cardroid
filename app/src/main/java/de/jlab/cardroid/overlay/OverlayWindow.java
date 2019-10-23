@@ -33,6 +33,7 @@ import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
+import de.jlab.cardroid.providers.DataProviderService;
 import de.jlab.cardroid.variables.Variable;
 
 /**
@@ -46,7 +47,7 @@ public class OverlayWindow {
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private DeviceService service;
+    private DataProviderService service;
 
     private WindowManager windowManager;
 
@@ -156,7 +157,7 @@ public class OverlayWindow {
         updateUi();
     };
 
-    public OverlayWindow(DeviceService service) {
+    public OverlayWindow(DataProviderService service) {
         this.service = service;
     }
 

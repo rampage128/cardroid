@@ -28,7 +28,6 @@ import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
-import de.jlab.cardroid.devices.FeatureConnection;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
@@ -61,12 +60,12 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeDeviceStore(DeviceDetailFragment.this);
+            deviceService.subscribeToFeatures(DeviceDetailFragment.this);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeDeviceStore(DeviceDetailFragment.this);
+            deviceService.unsubscribeFromFeatures(DeviceDetailFragment.this);
             deviceService = null;
         }
     };

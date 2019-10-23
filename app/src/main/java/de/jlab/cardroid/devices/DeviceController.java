@@ -7,15 +7,15 @@ import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 
-public final class DeviceStore {
+public final class DeviceController {
 
     private ArrayList<DeviceHandler> devices = new ArrayList<>();
-    private ArrayList<DeviceHandler.Observer> observers = new ArrayList<>();
+    private ArrayList<FeatureObserver> observers = new ArrayList<>();
     private DeviceHandler.Observer deviceObserver = new DeviceHandler.Observer() {
         @Override
         public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
-            for (int i = 0; i < observers.size(); i++) {
-                observers.get(i).onStateChange(device, state, previous);
+            if (state == DeviceHandler.State.INVALID) {
+                DeviceController.this.remove(device);
             }
         }
 
@@ -37,21 +37,23 @@ public final class DeviceStore {
     public void add(@NonNull DeviceHandler device) {
         this.devices.add(device);
         device.addObserver(this.deviceObserver);
+        device.open();
     }
 
     public boolean isEmpty() {
         return this.devices.size() < 1;
     }
 
-    public void subscribe(@NonNull DeviceHandler.Observer observer) {
+    public void subscribe(@NonNull FeatureObserver observer) {
         this.observers.add(observer);
         for (int i = 0; i < this.devices.size(); i++) {
-            DeviceHandler device = this.devices.get(i);
-            observer.onStateChange(device, device.getState(), device.getState());
+             for (Feature f: this.devices.get(i).getFeatures()) {
+                 observer.onFeatureAvailable(f);
+             }
         }
     }
 
-    public void unsubscribe(@NonNull DeviceHandler.Observer observer) {
+    public void unsubscribe(@NonNull FeatureObserver observer) {
         this.observers.remove(observer);
     }
 
@@ -100,6 +102,11 @@ public final class DeviceStore {
     public boolean remove(@NonNull DeviceHandler device) {
         device.removeObserver(this.deviceObserver);
         return this.devices.remove(device);
+    }
+
+    public interface FeatureObserver {
+        void onFeatureAvailable(@NonNull Feature feature);
+        void onFeatureUnavailable(@NonNull Feature feature);
     }
 
 }

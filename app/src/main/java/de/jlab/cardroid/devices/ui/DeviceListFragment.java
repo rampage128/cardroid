@@ -19,13 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
@@ -53,12 +51,12 @@ public final class DeviceListFragment extends Fragment {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeDeviceStore(adapter);
+            deviceService.subscribeToFeatures(adapter);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeDeviceStore(adapter);
+            deviceService.unsubscribeFromFeatures(adapter);
             deviceService = null;
         }
     };

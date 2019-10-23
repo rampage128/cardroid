@@ -4,11 +4,12 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.providers.DataProviderService;
 
-public final class CarduinoEventProvider extends DeviceDataProvider {
+public final class CarduinoEventProvider extends FeatureDataProvider {
 
     private ArrayList<CarduinoEventParser.EventListener> externalListeners = new ArrayList<>();
 
@@ -18,7 +19,7 @@ public final class CarduinoEventProvider extends DeviceDataProvider {
         }
     };
 
-    public CarduinoEventProvider(@NonNull DeviceService service) {
+    public CarduinoEventProvider(@NonNull DataProviderService service) {
         super(service);
     }
 

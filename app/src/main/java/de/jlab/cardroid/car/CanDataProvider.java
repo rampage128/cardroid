@@ -4,20 +4,21 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.providers.DataProviderService;
 import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
 
-public final class CanDataProvider extends DeviceDataProvider<CanObservable> {
+public final class CanDataProvider extends FeatureDataProvider<CanObservable> {
 
     private ArrayList<CanObservable.CanPacketListener> externalListeners = new ArrayList<>();
     private ArrayList<CanPacketDescriptor> packetDescriptors = new ArrayList<>();
     private boolean isSniffing = false;
 
-    private DeviceService service;
+    private DataProviderService service;
 
     private CanObservable.CanPacketListener listener = packet -> {
         for (int i = 0; i < this.externalListeners.size(); i++) {
@@ -31,7 +32,7 @@ public final class CanDataProvider extends DeviceDataProvider<CanObservable> {
         }
     };
 
-    public CanDataProvider(@NonNull DeviceService service) {
+    public CanDataProvider(@NonNull DataProviderService service) {
         super(service);
         this.service = service;
 

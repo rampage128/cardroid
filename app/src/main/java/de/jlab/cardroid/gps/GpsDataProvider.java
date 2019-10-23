@@ -16,14 +16,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
+import de.jlab.cardroid.providers.DataProviderService;
 
 
-public final class GpsDataProvider extends DeviceDataProvider {
+public final class GpsDataProvider extends FeatureDataProvider {
 
     private LocationManager locationManager;
     private ArrayList<GpsPositionParser.PositionListener> externalListeners = new ArrayList<>();
@@ -35,7 +36,7 @@ public final class GpsDataProvider extends DeviceDataProvider {
         }
     };
 
-    public GpsDataProvider(@NonNull DeviceService service) {
+    public GpsDataProvider(@NonNull DataProviderService service) {
         super(service);
     }
 

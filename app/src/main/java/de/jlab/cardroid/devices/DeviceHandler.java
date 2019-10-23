@@ -199,6 +199,8 @@ public abstract class DeviceHandler {
         }
     }
 
+    public final ArrayList<Feature> getFeatures() { return this.features; }
+
     ////////////////////////
     // Coupled interfaces //
     ////////////////////////

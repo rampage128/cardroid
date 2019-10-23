@@ -9,6 +9,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
+import de.jlab.cardroid.providers.DataProviderService;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
@@ -22,7 +23,7 @@ public final class RuleHandler {
     private KnownEvents knownEvents;
     private SparseArray<Rule> rules = new SparseArray<>();
 
-    public RuleHandler(@NonNull DeviceService service) {
+    public RuleHandler(@NonNull DataProviderService service) {
         this.application = service.getApplication();
         this.knownEvents = new KnownEvents(application);
         this.eventProvider = service.getDeviceProvider(CarduinoEventProvider.class);

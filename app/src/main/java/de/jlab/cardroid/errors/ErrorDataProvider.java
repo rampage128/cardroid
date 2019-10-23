@@ -5,11 +5,12 @@ import android.util.SparseArray;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.providers.DataProviderService;
 
-public final class ErrorDataProvider extends DeviceDataProvider {
+public final class ErrorDataProvider extends FeatureDataProvider {
 
     private SparseArray<Error> errors = new SparseArray<>();
 
@@ -32,7 +33,7 @@ public final class ErrorDataProvider extends DeviceDataProvider {
         }
     };
 
-    public ErrorDataProvider(@NonNull DeviceService service) {
+    public ErrorDataProvider(@NonNull DataProviderService service) {
         super(service);
 
         this.errorNotifier = new ErrorNotifier(service);

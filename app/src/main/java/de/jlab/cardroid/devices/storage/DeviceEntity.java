@@ -7,7 +7,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
-import de.jlab.cardroid.devices.DeviceDataProvider;
+
 import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;

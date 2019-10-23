@@ -14,12 +14,7 @@ public final class FeatureConnection implements ServiceConnection {
     private DeviceService.DeviceServiceBinder service;
 
     private HashMap<Class<? extends ObservableFeature>, Subscriber> subscribers = new HashMap<>();
-    private DeviceHandler.Observer deviceStoreObserver = new DeviceHandler.Observer() {
-        @Override
-        public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
-
-        }
-
+    private DeviceController.FeatureObserver featureObserver = new DeviceController.FeatureObserver() {
         @Override
         public void onFeatureAvailable(@NonNull Feature feature) {
             for (Iterator<Class<? extends ObservableFeature>> it = subscribers.keySet().iterator(); it.hasNext(); ) {
@@ -59,12 +54,12 @@ public final class FeatureConnection implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         this.service = (DeviceService.DeviceServiceBinder)service;
-        this.service.subscribeDeviceStore(this.deviceStoreObserver);
+        this.service.subscribeToFeatures(this.featureObserver);
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        this.service.unsubscribeDeviceStore(this.deviceStoreObserver);
+        this.service.unsubscribeFromFeatures(this.featureObserver);
         this.service = null;
     }
 

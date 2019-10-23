@@ -1,6 +1,6 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.ObservableFeature;
 
 public interface EventObservable extends ObservableFeature<EventObservable.EventListener> {
@@ -10,7 +10,7 @@ public interface EventObservable extends ObservableFeature<EventObservable.Event
     }
 
     @Override
-    default Class<? extends DeviceDataProvider> getProviderClass() {
+    default Class<? extends FeatureDataProvider> getProviderClass() {
         return CarduinoEventProvider.class;
     }
 }

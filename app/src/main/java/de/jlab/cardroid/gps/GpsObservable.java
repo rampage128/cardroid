@@ -1,6 +1,6 @@
 package de.jlab.cardroid.gps;
 
-import de.jlab.cardroid.devices.DeviceDataProvider;
+import de.jlab.cardroid.devices.FeatureDataProvider;
 import de.jlab.cardroid.devices.ObservableFeature;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 
@@ -12,7 +12,7 @@ public interface GpsObservable extends ObservableFeature<GpsObservable.PositionL
     }
 
     @Override
-    default Class<? extends DeviceDataProvider> getProviderClass() {
+    default Class<? extends FeatureDataProvider> getProviderClass() {
         return GpsDataProvider.class;
     }
 }

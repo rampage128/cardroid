@@ -20,6 +20,7 @@ import de.jlab.cardroid.car.CanDataProvider;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.providers.DataProviderService;
 
 public class CarMonitorActivity extends AppCompatActivity implements CanObservable.CanPacketListener {
 
@@ -34,10 +35,10 @@ public class CarMonitorActivity extends AppCompatActivity implements CanObservab
     private ScrollView packetListViewContainer;
     private StatusGridAdapter connectionGridAdapter;
 
-    private DeviceService.DeviceServiceBinder serviceBinder;
+    private DataProviderService.DataProviderServiceBinder serviceBinder;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            CarMonitorActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder) service;
+            CarMonitorActivity.this.serviceBinder = (DataProviderService.DataProviderServiceBinder) service;
 
             CarMonitorActivity.this.initStatusGrid();
             CarMonitorActivity.this.initConnetionGrid();

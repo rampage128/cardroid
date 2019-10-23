@@ -1,20 +1,16 @@
 package de.jlab.cardroid.devices;
 
 import android.app.Service;
+import android.bluetooth.BluetoothClass;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.os.AsyncTask;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,50 +21,20 @@ import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
-import de.jlab.cardroid.overlay.OverlayWindow;
-import de.jlab.cardroid.rules.RuleHandler;
-import de.jlab.cardroid.rules.storage.EventRepository;
-import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.variables.ScriptEngine;
-import de.jlab.cardroid.variables.VariableStore;
 
 
 public final class DeviceService extends Service {
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
-
-    private DeviceStore deviceStore = new DeviceStore();
-
-    private HashMap<Class<? extends DeviceDataProvider>, DeviceDataProvider> dataProviders = new HashMap<>();
-
-    private RuleHandler ruleHandler;
-    private VariableStore variableStore;
-    private ScriptEngine scriptEngine = new ScriptEngine();
-    private OverlayWindow overlay;
-
+    private DeviceController deviceController = new DeviceController();
     private Timer timer = new Timer();
-
     private TimerTask disposalTask;
-    private Handler uiHandler;
-
-    private DeviceObserver deviceObserver = new DeviceObserver();
+    private DeviceObserver observer = new DeviceObserver();
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        this.uiHandler = new Handler();
-
-        this.overlay = new OverlayWindow(this);
-        this.variableStore = new VariableStore();
-
-        try {
-            this.ruleHandler = new getRulesTask().execute(this).get();
-        } catch (ExecutionException | InterruptedException e) {
-            Log.e(this.getClass().getSimpleName(), "Error creating RuleHandler", e);
-        }
-
         this.deviceIdentificationTask = new UsbDeviceIdentificationTask(
                 this,
                 new UsbDeviceDetectionObserver(),
@@ -76,7 +42,6 @@ public final class DeviceService extends Service {
                         new CarduinoSerialMatcher(),
                         new GpsSerialMatcher()
                 ));
-
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
 
@@ -95,57 +60,13 @@ public final class DeviceService extends Service {
                 }
             }
         }
-
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        this.overlay.destroy();
-        this.variableStore.dispose();
-        this.variableStore = null;
-        this.ruleHandler.dispose();
-        this.ruleHandler = null;
-
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
-    }
-
-    @NonNull
-    public ScriptEngine getScriptEngine() {
-        return this.scriptEngine;
-    }
-
-    @NonNull
-    public RuleHandler getRuleHandler() {
-        return this.ruleHandler;
-    }
-
-    @Nullable
-    public <ProviderType extends DeviceDataProvider> ProviderType getDeviceProvider(@NonNull Class<ProviderType> type) {
-        DeviceDataProvider provider = DeviceService.this.dataProviders.get(type);
-        if (provider == null) {
-            provider = DeviceDataProvider.createFrom(type, this);
-            DeviceService.this.dataProviders.put(type, provider);
-        }
-        if (type.isInstance(provider)) {
-            return type.cast(provider);
-        }
-        return null;
-    }
-
-    @NonNull
-    public VariableStore getVariableStore() {
-        return this.variableStore;
-    }
-
-    public void showOverlay() {
-        this.runOnUiThread(() -> this.overlay.create());
-    }
-
-    public void hideOverlay() {
-        this.runOnUiThread(() -> this.overlay.destroy());
     }
 
     private void usbDeviceAttached(@NonNull UsbDevice device) {
@@ -156,7 +77,7 @@ public final class DeviceService extends Service {
 
     private void usbDeviceDetached(@NonNull UsbDevice usbDevice) {
         Log.e(this.getClass().getSimpleName(), "Device detached " + usbDevice.getDeviceId());
-        DeviceHandler device = this.deviceStore.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
+        DeviceHandler device = this.deviceController.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
         if (device != null) {
             device.close();
         }
@@ -172,7 +93,7 @@ public final class DeviceService extends Service {
         this.disposalTask = new TimerTask() {
             @Override
             public void run() {
-                if (DeviceService.this.deviceStore.isEmpty()) {
+                if (DeviceService.this.deviceController.isEmpty()) {
                     DeviceService.this.stopSelf();
                 }
             }
@@ -181,46 +102,11 @@ public final class DeviceService extends Service {
         this.timer.schedule(this.disposalTask, 20000);
     }
 
-    private void runOnUiThread(Runnable runnable) {
-        this.uiHandler.post(runnable);
-    }
-
-    private void stopDataProvider(@NonNull ObservableFeature<? extends ObservableFeature.Listener> feature) {
-        Class<? extends DeviceDataProvider> providerClass = feature.getProviderClass();
-        if (providerClass != null) {
-            DeviceDataProvider provider = this.getDeviceProvider(providerClass);
-            if (provider != null) {
-                provider.stop(feature);
-            }
-        }
-    }
-
-    private void startDataProvider(@NonNull ObservableFeature<? extends ObservableFeature.Listener> feature) {
-        Class<? extends DeviceDataProvider> providerClass = feature.getProviderClass();
-        if (providerClass != null) {
-            DeviceDataProvider provider = this.getDeviceProvider(providerClass);
-            if (provider != null) {
-                provider.start(feature);
-            }
-        }
-    }
-
     private void deviceDetected(@NonNull DeviceHandler device) {
-        device.addObserver(this.deviceObserver);
-        device.open();
-        this.disposeIfEmpty();
+        device.addObserver(this.observer);
+        deviceController.add(device);
     }
 
-    private void deviceReady(@NonNull DeviceHandler device) {
-        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" ready!");
-        this.deviceStore.add(device);
-    }
-
-    private void deviceInvalid(@NonNull DeviceHandler device) {
-        Log.e(this.getClass().getSimpleName(), "Device \"" + device.getClass().getSimpleName() + "\" removed!");
-        this.deviceStore.remove(device);
-        this.disposeIfEmpty();
-    }
 
     @Nullable
     @Override
@@ -229,67 +115,35 @@ public final class DeviceService extends Service {
     }
 
     public class DeviceServiceBinder extends Binder {
-        @Nullable
-        public <ProviderType extends DeviceDataProvider> ProviderType getDeviceProvider(@NonNull Class<ProviderType> type) {
-            return DeviceService.this.getDeviceProvider(type);
-        }
 
         @Nullable
         public DeviceHandler getDevice(@NonNull DeviceUid uid) {
-            return DeviceService.this.deviceStore.get(uid);
+            return DeviceService.this.deviceController.get(uid);
         }
 
-        public void subscribeDeviceStore(@NonNull DeviceHandler.Observer observer) {
-            DeviceService.this.deviceStore.subscribe(observer);
+        public void subscribeToFeatures(@NonNull DeviceController.FeatureObserver observer) {
+            DeviceService.this.deviceController.subscribe(observer);
         }
 
-        public void unsubscribeDeviceStore(@NonNull DeviceHandler.Observer observer) {
-            DeviceService.this.deviceStore.unsubscribe(observer);
-        }
-
-        @NonNull
-        public VariableStore getVariableStore() {
-            return DeviceService.this.variableStore;
-        }
-
-        @NonNull
-        public RuleHandler getRuleHandler() {
-            return DeviceService.this.ruleHandler;
-        }
-
-        public void showOverlay() {
-            DeviceService.this.overlay.create();
-        }
-
-        public void hideOverlay() {
-            DeviceService.this.overlay.destroy();
+        public void unsubscribeFromFeatures(@NonNull DeviceController.FeatureObserver observer) {
+            DeviceService.this.deviceController.unsubscribe(observer);
         }
     }
 
+    // FIXME: no need to be a device observer for all devices just for monitoring service lifecycle
+    // This should be communicated back to the service back from the DeviceController
     private class DeviceObserver implements DeviceHandler.Observer {
 
         @Override
         public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
-            if (state == DeviceHandler.State.READY) {
-                DeviceService.this.deviceReady(device);
-            } else if (state == DeviceHandler.State.INVALID) {
-                DeviceService.this.deviceInvalid(device);
-            }
+            DeviceService.this.disposeIfEmpty();
         }
 
         @Override
-        public void onFeatureAvailable(@NonNull Feature feature) {
-            if (feature instanceof ObservableFeature) {
-                DeviceService.this.startDataProvider((ObservableFeature<? extends ObservableFeature.Listener>)feature);
-            }
-        }
+        public void onFeatureAvailable(@NonNull Feature feature) {}
 
         @Override
-        public void onFeatureUnavailable(@NonNull Feature feature) {
-            if (feature instanceof ObservableFeature) {
-                DeviceService.this.stopDataProvider((ObservableFeature<? extends ObservableFeature.Listener>)feature);
-            }
-        }
+        public void onFeatureUnavailable(@NonNull Feature feature) {}
     }
 
     private class UsbDeviceDetectionObserver implements UsbDeviceDetector.DetectionObserver {
@@ -300,24 +154,11 @@ public final class DeviceService extends Service {
 
         @Override
         public void detectionFailed() {
-            // TODO notify user if the attached device is not supported
+            // TODO: notify user if the attached device is not supported
             Log.e(this.getClass().getSimpleName(), "Detection of device failed!");
             DeviceService.this.disposeIfEmpty();
         }
     };
 
-    // TODO: Rules are not part of devices. This should find it's own place
-    private static class getRulesTask extends AsyncTask<DeviceService, Void, RuleHandler> {
-        @Override
-        protected RuleHandler doInBackground(DeviceService... services) {
-            DeviceService service = services[0];
-            EventRepository eventRepo = new EventRepository(service.getApplication());
-            List<RuleDefinition> rules = eventRepo.getAllRules();
-
-            RuleHandler ruleHandler = new RuleHandler(service);
-            ruleHandler.updateRuleDefinitions(rules);
-            return ruleHandler;
-        }
-    }
 
 }
