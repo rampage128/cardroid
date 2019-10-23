@@ -99,6 +99,10 @@ public abstract class DeviceHandler {
         this.connectionId = connectionId;
     }
 
+    public final DeviceConnectionId getConnectionId() {
+        return this.connectionId;
+    }
+
     protected final void setDeviceUid(@NonNull DeviceUid uid) {
         if (connectionId == null) {
             throw new IllegalStateException("Device can not be identified without a connectionId. Did you call setConnectionId(DeviceConnectionId) first?");

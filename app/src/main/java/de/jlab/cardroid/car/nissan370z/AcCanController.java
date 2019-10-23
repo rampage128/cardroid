@@ -1,8 +1,9 @@
-package de.jlab.cardroid.overlay;
+package de.jlab.cardroid.car.nissan370z;
 
 import java.nio.ByteBuffer;
 
-import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.car.CanInteractable;
+import de.jlab.cardroid.car.CanService;
 
 public final class AcCanController {
 
@@ -91,10 +92,10 @@ public final class AcCanController {
         this.canPacket541.putInt(0, this.buttonBits);
     }
 
-    public void broadcast(CanDataProvider provider) {
-        provider.sendPacket(0x540, this.canPacket540.array());
-        provider.sendPacket(0x541, this.canPacket541.array());
-        provider.sendPacket(0x542, this.canPacket542.array());
+    public void broadcast(CanInteractable interactable) {
+        interactable.sendPacket(0x540, this.canPacket540.array());
+        interactable.sendPacket(0x541, this.canPacket541.array());
+        interactable.sendPacket(0x542, this.canPacket542.array());
 
         this.resetRearHeaterButton();
 

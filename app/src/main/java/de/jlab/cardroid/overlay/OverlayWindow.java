@@ -28,12 +28,11 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.car.CanDataProvider;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
+import de.jlab.cardroid.car.CanInteractable;
+import de.jlab.cardroid.car.CanService;
+import de.jlab.cardroid.car.nissan370z.AcCanController;
+import de.jlab.cardroid.devices.serial.carduino.EventInteractable;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
-import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
-import de.jlab.cardroid.providers.DataProviderService;
 import de.jlab.cardroid.variables.Variable;
 
 /**
@@ -47,7 +46,7 @@ public class OverlayWindow {
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private DataProviderService service;
+    private CanService service;
 
     private WindowManager windowManager;
 
@@ -157,7 +156,7 @@ public class OverlayWindow {
         updateUi();
     };
 
-    public OverlayWindow(DataProviderService service) {
+    public OverlayWindow(CanService service) {
         this.service = service;
     }
 
@@ -243,8 +242,8 @@ public class OverlayWindow {
         View.OnClickListener buttonListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CarduinoEventProvider eventProvider = service.getDeviceProvider(CarduinoEventProvider.class);
-                if (eventProvider != null) {
+                EventInteractable interactable = service.getEventInteractable();
+                if (interactable != null) {
                     switch (view.getId()) {
                         case R.id.offButton:
                             acController.pushOffButton();
@@ -342,8 +341,8 @@ public class OverlayWindow {
         this.broadCastTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                CanDataProvider provider = service.getDeviceProvider(CanDataProvider.class);
-                acController.broadcast(provider);
+                CanInteractable interactable = service.getCanInteractable();
+                acController.broadcast(interactable);
             }
         }, 0, 250);
     }
@@ -355,9 +354,9 @@ public class OverlayWindow {
     }
 
     private void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
-        CarduinoEventProvider eventProvider = this.service.getDeviceProvider(CarduinoEventProvider.class);
-        if (eventProvider != null) {
-            eventProvider.sendEvent(event, payload);
+        EventInteractable interactable = this.service.getEventInteractable();
+        if (interactable != null) {
+            interactable.sendEvent(event.getCommand(), payload);
         }
     }
 
@@ -379,7 +378,7 @@ public class OverlayWindow {
 
     private void attach(String variableName, Variable.VariableChangeListener listener) {
         detach(variableName, listener);
-        this.service.getVariableStore().subscribe(variableName, listener);
+        this.service.getCarCanController().monitorVariable(variableName, listener);
     }
 
     private void detachBubbleData() {
@@ -399,7 +398,7 @@ public class OverlayWindow {
     }
 
     private void detach(String variableName, Variable.VariableChangeListener listener) {
-        this.service.getVariableStore().unsubscribe(variableName, listener);
+        this.service.getCarCanController().stopMonitoringVariable(variableName, listener);
     }
 
     private void roundCardViews(View v) {

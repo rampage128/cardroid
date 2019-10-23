@@ -48,6 +48,22 @@
             android:exported="false"
             android:launchMode="singleTop" />
 
+        <service
+            android:name=".gps.GpsService"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <service
+            android:name=".car.CanService"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+        <service
+            android:name=".errors.ErrorService"
+            android:exported="false"
+            android:launchMode="singleTop" />
+
+
         <receiver
             android:name=".PowerManagementReceiver"
             android:exported="true">

@@ -51,12 +51,12 @@ public final class DeviceListFragment extends Fragment {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeToFeatures(adapter);
+            deviceService.setExternalDeviceObserver(adapter);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeFromFeatures(adapter);
+            deviceService.setExternalDeviceObserver(null);
             deviceService = null;
         }
     };

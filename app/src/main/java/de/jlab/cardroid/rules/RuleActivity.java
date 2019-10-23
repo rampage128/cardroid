@@ -30,10 +30,10 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     private int eventId = 0;
     private Fragment activeFragment;
 
-    private DeviceService.DeviceServiceBinder serviceBinder;
+    private RuleService.RuleServiceBinder serviceBinder;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            RuleActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder)service;
+            RuleActivity.this.serviceBinder = (RuleService.RuleServiceBinder) service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -77,7 +77,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), RuleService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     public void onRuleChange(int command, RuleDefinition ruleDefinition) {
         if (command == COMMAND_UPDATED) {
-            this.serviceBinder.getRuleHandler().updateRuleDefinition(ruleDefinition);
+            this.serviceBinder.updateRuleDefinition(ruleDefinition);
         }
     }
 

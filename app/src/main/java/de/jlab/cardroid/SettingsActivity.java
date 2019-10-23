@@ -24,6 +24,8 @@ import android.widget.Toast;
 import java.util.List;
 
 import androidx.appcompat.app.ActionBar;
+
+import de.jlab.cardroid.car.CanService;
 import de.jlab.cardroid.devices.DeviceService;
 
 /**
@@ -39,11 +41,11 @@ import de.jlab.cardroid.devices.DeviceService;
  */
 public final class SettingsActivity extends AppCompatPreferenceActivity {
 
-    private DeviceService.DeviceServiceBinder deviceService;
+    private CanService.CanServiceBinder deviceService;
 
     private ServiceConnection deviceServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            deviceService = (DeviceService.DeviceServiceBinder)service;
+            deviceService = (CanService.CanServiceBinder) service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -121,7 +123,7 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onResume() {
         super.onResume();
 
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), CanService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

@@ -8,7 +8,6 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
 import de.jlab.cardroid.devices.serial.gps.GpsSerialReader;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
-import de.jlab.cardroid.gps.GpsDataProvider;
 
 public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialReader> {
 

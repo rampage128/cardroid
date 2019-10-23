@@ -9,6 +9,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,8 +22,12 @@ import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
+import de.jlab.cardroid.service.ServiceStore;
+
+import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
 
 
+//TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
@@ -31,6 +36,7 @@ public final class DeviceService extends Service {
     private Timer timer = new Timer();
     private TimerTask disposalTask;
     private DeviceObserver observer = new DeviceObserver();
+    private DeviceHandler.Observer externalObserver = null;
 
     @Override
     public void onCreate() {
@@ -108,6 +114,14 @@ public final class DeviceService extends Service {
     }
 
 
+    private void fireServices(ArrayList<Class<? extends Service>> services) {
+        for (int i = 0; i < services.size(); i++) {
+            Class<? extends Service> serviceClass = services.get(i);
+            Intent action = new Intent(this.getApplicationContext(), serviceClass);
+            this.getApplicationContext().startService(action);
+        }
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -115,35 +129,48 @@ public final class DeviceService extends Service {
     }
 
     public class DeviceServiceBinder extends Binder {
-
         @Nullable
         public DeviceHandler getDevice(@NonNull DeviceUid uid) {
             return DeviceService.this.deviceController.get(uid);
         }
 
-        public void subscribeToFeatures(@NonNull DeviceController.FeatureObserver observer) {
-            DeviceService.this.deviceController.subscribe(observer);
+        public <FT extends Feature> void subscribe(@NonNull FeatureObserver observer, Class<FT> featureClass) {
+            DeviceService.this.deviceController.addSubscriber(observer, featureClass);
         }
 
-        public void unsubscribeFromFeatures(@NonNull DeviceController.FeatureObserver observer) {
-            DeviceService.this.deviceController.unsubscribe(observer);
+        public <FT extends Feature> void unsubscribe(@NonNull FeatureObserver observer, Class<FT> featureClass) {
+            DeviceService.this.deviceController.addSubscriber(observer, featureClass);
+        }
+
+        public void setExternalDeviceObserver(DeviceHandler.Observer observer) {
+            DeviceService.this.externalObserver = observer;
         }
     }
 
-    // FIXME: no need to be a device observer for all devices just for monitoring service lifecycle
-    // This should be communicated back to the service back from the DeviceController
     private class DeviceObserver implements DeviceHandler.Observer {
 
         @Override
         public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
             DeviceService.this.disposeIfEmpty();
+            if (DeviceService.this.externalObserver != null) {
+                DeviceService.this.externalObserver.onStateChange(device, state, previous);
+            }
         }
 
         @Override
-        public void onFeatureAvailable(@NonNull Feature feature) {}
+        public void onFeatureAvailable(@NonNull Feature feature) {
+            DeviceService.this.fireServices(servicesForDevice(feature.getDevice()));
+            if (DeviceService.this.externalObserver != null) {
+                DeviceService.this.externalObserver.onFeatureAvailable(feature);
+            }
+        }
 
         @Override
-        public void onFeatureUnavailable(@NonNull Feature feature) {}
+        public void onFeatureUnavailable(@NonNull Feature feature) {
+            if (DeviceService.this.externalObserver != null) {
+                DeviceService.this.externalObserver.onFeatureUnavailable(feature);
+            }
+        }
     }
 
     private class UsbDeviceDetectionObserver implements UsbDeviceDetector.DetectionObserver {

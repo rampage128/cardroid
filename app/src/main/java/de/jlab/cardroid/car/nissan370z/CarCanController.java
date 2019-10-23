@@ -1,40 +1,45 @@
-package de.jlab.cardroid.car;
-
-import java.util.ArrayList;
+package de.jlab.cardroid.car.nissan370z;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.FeatureDataProvider;
-import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.providers.DataProviderService;
+
+import java.util.ArrayList;
+
+import de.jlab.cardroid.car.CanInteractable;
+import de.jlab.cardroid.car.CanObservable;
+import de.jlab.cardroid.car.CanPacket;
+import de.jlab.cardroid.car.CanPacketDescriptor;
+import de.jlab.cardroid.car.CanValue;
 import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
+import de.jlab.cardroid.variables.VariableStore;
 
-public final class CanDataProvider extends FeatureDataProvider<CanObservable> {
+public class CarCanController {
 
-    private ArrayList<CanObservable.CanPacketListener> externalListeners = new ArrayList<>();
+    private VariableStore variableStore = new VariableStore();
+    private ScriptEngine scriptEngine = new ScriptEngine();
     private ArrayList<CanPacketDescriptor> packetDescriptors = new ArrayList<>();
-    private boolean isSniffing = false;
-
-    private DataProviderService service;
+    private CanInteractable interactable;
+    private CanObservable observable;
+    private ArrayList<CarCanControllerListener> listeners = new ArrayList<>();
 
     private CanObservable.CanPacketListener listener = packet -> {
-        for (int i = 0; i < this.externalListeners.size(); i++) {
-            this.externalListeners.get(i).onReceive(packet);
-        }
         for (int i = 0; i < this.packetDescriptors.size(); i++) {
             CanPacketDescriptor descriptor = this.packetDescriptors.get(i);
             if (descriptor.getCanId() == packet.getCanId()) {
                 descriptor.onReceive(packet);
             }
         }
+        for (CarCanControllerListener listener: CarCanController.this.listeners) {
+            listener.onVariablesUpdated(packet);
+        }
     };
 
-    public CanDataProvider(@NonNull DataProviderService service) {
-        super(service);
-        this.service = service;
+    public CarCanController(CanInteractable interactable, CanObservable observable) {
+        this.interactable = interactable;
+        this.observable = observable;
+        this.observable.addListener(this.listener);
 
         CanPacketDescriptor descriptor = new CanPacketDescriptor(0x002);
         descriptor.addCanValue(this.registerCanVariable(
@@ -229,158 +234,67 @@ public final class CanDataProvider extends FeatureDataProvider<CanObservable> {
         this.subscribeCanId(descriptor);
     }
 
-    private CanValue registerCanVariable(@NonNull String variableName, @Nullable String expression, @NonNull CanValue value) {
-        if (expression != null && expression.trim().length() > 0 && !expression.trim().equals("value")) {
-            ScriptEngine engine = this.service.getScriptEngine();
-            this.service.getVariableStore().registerVariable(Variable.createFromExpression(variableName, expression, value, new ObservableValue(value.getMaxValue()), engine));
-        } else {
-            this.service.getVariableStore().registerVariable(Variable.createPlain(variableName, value));
+    public void dispose() {
+        for (int i = 0; i < this.packetDescriptors.size(); i++) {
+            this.unregisterCanId(this.packetDescriptors.get(i));
         }
-
-        return value;
+        observable.removeListener(this.listener);
     }
 
-    public void addExternalListener(@NonNull CanObservable.CanPacketListener externalListener) {
-        this.externalListeners.add(externalListener);
+    public void monitorVariable(String name, Variable.VariableChangeListener listener) {
+        this.variableStore.subscribe(name, listener);
     }
 
-    public void removeExternalListener(@NonNull CanObservable.CanPacketListener externalListener) {
-        this.externalListeners.remove(externalListener);
+    public void stopMonitoringVariable(String name, Variable.VariableChangeListener listener) {
+        this.variableStore.unsubscribe(name, listener);
     }
 
-    public void sendPacket(int canId, byte[] data) {
-        ArrayList<DeviceHandler> devices = this.getFeature();
-        for (int i = 0; i < devices.size(); i++) {
-            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-            if (interactable != null) {
-                interactable.sendPacket(canId, data);
-            }
-        }
-    }
-
-    public void subscribeCanId(CanPacketDescriptor descriptor) {
+    private void subscribeCanId(CanPacketDescriptor descriptor) {
         this.packetDescriptors.add(descriptor);
         this.registerCanId(descriptor);
     }
 
     private void registerCanId(CanPacketDescriptor descriptor) {
-        ArrayList<DeviceHandler> devices = this.getFeature();
-        for (int i = 0; i < devices.size(); i++) {
-            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-            if (interactable != null) {
-                interactable.registerCanId(descriptor);
-            }
+        if (this.interactable != null) {
+            this.interactable.registerCanId(descriptor);
         }
     }
 
-    public void unsubscribeCanId(CanPacketDescriptor descriptor) {
+    private void unsubscribeCanId(CanPacketDescriptor descriptor) {
         this.packetDescriptors.remove(descriptor);
         this.unregisterCanId(descriptor);
     }
 
     private void unregisterCanId(CanPacketDescriptor descriptor) {
-        ArrayList<DeviceHandler> devices = this.getFeature();
-        for (int i = 0; i < devices.size(); i++) {
-            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-            if (interactable != null) {
-                interactable.unregisterCanId(descriptor);
-            }
+        if (this.interactable != null) {
+            this.interactable.unregisterCanId(descriptor);
         }
     }
 
-    public void startCanSniffer() {
-        this.isSniffing = true;
-        ArrayList<DeviceHandler> devices = this.getFeature();
-        for (int i = 0; i < devices.size(); i++) {
-            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-            if (interactable != null) {
-                interactable.startSniffer();
-            }
-        }
-    }
-
-    public void stopCanSniffer() {
-        this.isSniffing = false;
-        ArrayList<DeviceHandler> devices = this.getFeature();
-        for (int i = 0; i < devices.size(); i++) {
-            CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-            if (interactable != null) {
-                interactable.stopSniffer();
-            }
-        }
-    }
-
-    private void deviceRemoved(@NonNull DeviceHandler device) {
-        for (int i = 0; i < this.packetDescriptors.size(); i++) {
-            this.unregisterCanId(this.packetDescriptors.get(i));
-        }
-        CanObservable observable = device.getObservable(CanObservable.class);
-        if (observable != null) {
-            observable.removeCanListener(this.listener);
-        }
-    }
-
-    private void deviceAdded(@NonNull DeviceHandler device) {
-        CanObservable observable = device.getObservable(CanObservable.class);
-        if (observable != null) {
-            observable.addCanListener(this.listener);
+    private CanValue registerCanVariable(@NonNull String variableName, @Nullable String expression, @NonNull CanValue value) {
+        if (expression != null && expression.trim().length() > 0 && !expression.trim().equals("value")) {
+            this.variableStore.registerVariable(Variable.createFromExpression(variableName, expression, value, new ObservableValue(value.getMaxValue()), this.scriptEngine));
+        } else {
+            this.variableStore.registerVariable(Variable.createPlain(variableName, value));
         }
 
-        for (int i = 0; i < this.packetDescriptors.size(); i++) {
-            this.registerCanId(this.packetDescriptors.get(i));
-        }
-        if (this.isSniffing) {
-            ArrayList<DeviceHandler> devices = this.getFeature();
-            for (int i = 0; i < devices.size(); i++) {
-                CanInteractable interactable = devices.get(i).getInteractable(CanInteractable.class);
-                if (interactable != null) {
-                    interactable.startSniffer();
-                }
-            }
-        }
+        return value;
     }
 
-    @Override
-    protected void onStop(@NonNull CanObservable feature, @NonNull DeviceService service) {
-        assert feature.getDevice() != null;
-        this.deviceRemoved(feature.getDevice());
+    public VariableStore getVariableStore() {
+        return this.variableStore;
     }
 
-    @Override
-    protected void onStart(@NonNull CanObservable feature, @NonNull DeviceService service) {
-        assert feature.getDevice() != null;
-        this.deviceAdded(feature.getDevice());
+    public void addListener(CarCanControllerListener listener) {
+        this.listeners.add(listener);
     }
 
-    @Override
-    protected void onCreate(@NonNull DeviceService service) {
-        this.service.showOverlay();
+    public void removeListener(CarCanControllerListener listener) {
+        this.listeners.remove(listener);
     }
 
-    @Override
-    protected void onDispose(@NonNull DeviceService service) {
-        this.service.hideOverlay();
-    }
-
-    @Override
-    protected void onUpdate(@NonNull DeviceHandler previousDevice, @NonNull DeviceHandler newDevice, @NonNull DeviceService service) {
-        this.deviceRemoved(previousDevice);
-        this.deviceAdded(newDevice);
-        this.service.showOverlay();
-    }
-
-    @Override
-    protected void onStop(@NonNull DeviceHandler device, @NonNull DeviceService service) {
-
-        if (this.getConnectedDeviceCount() < 1) {
-            this.service.hideOverlay();
-        }
-    }
-
-    @Override
-    protected void onStart(@NonNull DeviceHandler device, @NonNull DeviceService service) {
-
-        this.service.showOverlay();
+    public interface CarCanControllerListener {
+        void onVariablesUpdated(CanPacket lastPacketReceived);
     }
 
 }

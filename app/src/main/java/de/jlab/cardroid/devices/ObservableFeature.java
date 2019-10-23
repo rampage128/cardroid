@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 
 public interface ObservableFeature<LT extends ObservableFeature.Listener> extends Feature {
 
-    Class<? extends FeatureDataProvider> getProviderClass();
-
     void addListener(@NonNull LT listener);
     void removeListener(@NonNull LT listener);
 

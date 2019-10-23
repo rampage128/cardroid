@@ -28,6 +28,7 @@ import de.jlab.cardroid.devices.DeviceHandler;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
+import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
@@ -41,7 +42,7 @@ import de.jlab.cardroid.utils.ui.DialogUtils;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, DeviceHandler.Observer {
+public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, DeviceHandler.Observer, FeatureObserver<Feature> {
     private static final String ARG_DEVICE_ID = "deviceId";
 
     private DeviceDetailViewModel model;
@@ -60,12 +61,12 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeToFeatures(DeviceDetailFragment.this);
+            deviceService.subscribe(DeviceDetailFragment.this, Feature.class);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeFromFeatures(DeviceDetailFragment.this);
+            deviceService.unsubscribe(DeviceDetailFragment.this, Feature.class);
             deviceService = null;
         }
     };
