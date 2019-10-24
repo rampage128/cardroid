@@ -2,6 +2,7 @@ package de.jlab.cardroid.service;
 
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
@@ -34,12 +35,12 @@ abstract public class FeatureService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.featureConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onDestroy() {
-
+        this.getApplicationContext().unbindService(this.featureConnection);
         super.onDestroy();
     }
 
