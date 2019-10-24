@@ -23,16 +23,11 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.CanInteractable;
-import de.jlab.cardroid.car.CanService;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
-import de.jlab.cardroid.devices.serial.carduino.EventInteractable;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
 import de.jlab.cardroid.variables.Variable;
 
 /**
@@ -46,7 +41,7 @@ public class OverlayWindow {
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private CanService service;
+    private OverlayService service;
 
     private WindowManager windowManager;
 
@@ -156,7 +151,7 @@ public class OverlayWindow {
         updateUi();
     };
 
-    public OverlayWindow(CanService service) {
+    public OverlayWindow(OverlayService service) {
         this.service = service;
     }
 
@@ -341,7 +336,7 @@ public class OverlayWindow {
         this.broadCastTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                CanInteractable interactable = service.getCanInteractable();
+                CanInteractable interactable = service.getInteractable();
                 acController.broadcast(interactable);
             }
         }, 0, 250);
@@ -350,13 +345,6 @@ public class OverlayWindow {
     private void stopBroadCast() {
         if (this.broadCastTimer != null) {
             this.broadCastTimer.cancel();
-        }
-    }
-
-    private void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
-        EventInteractable interactable = this.service.getEventInteractable();
-        if (interactable != null) {
-            interactable.sendEvent(event.getCommand(), payload);
         }
     }
 

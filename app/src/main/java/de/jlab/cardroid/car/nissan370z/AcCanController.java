@@ -3,7 +3,6 @@ package de.jlab.cardroid.car.nissan370z;
 import java.nio.ByteBuffer;
 
 import de.jlab.cardroid.car.CanInteractable;
-import de.jlab.cardroid.car.CanService;
 
 public final class AcCanController {
 

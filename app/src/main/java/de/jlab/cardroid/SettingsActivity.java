@@ -25,8 +25,8 @@ import java.util.List;
 
 import androidx.appcompat.app.ActionBar;
 
-import de.jlab.cardroid.car.CanService;
-import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.car.CarService;
+import de.jlab.cardroid.overlay.OverlayService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -41,15 +41,15 @@ import de.jlab.cardroid.devices.DeviceService;
  */
 public final class SettingsActivity extends AppCompatPreferenceActivity {
 
-    private CanService.CanServiceBinder deviceService;
+    private OverlayService.OverlayServiceBinder overlayService;
 
     private ServiceConnection deviceServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            deviceService = (CanService.CanServiceBinder) service;
+            overlayService = (OverlayService.OverlayServiceBinder) service;
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            deviceService = null;
+            overlayService = null;
         }
     };
 
@@ -123,7 +123,7 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onResume() {
         super.onResume();
 
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), CanService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), OverlayService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -145,11 +145,11 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     private void showOverlay() {
-        this.deviceService.showOverlay();
+        this.overlayService.showOverlay();
     }
 
     private void hideOverlay() {
-        this.deviceService.hideOverlay();
+        this.overlayService.hideOverlay();
     }
 
     /**

@@ -16,7 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.StatusGridAdapter;
-import de.jlab.cardroid.car.CanService;
+import de.jlab.cardroid.car.CarService;
 import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.car.nissan370z.CarCanController;
 
@@ -33,10 +33,10 @@ public class CarMonitorActivity extends AppCompatActivity implements CarCanContr
     private ScrollView packetListViewContainer;
     private StatusGridAdapter connectionGridAdapter;
 
-    private CanService.CanServiceBinder serviceBinder;
+    private CarService.CarServiceBinder serviceBinder;
     private ServiceConnection carServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            CarMonitorActivity.this.serviceBinder = (CanService.CanServiceBinder) service;
+            CarMonitorActivity.this.serviceBinder = (CarService.CarServiceBinder) service;
 
             CarMonitorActivity.this.initStatusGrid();
             CarMonitorActivity.this.initConnetionGrid();
@@ -159,7 +159,7 @@ public class CarMonitorActivity extends AppCompatActivity implements CarCanContr
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), CanService.class), this.carServiceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), CarService.class), this.carServiceConnection, Context.BIND_AUTO_CREATE);
         if (this.bottomBar.getSelectedItemId() == R.id.action_connection) {
             CarMonitorActivity.this.packetListView.startLiveMode();
         }
