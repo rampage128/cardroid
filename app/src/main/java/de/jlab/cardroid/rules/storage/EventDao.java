@@ -24,7 +24,11 @@ public interface EventDao {
 
     @Transaction
     @Query("SELECT * FROM events")
-    List<RuleDefinition> getAllRules();
+    List<RuleDefinition> getAllRulesSynchronous();
+
+    @Transaction
+    @Query("SELECT * FROM events")
+    LiveData<List<RuleDefinition>> getAllRules();
 
     @Transaction
     @Query("SELECT * FROM events WHERE identifier =:identifier")

@@ -10,7 +10,6 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.serial.carduino.EventObservable;
@@ -31,10 +30,14 @@ public final class RuleService extends FeatureService implements FeatureObserver
     @Override
     public void onCreate() {
         super.onCreate();
-        this.knownEvents = new KnownEvents(this.getApplication());
+
+        this.knownEvents = new KnownEvents();
+
+        EventRepository eventRepository = new EventRepository(this.getApplication());
+        eventRepository.getAll().observe(this, this::updateKnownEvents);
+
         EventRepository eventRepo = new EventRepository(this.getApplication());
-        List<RuleDefinition> rules = eventRepo.getAllRules();
-        this.updateRuleDefinitions(rules);
+        eventRepo.getAllRules().observe(this, this::updateRuleDefinitions);
     }
 
     @Override
@@ -47,7 +50,9 @@ public final class RuleService extends FeatureService implements FeatureObserver
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(@NonNull Intent intent) {
+        super.onBind(intent);
+
         return this.binder;
     }
 
@@ -98,6 +103,13 @@ public final class RuleService extends FeatureService implements FeatureObserver
         return event;
     }
 
+    private void updateKnownEvents(@NonNull List<EventEntity> events) {
+        for (EventEntity eventEntity : events) {
+            this.knownEvents.addEvent(new Event(eventEntity.identifier));
+        }
+    }
+
+
     public void updateRuleDefinition(@NonNull RuleDefinition ruleDefinition) {
         if (ruleDefinition.actions == null || ruleDefinition.actions.isEmpty()) {
             this.rules.remove(ruleDefinition.event.identifier);
@@ -127,4 +139,5 @@ public final class RuleService extends FeatureService implements FeatureObserver
             RuleService.this.updateRuleDefinition(definition);
         }
     }
+
 }

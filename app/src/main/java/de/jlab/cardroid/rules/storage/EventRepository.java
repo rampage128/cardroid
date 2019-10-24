@@ -29,7 +29,11 @@ public class EventRepository {
         return this.eventDao.get(identifier);
     }
 
-    public List<RuleDefinition> getAllRules() {
+    public List<RuleDefinition> getAllRulesSynchronous() {
+        return this.eventDao.getAllRulesSynchronous();
+    }
+
+    public LiveData<List<RuleDefinition>> getAllRules() {
         return this.eventDao.getAllRules();
     }
 

@@ -1,6 +1,5 @@
 package de.jlab.cardroid.service;
 
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,10 +7,10 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.lifecycle.LifecycleService;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.overlay.OverlayService;
 
-abstract public class FeatureService extends Service {
+abstract public class FeatureService extends LifecycleService {
 
     private DeviceService.DeviceServiceBinder service;
 
