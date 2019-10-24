@@ -81,8 +81,10 @@ public final class CarService extends FeatureService {
     }
 
     private void destroyCarController() {
-        this.carCanController.dispose();
-        this.carCanController = null;
+        if (this.carCanController != null) {
+            this.carCanController.dispose();
+            this.carCanController = null;
+        }
     }
 
     public CanInteractable getCanInteractable() {
