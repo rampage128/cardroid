@@ -108,6 +108,7 @@ public class GpsService extends FeatureService implements FeatureObserver<GpsObs
         };
         feature.addListener(this.positionListener);
         this.gpsSources.add(feature);
+        this.currentGpsSource = feature;
     }
 
     @Override
