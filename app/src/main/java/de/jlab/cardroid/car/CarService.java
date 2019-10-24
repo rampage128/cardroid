@@ -68,8 +68,7 @@ public final class CarService extends FeatureService {
     }
 
     private void checkReady() {
-        if (this.canObservables.size()    > 0 &&
-            this.canInteractables.size()  > 0) {
+        if (this.canObservables.size() > 0) {
             createCarController();
         } else {
             destroyCarController();
@@ -77,7 +76,13 @@ public final class CarService extends FeatureService {
     }
 
     private void createCarController() {
-        this.carCanController = new CarCanController(this.getCanInteractable(), this.getCanObservable());
+        CanObservable observable = this.getCanObservable();
+        this.carCanController = new CarCanController(this.getCanObservable());
+        for (int i=0; i<this.canInteractables.size(); i++) {
+            if (observable.getDevice().equals(this.canInteractables.get(i).getDevice())) {
+                this.carCanController.setInteractable(this.canInteractables.get(i));
+            }
+        }
     }
 
     private void destroyCarController() {
@@ -85,10 +90,6 @@ public final class CarService extends FeatureService {
             this.carCanController.dispose();
             this.carCanController = null;
         }
-    }
-
-    public CanInteractable getCanInteractable() {
-        return canInteractables.size() > 0 ? canInteractables.get(0): null;
     }
 
     public CanObservable getCanObservable() {

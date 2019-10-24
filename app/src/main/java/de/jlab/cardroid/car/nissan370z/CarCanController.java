@@ -3,6 +3,7 @@ package de.jlab.cardroid.car.nissan370z;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import de.jlab.cardroid.car.CanInteractable;
@@ -36,8 +37,7 @@ public class CarCanController {
         }
     };
 
-    public CarCanController(CanInteractable interactable, CanObservable observable) {
-        this.interactable = interactable;
+    public CarCanController(@NonNull CanObservable observable) {
         this.observable = observable;
         this.observable.addListener(this.listener);
 
@@ -232,6 +232,16 @@ public class CarCanController {
                 new CanValue(14, 1, CanValue.DataType.FLAG, 0)
         ));
         this.subscribeCanId(descriptor);
+    }
+
+    public void setInteractable(@NonNull CanInteractable interactable) {
+        if (!interactable.getDevice().equals(this.observable.getDevice())) {
+            throw new InvalidParameterException("The interactable provided doesn't match the device this controller is observing");
+        }
+        this.interactable = interactable;
+        for (int i=0; i<this.packetDescriptors.size(); i++) {
+            this.registerCanId(this.packetDescriptors.get(i));
+        }
     }
 
     public void dispose() {
