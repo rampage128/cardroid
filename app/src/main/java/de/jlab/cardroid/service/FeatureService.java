@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
 
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.overlay.OverlayService;
 
 abstract public class FeatureService extends Service {
 
@@ -36,11 +38,13 @@ abstract public class FeatureService extends Service {
     public void onCreate() {
         super.onCreate();
         this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.featureConnection, Context.BIND_AUTO_CREATE);
+        Log.e(this.getClass().getSimpleName(), "FEATURE SERVICE CREATED");
     }
 
     @Override
     public void onDestroy() {
         this.getApplicationContext().unbindService(this.featureConnection);
+        Log.e(this.getClass().getSimpleName(), "FEATURE SERVICE DESTROYED");
         super.onDestroy();
     }
 
