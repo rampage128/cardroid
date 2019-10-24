@@ -68,6 +68,10 @@
             android:exported="false"
             android:launchMode="singleTop" />
 
+        <service
+            android:name=".rules.RuleService"
+            android:exported="false"
+            android:launchMode="singleTop" />
 
         <receiver
             android:name=".PowerManagementReceiver"
