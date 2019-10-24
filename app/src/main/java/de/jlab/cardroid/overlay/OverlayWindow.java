@@ -221,48 +221,32 @@ public class OverlayWindow {
         this.isAttached = true;
 
         // Make overlay toggleable
-        viewHolder.toggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle();
-            }
-        });
-        viewHolder.detailView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle();
-            }
-        });
+        viewHolder.toggleButton.setOnClickListener(v -> toggle());
+        viewHolder.detailView.setOnClickListener(v -> toggle());
 
-        View.OnClickListener buttonListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EventInteractable interactable = service.getEventInteractable();
-                if (interactable != null) {
-                    switch (view.getId()) {
-                        case R.id.offButton:
-                            acController.pushOffButton();
-                            break;
-                        case R.id.wshButton:
-                            acController.pushWindshieldButton();
-                            break;
-                        case R.id.rwhButton:
-                            acController.pushRearHeaterButton();
-                            break;
-                        case R.id.recirculationButton:
-                            acController.pushRecirculationButton();
-                            break;
-                        case R.id.modeButton:
-                            acController.pushModeButton();
-                            break;
-                        case R.id.autoButton:
-                            acController.pushAutoButton();
-                            break;
-                        case R.id.acButton:
-                            acController.pushAcButton();
-                            break;
-                    }
-                }
+        View.OnClickListener buttonListener = view -> {
+            switch (view.getId()) {
+                case R.id.offButton:
+                    acController.pushOffButton();
+                    break;
+                case R.id.wshButton:
+                    acController.pushWindshieldButton();
+                    break;
+                case R.id.rwhButton:
+                    acController.pushRearHeaterButton();
+                    break;
+                case R.id.recirculationButton:
+                    acController.pushRecirculationButton();
+                    break;
+                case R.id.modeButton:
+                    acController.pushModeButton();
+                    break;
+                case R.id.autoButton:
+                    acController.pushAutoButton();
+                    break;
+                case R.id.acButton:
+                    acController.pushAcButton();
+                    break;
             }
         };
         viewHolder.offButton.setOnClickListener(buttonListener);
