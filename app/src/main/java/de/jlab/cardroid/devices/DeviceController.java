@@ -1,5 +1,6 @@
 package de.jlab.cardroid.devices;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,7 +13,7 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 public final class DeviceController {
 
     private ArrayList<DeviceHandler> devices = new ArrayList<>();
-    private HashMap<Class<? extends Feature>, FeatureObserver> subscribers = new HashMap<>();
+    private HashMap<Class<? extends Feature>, ArrayList<FeatureObserver>> subscribers = new HashMap<>();
     private DeviceHandler.Observer deviceObserver = new DeviceHandler.Observer() {
         @Override
         public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
@@ -23,22 +24,33 @@ public final class DeviceController {
 
         @Override
         public void onFeatureAvailable(@NonNull Feature feature) {
-            for (Iterator<Class<? extends Feature>> it = subscribers.keySet().iterator(); it.hasNext(); ) {
-                Class<? extends Feature> key = it.next();
-                FeatureObserver subscriber = subscribers.get(key);
-                if (key.isInstance(feature) && subscriber != null) {
-                    subscriber.onFeatureAvailable(key.cast(feature));
+            synchronized (subscribers) {
+                for (Iterator<Class<? extends Feature>> it = subscribers.keySet().iterator(); it.hasNext(); ) {
+                    Class<? extends Feature> key = it.next();
+                    ArrayList<FeatureObserver> observers = subscribers.get(key);
+                    for (int i = 0; i < observers.size(); i++) {
+                        FeatureObserver observer = observers.get(i);
+                        if (key.isInstance(feature) && observer != null) {
+                            observer.onFeatureAvailable(key.cast(feature));
+                        }
+                    }
+
                 }
             }
         }
 
         @Override
         public void onFeatureUnavailable(@NonNull Feature feature) {
-            for (Iterator<Class<? extends Feature>> it = subscribers.keySet().iterator(); it.hasNext(); ) {
-                Class<? extends Feature> key = it.next();
-                FeatureObserver subscriber = subscribers.get(key);
-                if (key.isInstance(feature) && subscriber != null) {
-                    subscriber.onFeatureUnavailable(key.cast(feature));
+            synchronized (subscribers) {
+                for (Iterator<Class<? extends Feature>> it = subscribers.keySet().iterator(); it.hasNext(); ) {
+                    Class<? extends Feature> key = it.next();
+                    ArrayList<FeatureObserver> observers = subscribers.get(key);
+                    for (int i = 0; i < observers.size(); i++) {
+                        FeatureObserver observer = observers.get(i);
+                        if (key.isInstance(feature) && observer != null) {
+                            observer.onFeatureUnavailable(key.cast(feature));
+                        }
+                    }
                 }
             }
         }
@@ -56,21 +68,30 @@ public final class DeviceController {
 
 
     public <FT extends Feature> void addSubscriber(FeatureObserver<FT> subscriber, Class<FT> featureClass) {
-        this.subscribers.put(featureClass, subscriber);
-        for (int i = 0; i < this.devices.size(); i++) {
-             for (Feature f: this.devices.get(i).getFeatures()) {
-                 if (featureClass.isInstance(f)) {
-                     subscriber.onFeatureAvailable((FT) f);
-                 }
-             }
+        synchronized (subscribers) {
+            if (this.subscribers.get(featureClass) == null) {
+                this.subscribers.put(featureClass, new ArrayList<>());
+            }
+            ArrayList<FeatureObserver> observers = this.subscribers.get(featureClass);
+            observers.add(subscriber);
+            for (int i = 0; i < this.devices.size(); i++) {
+                for (Feature f : this.devices.get(i).getFeatures()) {
+                    if (featureClass.isInstance(f)) {
+                        subscriber.onFeatureAvailable((FT) f);
+                    }
+                }
+            }
         }
     }
 
     public <FT extends Feature> void removeSubscriber(FeatureObserver<FT> subscriber) {
-        for (Iterator<Class<? extends Feature>> it = this.subscribers.keySet().iterator(); it.hasNext(); ) {
-            Class<? extends Feature> key = it.next();
-            if (this.subscribers.get(key) == subscriber) {
-                it.remove();
+        synchronized (subscribers) {
+            for (Iterator<Class<? extends Feature>> it = this.subscribers.keySet().iterator(); it.hasNext(); ) {
+                Class<? extends Feature> key = it.next();
+                ArrayList<FeatureObserver> observers = subscribers.get(key);
+                if (observers.contains(subscriber)) {
+                    observers.remove(subscriber);
+                }
             }
         }
     }
