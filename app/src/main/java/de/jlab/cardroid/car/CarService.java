@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import de.jlab.cardroid.car.nissan370z.CarCanController;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.service.FeatureService;
 
@@ -60,6 +61,14 @@ public final class CarService extends FeatureService {
     @Override
     protected void onDeviceServiceDisconnected() {
         this.stopSelf();
+    }
+
+    @Override
+    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
+        return new ArrayList<Class<? extends Feature>>() {{
+            add(CanInteractable.class);
+            add(CanObservable.class);
+        }};
     }
 
     @Override
