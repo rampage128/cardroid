@@ -28,6 +28,7 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
+import de.jlab.cardroid.car.nissan370z.CarCanController;
 import de.jlab.cardroid.variables.Variable;
 
 /**
@@ -321,7 +322,9 @@ public class OverlayWindow {
             @Override
             public void run() {
                 CanInteractable interactable = service.getInteractable();
-                acController.broadcast(interactable);
+                if (interactable != null) {
+                    acController.broadcast(interactable);
+                }
             }
         }, 0, 250);
     }
@@ -370,7 +373,10 @@ public class OverlayWindow {
     }
 
     private void detach(String variableName, Variable.VariableChangeListener listener) {
-        this.service.getCarCanController().stopMonitoringVariable(variableName, listener);
+        CarCanController carController = this.service.getCarCanController();
+        if (carController != null) {
+            carController.stopMonitoringVariable(variableName, listener);
+        }
     }
 
     private void roundCardViews(View v) {
