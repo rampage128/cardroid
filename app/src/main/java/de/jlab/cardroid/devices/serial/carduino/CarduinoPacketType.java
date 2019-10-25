@@ -6,6 +6,7 @@ import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoCanInteractable;
 
 public enum CarduinoPacketType {
+    // FIXME: these should be created on demand. Otherwise multiple Carduino devices will share the same instances of the features
     META(0x61),
     // TODO: Split CarduinoCanInteractable into CanMessageInteractable and CanFilterInteractable
     CAN(0x62, new CarduinoCanParser(), new CarduinoCanInteractable()),
