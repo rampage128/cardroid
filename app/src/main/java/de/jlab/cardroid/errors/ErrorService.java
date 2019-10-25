@@ -31,9 +31,11 @@ public final class ErrorService extends FeatureService implements FeatureObserve
         //Error[] errors = this.errors.values().toArray(new Error[0]);
         //Arrays.sort(errors, (error1, error2) -> (int)(error1.getLastOccurence() - error2.getLastOccurence()));
 
+        this.errorNotifier.onError(error);
         for (int i = 0; i < this.externalListeners.size(); i++) {
             this.externalListeners.get(i).onError(error);
         }
+
     };
 
     @Override
