@@ -57,9 +57,11 @@ public final class DeviceController {
     };
 
     public void add(@NonNull DeviceHandler device) {
-        this.devices.add(device);
-        device.addObserver(this.deviceObserver);
-        device.open();
+        synchronized (this.devices) {
+            this.devices.add(device);
+            device.addObserver(this.deviceObserver);
+            device.open();
+        }
     }
 
     public boolean isEmpty() {
@@ -74,10 +76,12 @@ public final class DeviceController {
             }
             ArrayList<FeatureObserver> observers = this.subscribers.get(featureClass);
             observers.add(subscriber);
-            for (int i = 0; i < this.devices.size(); i++) {
-                for (Feature f : this.devices.get(i).getFeatures()) {
-                    if (featureClass.isInstance(f)) {
-                        subscriber.onFeatureAvailable((FT) f);
+            synchronized (this.devices) {
+                for (int i = 0; i < this.devices.size(); i++) {
+                    for (Feature f : this.devices.get(i).getFeatures()) {
+                        if (featureClass.isInstance(f)) {
+                            subscriber.onFeatureAvailable((FT) f);
+                        }
                     }
                 }
             }
