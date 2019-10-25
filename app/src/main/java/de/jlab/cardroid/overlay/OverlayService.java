@@ -32,6 +32,7 @@ public class OverlayService extends FeatureService implements FeatureObserver<Ca
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             OverlayService.this.carService = (CarService.CarServiceBinder)service;
+            OverlayService.this.showOverlay();
         }
 
         @Override
@@ -50,6 +51,7 @@ public class OverlayService extends FeatureService implements FeatureObserver<Ca
 
     @Override
     public void onDestroy() {
+        this.overlay.destroy();
         this.getApplicationContext().unbindService(this.serviceConnection);
         super.onDestroy();
     }
@@ -65,7 +67,9 @@ public class OverlayService extends FeatureService implements FeatureObserver<Ca
     }
 
     public void showOverlay() {
-        this.runOnUiThread(() -> this.overlay.create());
+        if (this.carService != null && this.getInteractable() != null) {
+            this.runOnUiThread(() -> this.overlay.create());
+        }
     }
 
     public void hideOverlay() {
@@ -77,7 +81,7 @@ public class OverlayService extends FeatureService implements FeatureObserver<Ca
     }
 
     public CarCanController getCarCanController() {
-        return this.carService.getCarController();
+        return this.carService != null ? this.carService.getCarController() : null;
     }
 
     private void runOnUiThread(Runnable runnable) {
