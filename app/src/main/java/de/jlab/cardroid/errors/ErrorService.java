@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.service.FeatureService;
 
@@ -58,6 +59,13 @@ public final class ErrorService extends FeatureService implements FeatureObserve
     @Override
     protected void onDeviceServiceDisconnected() {
         this.stopSelf();
+    }
+
+    @Override
+    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
+        return new ArrayList<Class<? extends Feature>>() {{
+            add(ErrorObservable.class);
+        }};
     }
 
     @Override

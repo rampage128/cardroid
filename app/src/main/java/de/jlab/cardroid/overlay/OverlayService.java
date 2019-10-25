@@ -17,7 +17,9 @@ import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.CarService;
 import de.jlab.cardroid.car.nissan370z.CarCanController;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
+import de.jlab.cardroid.errors.ErrorObservable;
 import de.jlab.cardroid.service.FeatureService;
 
 public class OverlayService extends FeatureService implements FeatureObserver<CanInteractable> {
@@ -100,6 +102,13 @@ public class OverlayService extends FeatureService implements FeatureObserver<Ca
         if (this.canInteractables.size() == 0) {
             this.hideOverlay();
         }
+    }
+
+    @Override
+    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
+        return new ArrayList<Class<? extends Feature>>() {{
+            add(CanInteractable.class);
+        }};
     }
 
     @Nullable

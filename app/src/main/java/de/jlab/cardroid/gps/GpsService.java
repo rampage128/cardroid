@@ -18,8 +18,10 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
+import de.jlab.cardroid.errors.ErrorObservable;
 import de.jlab.cardroid.service.FeatureService;
 
 /// Class responsible for providing a mock location to the system
@@ -126,6 +128,13 @@ public class GpsService extends FeatureService implements FeatureObserver<GpsObs
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
+        return new ArrayList<Class<? extends Feature>>() {{
+            add(GpsObservable.class);
+        }};
     }
 
     private boolean checkGpsPermissions(@NonNull GpsService service) {

@@ -11,8 +11,10 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.serial.carduino.EventObservable;
+import de.jlab.cardroid.errors.ErrorObservable;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
@@ -75,6 +77,13 @@ public final class RuleService extends FeatureService implements FeatureObserver
     @Override
     public void onFeatureUnavailable(@NonNull EventObservable feature) {
         eventObservables.remove(feature);
+    }
+
+    @Override
+    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
+        return new ArrayList<Class<? extends Feature>>() {{
+            add(EventObservable.class);
+        }};
     }
 
     public void triggerRule(int eventIdentifier) {
