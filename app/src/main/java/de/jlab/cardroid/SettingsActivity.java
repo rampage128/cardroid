@@ -230,7 +230,7 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
 
                     devicePreference.setEntries(deviceNames);
                     devicePreference.setEntryValues(deviceUids);
-                    devicePreference.setValueIndex(selectedIndex);
+                    devicePreference.setSummary(deviceNames[selectedIndex]);
 
                     return null;
                 }
