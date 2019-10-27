@@ -1,7 +1,6 @@
 package de.jlab.cardroid.devices;
 
 import android.app.Service;
-import android.bluetooth.BluetoothClass;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -15,6 +14,7 @@ import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.car.CanReader;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
@@ -22,7 +22,9 @@ import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
-import de.jlab.cardroid.service.ServiceStore;
+import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.variables.ScriptEngine;
+import de.jlab.cardroid.variables.VariableStore;
 
 import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
 
@@ -30,17 +32,26 @@ import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
 //TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
 
+    // Common storage/handlers/controllers
+    private DeviceController deviceController;
+    private VariableStore variableStore;
+    private ScriptEngine scriptEngine;
+    private CanReader canReader;
+    private OverlayWindow overlay;
+
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
-    private DeviceController deviceController = new DeviceController();
     private Timer timer = new Timer();
     private TimerTask disposalTask;
     private DeviceObserver observer = new DeviceObserver();
-    private DeviceHandler.Observer externalObserver = null;
+    private ArrayList<DeviceHandler.Observer> externalObservers = new ArrayList<>();
+
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Create device identification task for newly attached devices
         this.deviceIdentificationTask = new UsbDeviceIdentificationTask(
                 this,
                 new UsbDeviceDetectionObserver(),
@@ -48,6 +59,14 @@ public final class DeviceService extends Service {
                         new CarduinoSerialMatcher(),
                         new GpsSerialMatcher()
                 ));
+
+        // Initialize common storage/handlers/controllers
+        this.deviceController = new DeviceController();
+        this.variableStore = new VariableStore();
+        this.scriptEngine = new ScriptEngine();
+        this.canReader = new CanReader(this.deviceController, this.variableStore, this.scriptEngine);
+        this.overlay = new OverlayWindow(this.deviceController, this.variableStore, this);
+
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
 
@@ -72,6 +91,10 @@ public final class DeviceService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        this.canReader.dispose();
+        this.variableStore.dispose();
+
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
 
@@ -134,16 +157,28 @@ public final class DeviceService extends Service {
             return DeviceService.this.deviceController.get(uid);
         }
 
-        public <FT extends Feature> void subscribe(@NonNull FeatureObserver observer, Class<FT> featureClass) {
+        public <FT extends Feature> void subscribe(@NonNull FeatureObserver<FT> observer, Class<FT> featureClass) {
             DeviceService.this.deviceController.addSubscriber(observer, featureClass);
         }
 
-        public <FT extends Feature> void unsubscribe(@NonNull FeatureObserver observer, Class<FT> featureClass) {
+        public <FT extends Feature> void unsubscribe(@NonNull FeatureObserver<FT> observer, Class<FT> featureClass) {
             DeviceService.this.deviceController.addSubscriber(observer, featureClass);
         }
 
-        public void setExternalDeviceObserver(DeviceHandler.Observer observer) {
-            DeviceService.this.externalObserver = observer;
+        public void addExternalDeviceObserver(DeviceHandler.Observer observer) {
+            DeviceService.this.externalObservers.add(observer);
+        }
+
+        public void removeExternalDeviceObserver(DeviceHandler.Observer observer) {
+            DeviceService.this.externalObservers.remove(observer);
+        }
+
+        public VariableStore getVariableStore() {
+            return DeviceService.this.variableStore;
+        }
+
+        public OverlayWindow getOverlay() {
+            return DeviceService.this.overlay;
         }
     }
 
@@ -152,23 +187,23 @@ public final class DeviceService extends Service {
         @Override
         public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
             DeviceService.this.disposeIfEmpty();
-            if (DeviceService.this.externalObserver != null) {
-                DeviceService.this.externalObserver.onStateChange(device, state, previous);
+            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
+                DeviceService.this.externalObservers.get(i).onStateChange(device, state, previous);
             }
         }
 
         @Override
         public void onFeatureAvailable(@NonNull Feature feature) {
             DeviceService.this.fireServices(servicesForDevice(feature.getDevice()));
-            if (DeviceService.this.externalObserver != null) {
-                DeviceService.this.externalObserver.onFeatureAvailable(feature);
+            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
+                DeviceService.this.externalObservers.get(i).onFeatureAvailable(feature);
             }
         }
 
         @Override
         public void onFeatureUnavailable(@NonNull Feature feature) {
-            if (DeviceService.this.externalObserver != null) {
-                DeviceService.this.externalObserver.onFeatureUnavailable(feature);
+            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
+                DeviceService.this.externalObservers.get(i).onFeatureUnavailable(feature);
             }
         }
     }

@@ -1,8 +1,14 @@
 package de.jlab.cardroid.car.nissan370z;
 
 import java.nio.ByteBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanInteractable;
+import de.jlab.cardroid.car.CanObservable;
+import de.jlab.cardroid.devices.DeviceController;
+import de.jlab.cardroid.devices.FeatureFilter;
 
 public final class AcCanController {
 
@@ -14,12 +20,24 @@ public final class AcCanController {
     private ByteBuffer canPacket541 = ByteBuffer.wrap(new byte[8]);
     private ByteBuffer canPacket542 = ByteBuffer.wrap(new byte[8]);
 
-    public AcCanController() {
+    private DeviceController deviceController;
+    private Timer broadCastTimer;
+    private FeatureFilter<CanInteractable> writeFilter = new FeatureFilter<>(CanInteractable.class, null, this::canWriterConnected, this::canWriterDisconnected);
+
+    public AcCanController(@NonNull DeviceController deviceController) {
+        this.deviceController = deviceController;
+
         this.canPacket540.put(0, (byte)0x20);
         this.canPacket540.put(1, (byte)0x64);
 
         this.canPacket542.put(0, (byte)0x18);
         this.canPacket542.put(1, (byte)0x2F);
+
+        deviceController.addSubscriber(this.writeFilter, CanInteractable.class);
+    }
+
+    public void dispose() {
+        this.deviceController.removeSubscriber(this.writeFilter);
     }
 
     public void pushOffButton() {
@@ -110,6 +128,31 @@ public final class AcCanController {
             this.roll += 1;
         } else {
             this.roll = 0;
+        }
+    }
+
+    private void canWriterConnected(@NonNull CanInteractable interactable) {
+        // FIXME: this will not work with multiple simultaneous CanInteractables
+        this.startBroadCast(interactable);
+    }
+
+    private void canWriterDisconnected(@NonNull CanInteractable interactable) {
+        this.stopBroadCast();
+    }
+
+    private void startBroadCast(@NonNull CanInteractable interactable) {
+        this.broadCastTimer = new Timer();
+        this.broadCastTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                AcCanController.this.broadcast(interactable);
+            }
+        }, 0, 250);
+    }
+
+    private void stopBroadCast() {
+        if (this.broadCastTimer != null) {
+            this.broadCastTimer.cancel();
         }
     }
 

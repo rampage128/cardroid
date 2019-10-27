@@ -54,17 +54,7 @@
             android:launchMode="singleTop" />
 
         <service
-            android:name=".car.CarService"
-            android:exported="false"
-            android:launchMode="singleTop" />
-
-        <service
             android:name=".errors.ErrorService"
-            android:exported="false"
-            android:launchMode="singleTop" />
-
-        <service
-            android:name=".overlay.OverlayService"
             android:exported="false"
             android:launchMode="singleTop" />
 
