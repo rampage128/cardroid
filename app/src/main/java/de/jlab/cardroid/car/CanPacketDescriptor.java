@@ -91,6 +91,11 @@ public final class CanPacketDescriptor implements CanObservable.CanPacketListene
 
     @Override
     public void onReceive(@NonNull CanPacket packet) {
+        // FIXME: CanPacketListeners should be addable using a filter, then we don't have to do that internally
+        if (packet.getCanId() != this.canId) {
+            return;
+        }
+
         for (int i = 0; i < this.values.size(); i++) {
             int bitOffset = 0;
             CanValue value = this.values.get(i);
