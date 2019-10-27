@@ -2,10 +2,13 @@ package de.jlab.cardroid.devices;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -32,6 +35,8 @@ import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
 //TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
 
+    Handler uiHandler;
+
     // Common storage/handlers/controllers
     private DeviceController deviceController;
     private VariableStore variableStore;
@@ -50,6 +55,8 @@ public final class DeviceService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        this.uiHandler = new Handler();
 
         // Create device identification task for newly attached devices
         this.deviceIdentificationTask = new UsbDeviceIdentificationTask(
@@ -145,6 +152,10 @@ public final class DeviceService extends Service {
         }
     }
 
+    private void runOnUiThread(Runnable runnable) {
+        this.uiHandler.post(runnable);
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -189,6 +200,18 @@ public final class DeviceService extends Service {
             DeviceService.this.disposeIfEmpty();
             for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
                 DeviceService.this.externalObservers.get(i).onStateChange(device, state, previous);
+            }
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DeviceService.this);
+            String deviceUid = prefs.getString("overlay_device_uid", null);
+            if (deviceUid != null && device.isDevice(new DeviceUid(deviceUid))) {
+                DeviceService.this.runOnUiThread(() -> {
+                    if (state == DeviceHandler.State.READY) {
+                        DeviceService.this.overlay.create();
+                    } else if (state == DeviceHandler.State.INVALID) {
+                        DeviceService.this.overlay.destroy();
+                    }
+                });
             }
         }
 

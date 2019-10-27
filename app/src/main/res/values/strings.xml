@@ -45,6 +45,8 @@
     <string name="pref_title_overlay_toggle">Show Overlay</string>
     <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 
+    <string name="pref_title_overlay_device">Use Device</string>
+
     <string name="pref_title_overlay_temperature_range">Temperature range</string>
     <string name="pref_title_overlay_temperature_min">Temperature minimum</string>
     <string name="pref_description_overlay_temperature_min">Minimum allowed value of temperature adjustment</string>

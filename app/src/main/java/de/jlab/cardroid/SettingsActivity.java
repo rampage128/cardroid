@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -21,11 +22,19 @@ import android.provider.Settings;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.devices.storage.DeviceRepository;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -199,6 +208,33 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_max"));
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_min"));
             bindPreferenceSummaryToValue(findPreference("overlay_fan_max"));
+            bindPreferenceSummaryToValue(findPreference("overlay_device_uid"));
+
+            ListPreference devicePreference = (ListPreference)findPreference("overlay_device_uid");
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    DeviceRepository deviceRepo = new DeviceRepository(getActivity().getApplication());
+                    List<DeviceEntity> deviceEntities = deviceRepo.getAllSynchronous();
+                    String[] deviceNames = new String[deviceEntities.size()];
+                    String[] deviceUids = new String[deviceEntities.size()];
+                    int selectedIndex = -1;
+                    for (int i = 0; i < deviceEntities.size(); i++) {
+                        DeviceEntity deviceEntity = deviceEntities.get(i);
+                        deviceNames[i] = deviceEntity.displayName;
+                        deviceUids[i] = deviceEntity.deviceUid.toString();
+                        if (Objects.equals(devicePreference.getValue(), deviceEntity.deviceUid.toString())) {
+                            selectedIndex = i;
+                        }
+                    }
+
+                    devicePreference.setEntries(deviceNames);
+                    devicePreference.setEntryValues(deviceUids);
+                    devicePreference.setValueIndex(selectedIndex);
+
+                    return null;
+                }
+            }.execute();
 
             overlayPermissionPreference = (SwitchPreference)findPreference("overlay_active");
 
