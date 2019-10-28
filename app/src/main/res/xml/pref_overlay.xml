@@ -8,9 +8,8 @@
 
 
     <ListPreference
-        android:defaultValue="null"
         android:key="overlay_device_uid"
-        android:title="@string/pref_title_overlay_device"
+        android:title="@string/pref_title_device"
         />
 
     <PreferenceCategory

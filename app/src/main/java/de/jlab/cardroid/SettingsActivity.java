@@ -2,6 +2,7 @@ package de.jlab.cardroid;
 
 
 import android.annotation.TargetApi;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,16 +23,11 @@ import android.provider.Settings;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
@@ -211,32 +207,7 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("overlay_device_uid"));
 
             ListPreference devicePreference = (ListPreference)findPreference("overlay_device_uid");
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... voids) {
-                    DeviceRepository deviceRepo = new DeviceRepository(getActivity().getApplication());
-                    List<DeviceEntity> deviceEntities = deviceRepo.getAllSynchronous();
-                    String[] deviceNames = new String[deviceEntities.size()];
-                    String[] deviceUids = new String[deviceEntities.size()];
-                    int selectedIndex = -1;
-                    for (int i = 0; i < deviceEntities.size(); i++) {
-                        DeviceEntity deviceEntity = deviceEntities.get(i);
-                        deviceNames[i] = deviceEntity.displayName;
-                        deviceUids[i] = deviceEntity.deviceUid.toString();
-                        if (Objects.equals(devicePreference.getValue(), deviceEntity.deviceUid.toString())) {
-                            selectedIndex = i;
-                        }
-                    }
-
-                    devicePreference.setEntries(deviceNames);
-                    devicePreference.setEntryValues(deviceUids);
-                    if (selectedIndex > -1 && selectedIndex < deviceNames.length) {
-                        devicePreference.setSummary(deviceNames[selectedIndex]);
-                    }
-
-                    return null;
-                }
-            }.execute();
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
 
             overlayPermissionPreference = (SwitchPreference)findPreference("overlay_active");
 
@@ -358,6 +329,10 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_gps);
             setHasOptionsMenu(true);
             bindPreferenceSummaryToValue(findPreference("gps_baud_rate"));
+            bindPreferenceSummaryToValue(findPreference("gps_device_uid"));
+
+            ListPreference devicePreference = (ListPreference)findPreference("gps_device_uid");
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
         }
 
         @Override
@@ -459,4 +434,45 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(getContext());
         }
     }
+
+    private static class DeviceListTask extends AsyncTask<ListPreference, Void, Void> {
+
+        private Application application;
+
+        public DeviceListTask(@NonNull Application application) {
+            this.application = application;
+        }
+
+        @Override
+        protected Void doInBackground(ListPreference... preferences) {
+            DeviceRepository deviceRepo = new DeviceRepository(this.application);
+            List<DeviceEntity> deviceEntities = deviceRepo.getAllSynchronous();
+            String[] deviceNames = new String[deviceEntities.size() + 1];
+            String[] deviceUids = new String[deviceEntities.size() + 1];
+
+            int lastIndex = deviceEntities.size();
+
+            deviceUids[lastIndex] = "";
+            deviceNames[lastIndex] = this.application.getString(R.string.pref_device_none);
+
+            for (ListPreference preference : preferences) {
+                int selectedIndex = lastIndex;
+                for (int i = 0; i < deviceEntities.size(); i++) {
+                    DeviceEntity deviceEntity = deviceEntities.get(i);
+                    deviceNames[i] = deviceEntity.displayName;
+                    deviceUids[i] = deviceEntity.deviceUid.toString();
+                    if (Objects.equals(preference.getValue(), deviceEntity.deviceUid.toString())) {
+                        selectedIndex = i;
+                    }
+                }
+
+                preference.setEntries(deviceNames);
+                preference.setEntryValues(deviceUids);
+                preference.setSummary(deviceNames[selectedIndex]);
+            }
+
+            return null;
+        }
+    }
+
 }

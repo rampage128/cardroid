@@ -26,13 +26,11 @@ import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
 import de.jlab.cardroid.errors.ErrorService;
+import de.jlab.cardroid.gps.GpsService;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleService;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.VariableStore;
-
-import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
-
 
 //TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
@@ -47,6 +45,7 @@ public final class DeviceService extends Service {
     private OverlayWindow overlay;
     private RuleService ruleService;
     private ErrorService errorService;
+    private GpsService gpsService;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
@@ -79,6 +78,7 @@ public final class DeviceService extends Service {
         this.overlay = new OverlayWindow(this.deviceController, this.variableStore, this);
         this.ruleService = new RuleService(this.deviceController, this.getApplication());
         this.errorService = new ErrorService(this.deviceController, this);
+        this.gpsService = new GpsService(this.deviceController, this);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -109,6 +109,7 @@ public final class DeviceService extends Service {
         this.variableStore.dispose();
         this.ruleService.dispose();
         this.errorService.dispose();
+        this.gpsService.dispose();
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
@@ -149,15 +150,6 @@ public final class DeviceService extends Service {
     private void deviceDetected(@NonNull DeviceHandler device) {
         device.addObserver(this.observer);
         deviceController.add(device);
-    }
-
-
-    private void fireServices(ArrayList<Class<? extends Service>> services) {
-        for (int i = 0; i < services.size(); i++) {
-            Class<? extends Service> serviceClass = services.get(i);
-            Intent action = new Intent(this.getApplicationContext(), serviceClass);
-            this.getApplicationContext().startService(action);
-        }
     }
 
     private void runOnUiThread(Runnable runnable) {
@@ -225,7 +217,6 @@ public final class DeviceService extends Service {
 
         @Override
         public void onFeatureAvailable(@NonNull Feature feature) {
-            DeviceService.this.fireServices(servicesForDevice(feature.getDevice()));
             for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
                 DeviceService.this.externalObservers.get(i).onFeatureAvailable(feature);
             }

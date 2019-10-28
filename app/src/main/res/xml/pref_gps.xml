@@ -8,6 +8,11 @@
         android:entryValues="@array/gps_baud_rates"
         />
 
+    <ListPreference
+        android:key="gps_device_uid"
+        android:title="@string/pref_title_device"
+        />
+
     <Preference
         android:key="gps_monitor"
         android:title="@string/pref_title_gps_monitor"
