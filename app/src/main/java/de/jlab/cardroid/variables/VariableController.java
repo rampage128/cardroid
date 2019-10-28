@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 
-public final class VariableStore {
+public final class VariableController {
 
     private HashMap<String, Variable> variables = new HashMap<>();
     private HashMap<String, ArrayList<Variable.VariableChangeListener>> subscribers = new HashMap<>();

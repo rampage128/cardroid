@@ -28,7 +28,7 @@ import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
 import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.variables.Variable;
-import de.jlab.cardroid.variables.VariableStore;
+import de.jlab.cardroid.variables.VariableController;
 
 /**
  * @deprecated OverlayWindow is static legacy code. This has to be replaced with the coming "screens" feature.
@@ -42,7 +42,7 @@ public class OverlayWindow {
 
     private Handler uiHandler;
     private DeviceController deviceController;
-    private VariableStore variableStore;
+    private VariableController variableStore;
     private Context context;
 
     private WindowManager windowManager;
@@ -152,7 +152,7 @@ public class OverlayWindow {
         updateUi();
     };
 
-    public OverlayWindow(@NonNull DeviceController deviceController, @NonNull VariableStore variableStore, @NonNull Context context) {
+    public OverlayWindow(@NonNull DeviceController deviceController, @NonNull VariableController variableStore, @NonNull Context context) {
         this.deviceController = deviceController;
         this.variableStore = variableStore;
         this.context = context;

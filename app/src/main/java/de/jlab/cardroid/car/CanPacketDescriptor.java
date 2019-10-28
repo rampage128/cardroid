@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.variables.ScriptEngine;
-import de.jlab.cardroid.variables.VariableStore;
+import de.jlab.cardroid.variables.VariableController;
 
 public final class CanPacketDescriptor implements CanObservable.CanPacketListener {
 
@@ -21,7 +21,7 @@ public final class CanPacketDescriptor implements CanObservable.CanPacketListene
         this.canId = canId;
     }
 
-    public void registerVariables(@NonNull VariableStore variableStore, @NonNull ScriptEngine scriptEngine) {
+    public void registerVariables(@NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
         for (CanValue value : this.values) {
             value.register(variableStore, scriptEngine);
         }

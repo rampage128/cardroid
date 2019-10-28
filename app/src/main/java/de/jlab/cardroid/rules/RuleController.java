@@ -17,7 +17,7 @@ import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
 
-public final class RuleService {
+public final class RuleController {
 
     private KnownEvents knownEvents;
     private HashMap<EventEntity, Rule> rules = new HashMap<>();
@@ -32,7 +32,7 @@ public final class RuleService {
     private Observer<? super List<RuleDefinition>> ruleUpdater = this::updateRuleDefinitions;
 
 
-    public RuleService(@NonNull DeviceController deviceController, @NonNull Application app) {
+    public RuleController(@NonNull DeviceController deviceController, @NonNull Application app) {
         this.app = app;
         this.deviceController = deviceController;
         this.deviceController.addSubscriber(this.eventFilter, EventObservable.class);

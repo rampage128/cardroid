@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.devices.FeatureFilter;
 
-public final class ErrorService {
+public final class ErrorController {
 
     private SparseArray<Error> errors = new SparseArray<>();
 
@@ -18,7 +18,7 @@ public final class ErrorService {
     private ErrorObservable.ErrorListener errorListener = this::onError;
 
 
-    public ErrorService(@NonNull DeviceController deviceController, @NonNull Context context) {
+    public ErrorController(@NonNull DeviceController deviceController, @NonNull Context context) {
         this.deviceController = deviceController;
         this.errorNotifier = new ErrorNotifier(context);
         deviceController.addSubscriber(this.errorFilter, ErrorObservable.class);

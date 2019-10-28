@@ -17,7 +17,7 @@ import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.car.CanReader;
+import de.jlab.cardroid.car.CanController;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
@@ -25,12 +25,12 @@ import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
-import de.jlab.cardroid.errors.ErrorService;
-import de.jlab.cardroid.gps.GpsService;
+import de.jlab.cardroid.errors.ErrorController;
+import de.jlab.cardroid.gps.GpsController;
 import de.jlab.cardroid.overlay.OverlayWindow;
-import de.jlab.cardroid.rules.RuleService;
+import de.jlab.cardroid.rules.RuleController;
 import de.jlab.cardroid.variables.ScriptEngine;
-import de.jlab.cardroid.variables.VariableStore;
+import de.jlab.cardroid.variables.VariableController;
 
 //TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
@@ -39,13 +39,13 @@ public final class DeviceService extends Service {
 
     // Common storage/handlers/controllers
     private DeviceController deviceController;
-    private VariableStore variableStore;
+    private VariableController variableController;
     private ScriptEngine scriptEngine;
-    private CanReader canReader;
+    private CanController canController;
     private OverlayWindow overlay;
-    private RuleService ruleService;
-    private ErrorService errorService;
-    private GpsService gpsService;
+    private RuleController ruleController;
+    private ErrorController errorController;
+    private GpsController gpsController;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
@@ -72,13 +72,13 @@ public final class DeviceService extends Service {
 
         // Initialize common storage/handlers/controllers
         this.deviceController = new DeviceController();
-        this.variableStore = new VariableStore();
+        this.variableController = new VariableController();
         this.scriptEngine = new ScriptEngine();
-        this.canReader = new CanReader(this.deviceController, this.variableStore, this.scriptEngine);
-        this.overlay = new OverlayWindow(this.deviceController, this.variableStore, this);
-        this.ruleService = new RuleService(this.deviceController, this.getApplication());
-        this.errorService = new ErrorService(this.deviceController, this);
-        this.gpsService = new GpsService(this.deviceController, this);
+        this.canController = new CanController(this.deviceController, this.variableController, this.scriptEngine);
+        this.overlay = new OverlayWindow(this.deviceController, this.variableController, this);
+        this.ruleController = new RuleController(this.deviceController, this.getApplication());
+        this.errorController = new ErrorController(this.deviceController, this);
+        this.gpsController = new GpsController(this.deviceController, this);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -105,11 +105,11 @@ public final class DeviceService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        this.canReader.dispose();
-        this.variableStore.dispose();
-        this.ruleService.dispose();
-        this.errorService.dispose();
-        this.gpsService.dispose();
+        this.canController.dispose();
+        this.variableController.dispose();
+        this.ruleController.dispose();
+        this.errorController.dispose();
+        this.gpsController.dispose();
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
@@ -184,8 +184,8 @@ public final class DeviceService extends Service {
             DeviceService.this.externalObservers.remove(observer);
         }
 
-        public VariableStore getVariableStore() {
-            return DeviceService.this.variableStore;
+        public VariableController getVariableStore() {
+            return DeviceService.this.variableController;
         }
 
         public OverlayWindow getOverlay() {

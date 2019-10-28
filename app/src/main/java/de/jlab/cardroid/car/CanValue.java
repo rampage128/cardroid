@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import de.jlab.cardroid.variables.ObservableValue;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.Variable;
-import de.jlab.cardroid.variables.VariableStore;
+import de.jlab.cardroid.variables.VariableController;
 
 public final class CanValue extends ObservableValue {
 
@@ -49,7 +49,7 @@ public final class CanValue extends ObservableValue {
         this.maxValue = (long)Math.pow(2, this.bitLength) - 1;
     }
 
-    public void register(@NonNull VariableStore variableStore, @NonNull ScriptEngine scriptEngine) {
+    public void register(@NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
         if (this.expression != null && this.expression.trim().length() > 0 && !this.expression.trim().equals("value")) {
             variableStore.registerVariable(Variable.createFromExpression(this.name, this.expression, this, new ObservableValue(this.maxValue), scriptEngine));
         } else {

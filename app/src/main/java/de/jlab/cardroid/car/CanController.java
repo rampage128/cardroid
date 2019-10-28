@@ -11,14 +11,14 @@ import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.devices.FeatureFilter;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.variables.ScriptEngine;
-import de.jlab.cardroid.variables.VariableStore;
+import de.jlab.cardroid.variables.VariableController;
 
-public final class CanReader {
+public final class CanController {
 
     private DeviceController deviceController;
     private HashMap<DeviceUid, CanConfig> canConfigs = new HashMap<>();
 
-    public CanReader(@NonNull DeviceController deviceController, @NonNull VariableStore variableStore, @NonNull ScriptEngine scriptEngine) {
+    public CanController(@NonNull DeviceController deviceController, @NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
         this.deviceController = deviceController;
 
         // load variables from database
@@ -42,7 +42,7 @@ public final class CanReader {
         config.addCanValues(canId, values);
     }
 
-    private void loadVariables(@NonNull VariableStore variableStore, @NonNull ScriptEngine scriptEngine) {
+    private void loadVariables(@NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
         // TODO: read can variables from database
         this.addCanValues(0x002, null,
                 new CanValue("steeringWheelAngle", "(value - (max / 2)) / 10",
@@ -197,7 +197,7 @@ public final class CanReader {
             }
         }
 
-        public void registerVariables(@NonNull VariableStore variableStore, @NonNull ScriptEngine scriptEngine) {
+        public void registerVariables(@NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
             for(int i = 0; i < this.packetDescriptors.size(); i++) {
                 this.packetDescriptors.valueAt(i).registerVariables(variableStore, scriptEngine);
             }

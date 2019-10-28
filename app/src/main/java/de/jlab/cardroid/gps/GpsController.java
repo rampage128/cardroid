@@ -22,7 +22,7 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 
 /// Class responsible for providing a mock location to the system
-public class GpsService {
+public class GpsController {
 
     private Context context;
     private DeviceController deviceController;
@@ -30,7 +30,7 @@ public class GpsService {
     private FeatureFilter<GpsObservable> gpsFilter = new FeatureFilter<>(GpsObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
     private GpsObservable.PositionListener positionListener = this::updatePosition;
 
-    public GpsService(@NonNull DeviceController deviceController, @NonNull Context context) {
+    public GpsController(@NonNull DeviceController deviceController, @NonNull Context context) {
         this.deviceController = deviceController;
         this.context = context;
 
@@ -85,8 +85,8 @@ public class GpsService {
     private void updatePosition(@NonNull GpsPosition position, String sentence) {
         if (position.hasValidLocation()) {
             // FIXME: this can cause a crash if fine location permission is not granted
-            GpsService.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position.getLocation());
-            GpsService.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
+            GpsController.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position.getLocation());
+            GpsController.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
         }
     }
 
