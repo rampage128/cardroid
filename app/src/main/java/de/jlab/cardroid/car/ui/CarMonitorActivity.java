@@ -38,6 +38,7 @@ public class CarMonitorActivity extends AppCompatActivity {
     private StatusGridAdapter connectionGridAdapter;
 
     private FeatureFilter<CanObservable> readFilter = new FeatureFilter<>(CanObservable.class, null, this::canReaderConnected, this::canReaderDisconnected);
+    private CanObservable.CanPacketListener canListener = this::onReceiveCanPacket;
 
     private DeviceService.DeviceServiceBinder serviceBinder;
     private ServiceConnection deviceServiceConnection = new ServiceConnection() {
@@ -105,12 +106,12 @@ public class CarMonitorActivity extends AppCompatActivity {
      */
 
     private void canReaderConnected(CanObservable feature) {
-        feature.addListener(this::onReceiveCanPacket);
+        feature.addListener(this.canListener);
         this.canReaderConnected = true;
     }
 
     private void canReaderDisconnected(CanObservable feature) {
-        feature.removeListener(this::onReceiveCanPacket);
+        feature.removeListener(this.canListener);
         this.canReaderConnected = false;
     }
 
