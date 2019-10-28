@@ -7,14 +7,14 @@ import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPositionParser;
 import de.jlab.cardroid.devices.serial.gps.GpsSerialReader;
-import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.UsbSerialDevice;
 
-public final class GpsUsbDeviceHandler extends UsbSerialDeviceHandler<GpsSerialReader> {
+public final class GpsUsbDevice extends UsbSerialDevice<GpsSerialReader> {
 
     private GpsPositionParser positionParser = new GpsPositionParser();
     private DeviceUid uid;
 
-    public GpsUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
+    public GpsUsbDevice(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
 
         this.uid = DeviceUid.fromUsbDevice(device);

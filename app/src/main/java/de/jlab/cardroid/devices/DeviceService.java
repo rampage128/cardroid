@@ -52,7 +52,7 @@ public final class DeviceService extends Service {
     private Timer timer = new Timer();
     private TimerTask disposalTask;
     private DeviceObserver observer = new DeviceObserver();
-    private ArrayList<DeviceHandler.Observer> externalObservers = new ArrayList<>();
+    private ArrayList<Device.Observer> externalObservers = new ArrayList<>();
 
 
     @Override
@@ -122,7 +122,7 @@ public final class DeviceService extends Service {
 
     private void usbDeviceDetached(@NonNull UsbDevice usbDevice) {
         Log.e(this.getClass().getSimpleName(), "Device detached " + usbDevice.getDeviceId());
-        DeviceHandler device = this.deviceController.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
+        Device device = this.deviceController.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
         if (device != null) {
             device.close();
         }
@@ -147,7 +147,7 @@ public final class DeviceService extends Service {
         this.timer.schedule(this.disposalTask, 20000);
     }
 
-    private void deviceDetected(@NonNull DeviceHandler device) {
+    private void deviceDetected(@NonNull Device device) {
         device.addObserver(this.observer);
         deviceController.add(device);
     }
@@ -164,7 +164,7 @@ public final class DeviceService extends Service {
 
     public class DeviceServiceBinder extends Binder {
         @Nullable
-        public DeviceHandler getDevice(@NonNull DeviceUid uid) {
+        public Device getDevice(@NonNull DeviceUid uid) {
             return DeviceService.this.deviceController.get(uid);
         }
 
@@ -176,11 +176,11 @@ public final class DeviceService extends Service {
             DeviceService.this.deviceController.addSubscriber(observer, featureClass);
         }
 
-        public void addExternalDeviceObserver(DeviceHandler.Observer observer) {
+        public void addExternalDeviceObserver(Device.Observer observer) {
             DeviceService.this.externalObservers.add(observer);
         }
 
-        public void removeExternalDeviceObserver(DeviceHandler.Observer observer) {
+        public void removeExternalDeviceObserver(Device.Observer observer) {
             DeviceService.this.externalObservers.remove(observer);
         }
 
@@ -193,10 +193,10 @@ public final class DeviceService extends Service {
         }
     }
 
-    private class DeviceObserver implements DeviceHandler.Observer {
+    private class DeviceObserver implements Device.Observer {
 
         @Override
-        public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
+        public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
             DeviceService.this.disposeIfEmpty();
             for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
                 DeviceService.this.externalObservers.get(i).onStateChange(device, state, previous);
@@ -206,9 +206,9 @@ public final class DeviceService extends Service {
             String deviceUid = prefs.getString("overlay_device_uid", null);
             if (deviceUid != null && device.isDevice(new DeviceUid(deviceUid))) {
                 DeviceService.this.runOnUiThread(() -> {
-                    if (state == DeviceHandler.State.READY) {
+                    if (state == Device.State.READY) {
                         DeviceService.this.overlay.create();
-                    } else if (state == DeviceHandler.State.INVALID) {
+                    } else if (state == Device.State.INVALID) {
                         DeviceService.this.overlay.destroy();
                     }
                 });
@@ -232,7 +232,7 @@ public final class DeviceService extends Service {
 
     private class UsbDeviceDetectionObserver implements UsbDeviceDetector.DetectionObserver {
         @Override
-        public void deviceDetected(@NonNull DeviceHandler device) {
+        public void deviceDetected(@NonNull Device device) {
             DeviceService.this.deviceDetected(device);
         }
 
@@ -242,7 +242,6 @@ public final class DeviceService extends Service {
             Log.e(this.getClass().getSimpleName(), "Detection of device failed!");
             DeviceService.this.disposeIfEmpty();
         }
-    };
-
+    }
 
 }

@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
@@ -26,14 +25,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 import de.jlab.cardroid.utils.ui.DialogUtils;
 
 /**
@@ -44,7 +43,7 @@ import de.jlab.cardroid.utils.ui.DialogUtils;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, DeviceHandler.Observer, FeatureObserver<Feature> {
+public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, Device.Observer, FeatureObserver<Feature> {
     private static final String ARG_DEVICE_ID = "deviceId";
 
     private DeviceDetailViewModel model;
@@ -139,7 +138,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
                 // TODO: Disable reboot, reset and disconnect button if device is not connected
                 // TODO: Device interactability should be determined with an Interactable directly from the device
-                boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDeviceHandler.class.getSimpleName());
+                boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDevice.class.getSimpleName());
 
                 rebootButton.setEnabled(isInteractableDevice);
                 resetButton.setEnabled(isInteractableDevice);
@@ -184,9 +183,9 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
     }
 
     @Override
-    public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
+    public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
         if (this.deviceEntity != null && device.isDevice(this.deviceEntity.deviceUid)) {
-            if (state == DeviceHandler.State.READY) {
+            if (state == Device.State.READY) {
                 this.isDeviceOnline = true;
             } else {
                 this.isDeviceOnline = false;
@@ -194,7 +193,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
             if (this.getActivity() != null) {
                 this.getActivity().runOnUiThread(() -> {
-                    boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDeviceHandler.class.getSimpleName());
+                    boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDevice.class.getSimpleName());
 
                     rebootButton.setEnabled(isInteractableDevice);
                     resetButton.setEnabled(isInteractableDevice);

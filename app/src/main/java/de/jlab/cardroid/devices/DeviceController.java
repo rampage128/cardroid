@@ -11,12 +11,12 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public final class DeviceController {
 
-    private ArrayList<DeviceHandler> devices = new ArrayList<>();
+    private ArrayList<Device> devices = new ArrayList<>();
     private HashMap<Class<? extends Feature>, ArrayList<FeatureObserver>> subscribers = new HashMap<>();
-    private DeviceHandler.Observer deviceObserver = new DeviceHandler.Observer() {
+    private Device.Observer deviceObserver = new Device.Observer() {
         @Override
-        public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
-            if (state == DeviceHandler.State.INVALID) {
+        public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+            if (state == Device.State.INVALID) {
                 DeviceController.this.remove(device);
             }
         }
@@ -55,7 +55,7 @@ public final class DeviceController {
         }
     };
 
-    public void add(@NonNull DeviceHandler device) {
+    public void add(@NonNull Device device) {
         synchronized (this.devices) {
             this.devices.add(device);
             device.addObserver(this.deviceObserver);
@@ -100,9 +100,9 @@ public final class DeviceController {
     }
 
     @Nullable
-    public DeviceHandler get(@NonNull DeviceConnectionId connectionId) {
+    public Device get(@NonNull DeviceConnectionId connectionId) {
         for (int i = 0; i < this.devices.size(); i++) {
-            DeviceHandler device = this.devices.get(i);
+            Device device = this.devices.get(i);
             if (device.isPhysicalDevice(connectionId)) {
                 return device;
             }
@@ -111,9 +111,9 @@ public final class DeviceController {
     }
 
     @Nullable
-    public DeviceHandler get(@NonNull DeviceUid uid) {
+    public Device get(@NonNull DeviceUid uid) {
         for (int i = 0; i < this.devices.size(); i++) {
-            DeviceHandler device = this.devices.get(i);
+            Device device = this.devices.get(i);
             if (device.isDevice(uid)) {
                 return device;
             }
@@ -122,8 +122,8 @@ public final class DeviceController {
     }
 
     @Nullable
-    public DeviceHandler remove(@NonNull DeviceConnectionId connectionId) {
-        DeviceHandler device = this.get(connectionId);
+    public Device remove(@NonNull DeviceConnectionId connectionId) {
+        Device device = this.get(connectionId);
         if (device != null) {
             device.close();
             this.devices.remove(device);
@@ -133,8 +133,8 @@ public final class DeviceController {
     }
 
     @Nullable
-    public DeviceHandler remove(@NonNull DeviceUid uid) {
-        DeviceHandler device = this.get(uid);
+    public Device remove(@NonNull DeviceUid uid) {
+        Device device = this.get(uid);
         if (device != null) {
             device.close();
             this.devices.remove(device);
@@ -143,7 +143,7 @@ public final class DeviceController {
         return device;
     }
 
-    public boolean remove(@NonNull DeviceHandler device) {
+    public boolean remove(@NonNull Device device) {
         device.removeObserver(this.deviceObserver);
         return this.devices.remove(device);
     }

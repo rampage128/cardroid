@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
@@ -146,11 +145,11 @@ public final class DeviceListFragment extends Fragment {
         }
     }
 
-    public static class DeviceListAdapter extends RecyclerView.Adapter<DeviceListFragment.DeviceListAdapter.ViewHolder> implements DeviceHandler.Observer {
+    public static class DeviceListAdapter extends RecyclerView.Adapter<DeviceListFragment.DeviceListAdapter.ViewHolder> implements Device.Observer {
 
         private final DeviceListFragment fragment;
         private List<DeviceEntity> mValues = new ArrayList<>();
-        private HashMap<DeviceUid, DeviceHandler> liveDevices = new HashMap<>();
+        private HashMap<DeviceUid, Device> liveDevices = new HashMap<>();
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -169,12 +168,12 @@ public final class DeviceListFragment extends Fragment {
         }
 
         @Override
-        public void onStateChange(@NonNull DeviceHandler device, @NonNull DeviceHandler.State state, @NonNull DeviceHandler.State previous) {
+        public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
             for (int i = 0; i < this.mValues.size(); i++) {
                 DeviceEntity descriptor = this.mValues.get(i);
                 if (device.isDevice(descriptor.deviceUid) && this.fragment.getActivity() != null) {
                     this.fragment.getActivity().runOnUiThread(() -> {
-                        if (state == DeviceHandler.State.READY) {
+                        if (state == Device.State.READY) {
                             liveDevices.put(descriptor.deviceUid, device);
                         } else {
                             liveDevices.remove(descriptor.deviceUid);
@@ -202,7 +201,7 @@ public final class DeviceListFragment extends Fragment {
         public void onBindViewHolder(final DeviceListFragment.DeviceListAdapter.ViewHolder holder, int position) {
             DeviceEntity descriptor = mValues.get(position);
             DeviceType type = DeviceType.get(descriptor);
-            DeviceHandler device = this.liveDevices.get(descriptor.deviceUid);
+            Device device = this.liveDevices.get(descriptor.deviceUid);
             boolean isOnline = device != null;
 
             holder.name.setText(descriptor.displayName);

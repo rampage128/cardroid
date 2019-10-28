@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 
 public final class UsbDeviceIdentificationTask {
@@ -50,7 +50,7 @@ public final class UsbDeviceIdentificationTask {
 
     private class MasterDetectionObserver implements UsbDeviceDetector.DetectionObserver {
         @Override
-        public void deviceDetected(@NonNull DeviceHandler handler) {
+        public void deviceDetected(@NonNull Device handler) {
             UsbDeviceIdentificationTask.this.observer.deviceDetected(handler);
             UsbDeviceIdentificationTask.this.endIdentification();
         }

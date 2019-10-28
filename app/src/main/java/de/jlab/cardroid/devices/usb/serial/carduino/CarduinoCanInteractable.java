@@ -7,13 +7,13 @@ import java.nio.ByteBuffer;
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.CanPacketDescriptor;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 
 public final class CarduinoCanInteractable implements CanInteractable {
 
-    private CarduinoUsbDeviceHandler device;
+    private CarduinoUsbDevice device;
 
     @Override
     public void registerCanId(@NonNull CanPacketDescriptor descriptor) {
@@ -42,12 +42,12 @@ public final class CarduinoCanInteractable implements CanInteractable {
     }
 
     @Override
-    public void setDevice(@NonNull DeviceHandler device) {
-        this.device = (CarduinoUsbDeviceHandler)device;
+    public void setDevice(@NonNull Device device) {
+        this.device = (CarduinoUsbDevice)device;
     }
 
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 

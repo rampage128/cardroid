@@ -12,7 +12,7 @@ import java.util.TimerTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.serial.SerialPacket;
 import de.jlab.cardroid.devices.serial.SerialReader;
@@ -61,7 +61,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         return connectionSuccess;
     }
 
-    protected void deviceDetected(@NonNull DeviceHandler handler) {
+    protected void deviceDetected(@NonNull Device handler) {
         Log.e(this.getClass().getSimpleName(), "Serial device detected " + handler.getClass().getSimpleName());
         this.dispose();
         super.deviceDetected(handler);
@@ -110,7 +110,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
             if (UsbSerialDeviceDetector.this.baudRates.length > UsbSerialDeviceDetector.this.currentBaudRateIndex) {
                 int baudRate = UsbSerialDeviceDetector.this.baudRates[UsbSerialDeviceDetector.this.currentBaudRateIndex];
                 for (SerialMatcher matcher : matchers) {
-                    DeviceHandler device = matcher.detect(data, this.device, baudRate, this.app);
+                    Device device = matcher.detect(data, this.device, baudRate, this.app);
                     if (device != null) {
                         deviceDetected(device);
                     }
@@ -123,7 +123,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 
     public interface SerialMatcher {
         @Nullable
-        DeviceHandler detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
+        Device detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
 
         void clear();
     }

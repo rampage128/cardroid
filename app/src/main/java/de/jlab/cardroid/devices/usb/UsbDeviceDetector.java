@@ -3,7 +3,7 @@ package de.jlab.cardroid.devices.usb;
 import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 
 public abstract class UsbDeviceDetector {
@@ -23,7 +23,7 @@ public abstract class UsbDeviceDetector {
         }
     }
 
-    protected void deviceDetected(@NonNull DeviceHandler handler) {
+    protected void deviceDetected(@NonNull Device handler) {
         this.observer.deviceDetected(handler);
     }
 
@@ -34,7 +34,7 @@ public abstract class UsbDeviceDetector {
     protected abstract boolean startIdentification(@NonNull UsbDevice device, @NonNull DeviceService service);
 
     public interface DetectionObserver {
-        void deviceDetected(@NonNull DeviceHandler handler);
+        void deviceDetected(@NonNull Device handler);
         void detectionFailed();
     }
 

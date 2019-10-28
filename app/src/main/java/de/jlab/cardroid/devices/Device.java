@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -19,7 +18,7 @@ import de.jlab.cardroid.devices.storage.DeviceRepository;
  * - create a devicehandler wrapper to unify usb and bluetooth handling
  * - create a serial connection wrapper to unify usb and bluetooth serial connection
  */
-public abstract class DeviceHandler {
+public abstract class Device {
 
     public enum State {
         ATTACHED,
@@ -36,7 +35,7 @@ public abstract class DeviceHandler {
     private DeviceConnectionId connectionId;
     private State state = State.ATTACHED;
 
-    public DeviceHandler(@NonNull Application app) {
+    public Device(@NonNull Application app) {
         this.app = app;
     }
 
@@ -78,7 +77,7 @@ public abstract class DeviceHandler {
         return this.descriptor != null && this.descriptor.deviceUid.equals(uid);
     }
 
-    public boolean equals(@NonNull DeviceHandler other) {
+    public boolean equals(@NonNull Device other) {
         return this.getClass().equals(other.getClass()) && this.descriptor != null && other.descriptor != null && this.descriptor.deviceUid.equals(other.descriptor.deviceUid);
     }
 
@@ -218,7 +217,7 @@ public abstract class DeviceHandler {
     ////////////////////////
 
     public interface Observer {
-        void onStateChange(@NonNull DeviceHandler device, @NonNull State state, @NonNull State previous);
+        void onStateChange(@NonNull Device device, @NonNull State state, @NonNull State previous);
         void onFeatureAvailable(@NonNull Feature feature);
         void onFeatureUnavailable(@NonNull Feature feature);
     }

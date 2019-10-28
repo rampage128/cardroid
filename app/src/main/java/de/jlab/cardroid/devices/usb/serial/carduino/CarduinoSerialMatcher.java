@@ -5,7 +5,7 @@ import android.hardware.usb.UsbDevice;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
@@ -22,10 +22,10 @@ public final class CarduinoSerialMatcher implements UsbSerialDeviceDetector.Seri
 
     @Nullable
     @Override
-    public DeviceHandler detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app) {
+    public Device detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app) {
         this.received += new String(data);
         if (this.received.matches(PATTERN)) {
-            return new CarduinoUsbDeviceHandler(device, baudRate, app);
+            return new CarduinoUsbDevice(device, baudRate, app);
         }
         return null;
     }

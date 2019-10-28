@@ -8,9 +8,9 @@ public interface ObservableFeature<LT extends ObservableFeature.Listener> extend
     void addListener(@NonNull LT listener);
     void removeListener(@NonNull LT listener);
 
-    void setDevice(@NonNull DeviceHandler device);
+    void setDevice(@NonNull Device device);
     @Nullable
-    DeviceHandler getDevice();
+    Device getDevice();
 
     interface Listener {}
 
