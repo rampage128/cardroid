@@ -25,6 +25,7 @@ import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
+import de.jlab.cardroid.errors.ErrorService;
 import de.jlab.cardroid.overlay.OverlayWindow;
 import de.jlab.cardroid.rules.RuleService;
 import de.jlab.cardroid.variables.ScriptEngine;
@@ -36,7 +37,7 @@ import static de.jlab.cardroid.service.ServiceStore.servicesForDevice;
 //TODO: should this be renamed to "MainService"?
 public final class DeviceService extends Service {
 
-    Handler uiHandler;
+    private Handler uiHandler;
 
     // Common storage/handlers/controllers
     private DeviceController deviceController;
@@ -45,6 +46,7 @@ public final class DeviceService extends Service {
     private CanReader canReader;
     private OverlayWindow overlay;
     private RuleService ruleService;
+    private ErrorService errorService;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
@@ -76,6 +78,7 @@ public final class DeviceService extends Service {
         this.canReader = new CanReader(this.deviceController, this.variableStore, this.scriptEngine);
         this.overlay = new OverlayWindow(this.deviceController, this.variableStore, this);
         this.ruleService = new RuleService(this.deviceController, this.getApplication());
+        this.errorService = new ErrorService(this.deviceController, this);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -105,6 +108,7 @@ public final class DeviceService extends Service {
         this.canReader.dispose();
         this.variableStore.dispose();
         this.ruleService.dispose();
+        this.errorService.dispose();
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }

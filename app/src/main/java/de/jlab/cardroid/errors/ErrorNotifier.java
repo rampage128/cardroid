@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import de.jlab.cardroid.R;
 
-public final class ErrorNotifier implements ErrorService.ErrorListener {
+public final class ErrorNotifier {
 
     private static final String CHANNEL_ID = "errors";
 
@@ -24,7 +24,6 @@ public final class ErrorNotifier implements ErrorService.ErrorListener {
         this.context = context;
     }
 
-    @Override
     public void onError(Error error) {
         this.createNotificationChannel(context);
 

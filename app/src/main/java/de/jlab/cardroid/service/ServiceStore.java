@@ -17,7 +17,6 @@ public class ServiceStore {
         if (GpsUsbDeviceHandler.class.isInstance(device)) {
             services.add(GpsService.class);
         }
-        services.add(ErrorService.class);
         return services;
     }
 }

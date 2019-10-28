@@ -1,85 +1,49 @@
 package de.jlab.cardroid.errors;
 
-import android.content.Intent;
-import android.os.IBinder;
+import android.content.Context;
 import android.util.SparseArray;
 
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.DeviceController;
+import de.jlab.cardroid.devices.FeatureFilter;
 
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.Feature;
-import de.jlab.cardroid.devices.FeatureObserver;
-import de.jlab.cardroid.service.FeatureService;
-
-public final class ErrorService extends FeatureService implements FeatureObserver<ErrorObservable> {
+public final class ErrorService {
 
     private SparseArray<Error> errors = new SparseArray<>();
 
+    private DeviceController deviceController;
     private ErrorNotifier errorNotifier;
 
-    private ArrayList<ErrorListener> externalListeners = new ArrayList<>();
-    private ErrorObservable.ErrorListener errorListener = errorNumber -> {
+    private FeatureFilter<ErrorObservable> errorFilter = new FeatureFilter<>(ErrorObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
+    private ErrorObservable.ErrorListener errorListener = this::onError;
+
+
+    public ErrorService(@NonNull DeviceController deviceController, @NonNull Context context) {
+        this.deviceController = deviceController;
+        this.errorNotifier = new ErrorNotifier(context);
+        deviceController.addSubscriber(this.errorFilter, ErrorObservable.class);
+    }
+
+    public void dispose() {
+        this.deviceController.removeSubscriber(this.errorFilter);
+    }
+
+    private void onError(int errorNumber) {
         Error error = this.errors.get(errorNumber);
         if (error == null) {
             error = new Error(errorNumber);
             this.errors.put(errorNumber, error);
         }
         error.count(errorNumber);
-
-        //Error[] errors = this.errors.values().toArray(new Error[0]);
-        //Arrays.sort(errors, (error1, error2) -> (int)(error1.getLastOccurence() - error2.getLastOccurence()));
-
         this.errorNotifier.onError(error);
-        for (int i = 0; i < this.externalListeners.size(); i++) {
-            this.externalListeners.get(i).onError(error);
-        }
-
-    };
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        this.errorNotifier = new ErrorNotifier(this);
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    private void onFeatureAvailable(@NonNull ErrorObservable feature) {
+        feature.addListener(this.errorListener);
     }
 
-    @Override
-    protected void onDeviceServiceConnected(DeviceService.DeviceServiceBinder service) {
-        service.subscribe(this, ErrorObservable.class);
-    }
-
-    @Override
-    protected void onDeviceServiceDisconnected() {
-        this.stopSelf();
-    }
-
-    @Override
-    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
-        return new ArrayList<Class<? extends Feature>>() {{
-            add(ErrorObservable.class);
-        }};
-    }
-
-    @Override
-    public void onFeatureAvailable(@NonNull ErrorObservable feature) {
-        feature.addListener(errorListener);
-    }
-
-    @Override
-    public void onFeatureUnavailable(@NonNull ErrorObservable feature) {
-        feature.removeListener(errorListener);
-    }
-
-    public interface ErrorListener {
-        void onError(Error error);
+    private void onFeatureUnavailable(@NonNull ErrorObservable feature) {
+        feature.removeListener(this.errorListener);
     }
 
 }
