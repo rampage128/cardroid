@@ -1,13 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <ListPreference
-        android:defaultValue="115200"
-        android:key="car_baud_rate"
-        android:title="@string/pref_title_car_baud_rate"
-        android:entries="@array/car_baud_rates"
-        android:entryValues="@array/car_baud_rates"
-        />
-
     <Preference
         android:key="gps_monitor"
         android:title="@string/pref_title_car_monitor"
