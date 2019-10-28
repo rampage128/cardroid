@@ -11,7 +11,7 @@ import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventDao;
 import de.jlab.cardroid.rules.storage.EventEntity;
 
-@androidx.room.Database(entities = { ActionEntity.class, EventEntity.class, DeviceEntity.class }, version = 2, exportSchema = false)
+@androidx.room.Database(entities = { ActionEntity.class, EventEntity.class, DeviceEntity.class }, version = 3, exportSchema = false)
 public abstract class CardroidDatabase extends RoomDatabase {
     public abstract ActionDao actionDao();
     public abstract EventDao eventDao();
@@ -25,7 +25,7 @@ public abstract class CardroidDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             CardroidDatabase.class, "cardroid")
-                            .fallbackToDestructiveMigrationFrom(1)
+                            .fallbackToDestructiveMigrationFrom(1, 2)
                             .build();
                 }
             }

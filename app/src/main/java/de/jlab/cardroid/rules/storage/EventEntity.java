@@ -5,12 +5,14 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceConverters;
 
-@Entity(tableName = "events")
+@Entity(tableName = "events", indices = {@Index(value = {"identifier", "device_uid"},
+        unique = true)})
 public class EventEntity {
 
     public EventEntity(int identifier, @NonNull DeviceUid deviceUid, @NonNull String name) {
