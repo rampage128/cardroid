@@ -18,7 +18,6 @@ public class ServiceStore {
             services.add(GpsService.class);
         }
         services.add(ErrorService.class);
-        services.add(RuleService.class);
         return services;
     }
 }

@@ -19,7 +19,7 @@ public final class CarduinoEventParser extends CarduinoPacketParser implements E
     @Override
     protected void handlePacket(@NonNull CarduinoSerialPacket packet) {
         for (int i = 0; i < this.listeners.size(); i++) {
-            this.listeners.get(i).onEvent(packet.getPacketId());
+            this.listeners.get(i).onEvent(packet.getPacketId(), this.device.getDeviceUid());
         }
     }
 

@@ -1,112 +1,84 @@
 package de.jlab.cardroid.rules;
 
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-import android.util.SparseArray;
+import android.app.Application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.Feature;
-import de.jlab.cardroid.devices.FeatureObserver;
+import androidx.lifecycle.Observer;
+import de.jlab.cardroid.devices.DeviceController;
+import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.carduino.EventObservable;
-import de.jlab.cardroid.errors.ErrorObservable;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.service.FeatureService;
 
-// TODO: make this a service
-public final class RuleService extends FeatureService implements FeatureObserver<EventObservable> {
+public final class RuleService {
 
     private KnownEvents knownEvents;
-    private SparseArray<Rule> rules = new SparseArray<>();
-    private ArrayList<EventObservable> eventObservables = new ArrayList<>();
-    private RuleServiceBinder binder = new RuleServiceBinder();
+    private HashMap<EventEntity, Rule> rules = new HashMap<>();
+    private FeatureFilter<EventObservable> eventFilter = new FeatureFilter<>(EventObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    private Application app;
+    private DeviceController deviceController;
+    private EventRepository eventRepo;
+
+    private EventObservable.EventListener eventTrigger = this::triggerRule;
+    private Observer<? super List<EventEntity>> knownEventUpdater = this::updateKnownEvents;
+    private Observer<? super List<RuleDefinition>> ruleUpdater = this::updateRuleDefinitions;
+
+
+    public RuleService(@NonNull DeviceController deviceController, @NonNull Application app) {
+        this.app = app;
+        this.deviceController = deviceController;
+        this.deviceController.addSubscriber(this.eventFilter, EventObservable.class);
 
         this.knownEvents = new KnownEvents();
-
-        EventRepository eventRepository = new EventRepository(this.getApplication());
-        eventRepository.getAll().observe(this, this::updateKnownEvents);
-
-        EventRepository eventRepo = new EventRepository(this.getApplication());
-        eventRepo.getAllRules().observe(this, this::updateRuleDefinitions);
+        this.eventRepo = new EventRepository(app);
+        this.eventRepo.getAll().observeForever(this.knownEventUpdater);
+        this.eventRepo.getAllRules().observeForever(this.ruleUpdater);
     }
 
-    @Override
-    public void onDestroy() {
-        for (EventObservable observable: eventObservables) {
-            observable.removeListener(this::triggerRule);
-        }
-        super.onDestroy();
+    public void dispose() {
+        this.eventRepo.getAll().removeObserver(this.knownEventUpdater);
+        this.eventRepo.getAllRules().removeObserver(this.ruleUpdater);
+        this.deviceController.removeSubscriber(this.eventFilter);
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(@NonNull Intent intent) {
-        super.onBind(intent);
-
-        return this.binder;
+    private void onFeatureAvailable(@NonNull EventObservable feature) {
+        feature.addListener(this.eventTrigger);
     }
 
-    @Override
-    protected void onDeviceServiceConnected(DeviceService.DeviceServiceBinder service) {
-        service.subscribe(this, EventObservable.class);
+    private void onFeatureUnavailable(@NonNull EventObservable feature) {
+        feature.removeListener(this.eventTrigger);
     }
 
-    @Override
-    protected void onDeviceServiceDisconnected() {
-        this.stopSelf();
-    }
+    private void triggerRule(int identifier, @NonNull DeviceUid deviceUid) {
+        Event event = this.getEvent(identifier, deviceUid);
 
-    @Override
-    public void onFeatureAvailable(@NonNull EventObservable feature) {
-        eventObservables.add(feature);
-        feature.addListener(this::triggerRule);
-    }
-
-    @Override
-    public void onFeatureUnavailable(@NonNull EventObservable feature) {
-        eventObservables.remove(feature);
-    }
-
-    @Override
-    protected ArrayList<Class<? extends Feature>> tieLifecycleToFeatures() {
-        return new ArrayList<Class<? extends Feature>>() {{
-            add(EventObservable.class);
-        }};
-    }
-
-    public void triggerRule(int eventIdentifier) {
-        Event event = this.getEvent(eventIdentifier);
-
-        Rule rule = this.rules.get(event.getIdentifier());
+        Rule rule = this.rules.get(event.getDescriptor());
         if (rule != null) {
-            rule.trigger(event, this.getApplication());
+            rule.trigger(event, this.app);
         }
     }
 
-    private Event getEvent(int eventIdentifier) {
+    private Event getEvent(int identifier, @NonNull DeviceUid deviceUid) {
+        EventEntity descriptor = new EventEntity(identifier, deviceUid, "");
+
         // Get matching event from known events
-        Event event = this.knownEvents.getEventFromIdentifier(eventIdentifier);
+        Event event = this.knownEvents.getEvent(descriptor);
 
         // Create event and insert into database if not known yet
         if (event == null) {
-            event = new Event(eventIdentifier);
+            event = new Event(descriptor);
             this.knownEvents.addEvent(event);
 
-            String eventName = Event.getLocalizedNameFromIdentifier(eventIdentifier, this.getApplication());
-            EventRepository repository = new EventRepository(this.getApplication());
-            repository.insert(new EventEntity(eventIdentifier, eventName));
+            descriptor.name = Event.getLocalizedNameFromIdentifier(identifier, this.app);
+            this.eventRepo.insert(descriptor);
         }
 
         return event;
@@ -114,17 +86,16 @@ public final class RuleService extends FeatureService implements FeatureObserver
 
     private void updateKnownEvents(@NonNull List<EventEntity> events) {
         for (EventEntity eventEntity : events) {
-            this.knownEvents.addEvent(new Event(eventEntity.identifier));
+            this.knownEvents.addEvent(new Event(eventEntity));
         }
     }
 
-
-    public void updateRuleDefinition(@NonNull RuleDefinition ruleDefinition) {
+    private void updateRuleDefinition(@NonNull RuleDefinition ruleDefinition) {
         if (ruleDefinition.actions == null || ruleDefinition.actions.isEmpty()) {
-            this.rules.remove(ruleDefinition.event.identifier);
+            this.rules.remove(ruleDefinition.event);
             return;
         }
-        Event event = this.getEvent(ruleDefinition.event.identifier);
+        Event event = this.getEvent(ruleDefinition.event.identifier, ruleDefinition.event.deviceUid);
         List<Action> actions = new ArrayList<>();
         for (ActionEntity actionEntity : ruleDefinition.actions) {
             Action action = Action.createFromEntity(actionEntity);
@@ -132,20 +103,14 @@ public final class RuleService extends FeatureService implements FeatureObserver
         }
         Rule rule = new Rule(new Trigger(event), actions.toArray(new Action[0]));
 
-        this.rules.put(ruleDefinition.event.identifier, rule);
+        this.rules.put(ruleDefinition.event, rule);
     }
 
-    public void updateRuleDefinitions(@NonNull List<RuleDefinition> definitions) {
+    private void updateRuleDefinitions(@NonNull List<RuleDefinition> definitions) {
         this.rules.clear();
 
         for (RuleDefinition definition : definitions) {
             this.updateRuleDefinition(definition);
-        }
-    }
-
-    public class RuleServiceBinder extends Binder {
-        public void updateRuleDefinition(RuleDefinition definition) {
-            RuleService.this.updateRuleDefinition(definition);
         }
     }
 

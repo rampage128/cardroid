@@ -16,7 +16,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -207,12 +209,16 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
     @Override
     public void onFeatureAvailable(@NonNull Feature feature) {
-        this.adapter.addActiveFeature(feature);
+        if (this.getActivity() != null) {
+            this.getActivity().runOnUiThread(() -> this.adapter.addActiveFeature(feature));
+        }
     }
 
     @Override
     public void onFeatureUnavailable(@NonNull Feature feature) {
-        this.adapter.removeActiveFeature(feature);
+        if (this.getActivity() != null) {
+            this.getActivity().runOnUiThread(() -> this.adapter.removeActiveFeature(feature));
+        }
     }
 
     @Override
@@ -282,7 +288,8 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
 
         private final DeviceDetailInteractionListener listener;
         private FeatureType[] mValues;
-        private HashMap<String, Feature> activeFeatures = new HashMap<>();
+        private ArrayList<FeatureType> activeFeatures = new ArrayList<>();
+        //private HashMap<String, FeatureType> activeFeatures = new HashMap<>();
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -300,11 +307,14 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
         }
 
         public void addActiveFeature(@NonNull Feature feature) {
-            this.activeFeatures.put(feature.getClass().getCanonicalName(), feature);
+            this.activeFeatures.add(FeatureType.get(Objects.requireNonNull(feature.getClass().getCanonicalName())));
+            //this.activeFeatures.put(feature.getClass().getCanonicalName(), );
+            notifyDataSetChanged();
         }
 
         public void removeActiveFeature(@NonNull Feature feature) {
-            this.activeFeatures.remove(feature.getClass().getCanonicalName());
+            this.activeFeatures.remove(FeatureType.get(Objects.requireNonNull(feature.getClass().getCanonicalName())));
+            notifyDataSetChanged();
         }
 
         @NonNull
@@ -323,7 +333,7 @@ public final class DeviceDetailFragment extends Fragment implements View.OnClick
             holder.description.setText(feature.getTypeDescription());
             holder.icon.setImageResource(feature.getTypeIcon());
 
-            if (this.activeFeatures.containsKey(feature.getClass().getSimpleName())) {
+            if (this.activeFeatures.contains(feature)) {
                 holder.status.setBackgroundResource(R.color.colorPrimaryDark);
             } else {
                 holder.status.setBackgroundResource(R.color.colorDeviceUnavailable);

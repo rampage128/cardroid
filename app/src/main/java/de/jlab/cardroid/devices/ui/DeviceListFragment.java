@@ -132,12 +132,12 @@ public final class DeviceListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            if (this.getContext() != null) {
-                this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
-            }
-        }, 500);
+        //final Handler handler = new Handler();
+        //handler.postDelayed(() -> {
+        if (this.getContext() != null) {
+            this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
+        }
+    //    }, 500);
     }
 
     private void onDeviceSelected(DeviceEntity deviceEntity) {

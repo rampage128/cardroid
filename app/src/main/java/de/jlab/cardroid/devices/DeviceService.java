@@ -26,6 +26,7 @@ import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
 import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.rules.RuleService;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.VariableStore;
 
@@ -43,6 +44,7 @@ public final class DeviceService extends Service {
     private ScriptEngine scriptEngine;
     private CanReader canReader;
     private OverlayWindow overlay;
+    private RuleService ruleService;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
     private UsbDeviceIdentificationTask deviceIdentificationTask;
@@ -73,6 +75,7 @@ public final class DeviceService extends Service {
         this.scriptEngine = new ScriptEngine();
         this.canReader = new CanReader(this.deviceController, this.variableStore, this.scriptEngine);
         this.overlay = new OverlayWindow(this.deviceController, this.variableStore, this);
+        this.ruleService = new RuleService(this.deviceController, this.getApplication());
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -101,6 +104,7 @@ public final class DeviceService extends Service {
 
         this.canReader.dispose();
         this.variableStore.dispose();
+        this.ruleService.dispose();
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }

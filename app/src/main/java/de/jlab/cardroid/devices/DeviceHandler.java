@@ -142,6 +142,14 @@ public abstract class DeviceHandler {
         }
     }
 
+    @NonNull
+    public DeviceUid getDeviceUid() {
+        if (this.descriptor == null) {
+            throw new IllegalStateException("Device does not have a DeviceUid yet. Did you call setDeviceUid(DeviceUid) first?");
+        }
+        return this.descriptor.deviceUid;
+    }
+
     protected final void setState(@NonNull State newState) {
         if (this.state.equals(newState)) {
             return;
