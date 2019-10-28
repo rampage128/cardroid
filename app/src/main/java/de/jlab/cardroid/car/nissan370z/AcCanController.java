@@ -38,6 +38,7 @@ public final class AcCanController {
 
     public void dispose() {
         this.deviceController.removeSubscriber(this.writeFilter);
+        this.stopBroadCast();
     }
 
     public void pushOffButton() {
@@ -132,7 +133,6 @@ public final class AcCanController {
     }
 
     private void canWriterConnected(@NonNull CanInteractable interactable) {
-        // FIXME: this will not work with multiple simultaneous CanInteractables
         this.startBroadCast(interactable);
     }
 
@@ -141,18 +141,21 @@ public final class AcCanController {
     }
 
     private void startBroadCast(@NonNull CanInteractable interactable) {
-        this.broadCastTimer = new Timer();
-        this.broadCastTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                AcCanController.this.broadcast(interactable);
-            }
-        }, 0, 250);
+        if (this.broadCastTimer == null) {
+            this.broadCastTimer = new Timer();
+            this.broadCastTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    AcCanController.this.broadcast(interactable);
+                }
+            }, 0, 250);
+        }
     }
 
     private void stopBroadCast() {
         if (this.broadCastTimer != null) {
             this.broadCastTimer.cancel();
+            this.broadCastTimer = null;
         }
     }
 
