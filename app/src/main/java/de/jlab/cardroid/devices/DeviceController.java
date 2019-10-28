@@ -1,6 +1,5 @@
 package de.jlab.cardroid.devices;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -126,6 +125,7 @@ public final class DeviceController {
     public DeviceHandler remove(@NonNull DeviceConnectionId connectionId) {
         DeviceHandler device = this.get(connectionId);
         if (device != null) {
+            device.close();
             this.devices.remove(device);
             device.removeObserver(this.deviceObserver);
         }
@@ -136,6 +136,7 @@ public final class DeviceController {
     public DeviceHandler remove(@NonNull DeviceUid uid) {
         DeviceHandler device = this.get(uid);
         if (device != null) {
+            device.close();
             this.devices.remove(device);
             device.removeObserver(this.deviceObserver);
         }
