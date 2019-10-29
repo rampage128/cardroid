@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.DeviceService;
 
@@ -21,20 +23,20 @@ public final class UsbDeviceIdentificationTask {
 
     private int activeDetectorIndex = 0;
     private UsbDevice activeDevice;
-    private DeviceDetectorInfo activeDeviceDetectorInfo;
+    private DeviceDetectorFilter filter;
 
     public UsbDeviceIdentificationTask(@NonNull DeviceService service, @NonNull UsbDeviceDetector.DetectionObserver observer, @NonNull UsbDeviceDetector ...detectors) {
         this.detectors.addAll(Arrays.asList(detectors));
         this.service = service;
         this.observer = observer;
+        this.filter = new DeviceDetectorFilter(this.service.getResources().getXml(R.xml.device_filter));
     }
 
     public void identify(@NonNull UsbDevice device) {
         this.activeDevice = device;
-        this.activeDeviceDetectorInfo = new DeviceDetectorInfo(this.activeDevice, this.service.getResources().getXml(R.xml.device_filter));
 
         UsbDeviceDetector detector = this.detectors.get(this.activeDetectorIndex);
-        if (this.activeDeviceDetectorInfo.isValidDetector(detector)) {
+        if (this.filter.isValidDetector(device, detector)) {
             detector.setObserver(this.masterObserver);
             detector.identify(device, this.service);
         } else {
@@ -72,42 +74,32 @@ public final class UsbDeviceIdentificationTask {
     }
 
 
-    private class DeviceDetectorInfo {
-        private UsbDevice device;
+    private class DeviceDetectorFilter {
         private XmlResourceParser parser;
-        private Set<String> classNames;
+        Set<DeviceDetectorInfo> devicesInfo;
 
-        public DeviceDetectorInfo(@NonNull UsbDevice device, @NonNull XmlResourceParser parser) {
-            this.device = device;
+        public DeviceDetectorFilter(@NonNull XmlResourceParser parser) {
             this.parser = parser;
-            this.classNames = new HashSet<String>();
+            this.devicesInfo = new HashSet<>();
             parseDetectorList();
+
         }
 
         private void parseDetectorList() {
             int eventType = -1;
             boolean deviceMatchFound = false;
+            DeviceDetectorInfo currentDeviceInfo = null;
             while (eventType != XmlResourceParser.END_DOCUMENT) {
                 try {
                     if (parser.getEventType() == XmlResourceParser.START_TAG) {
                         String nodeName = parser.getName();
                         if (nodeName.equals("usb-device")) {
-                            boolean match = false;
                             String vendorIdStr = parser.getAttributeValue(null, "vendor-id");
                             String productIdStr = parser.getAttributeValue(null, "product-id");
-                            if (vendorIdStr != null) {
-                                match = device.getVendorId() == Integer.parseInt(vendorIdStr);
-                            } else {
-                                continue;
-                            }
-                            if (productIdStr != null) {
-                                match = match && device.getProductId() == Integer.parseInt(productIdStr);
-                            }
-                            if (match) {
-                                deviceMatchFound = true;
-                            }
-                        } else if (deviceMatchFound && nodeName.equals("detector")) {
-                            classNames.add(parser.getAttributeValue(null, "class"));
+                            currentDeviceInfo = new DeviceDetectorInfo(vendorIdStr, productIdStr);
+                            this.devicesInfo.add(currentDeviceInfo);
+                        } else if (nodeName.equals("detector")) {
+                            currentDeviceInfo.addClassName(parser.getAttributeValue(null, "class"));
                         }
                     }
                     eventType = parser.next();
@@ -117,10 +109,45 @@ public final class UsbDeviceIdentificationTask {
             }
         }
 
-        public boolean isValidDetector(UsbDeviceDetector detector) {
-            return classNames.contains(detector.getClass().getSimpleName());
+        public boolean isValidDetector(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
+            for (DeviceDetectorInfo info: devicesInfo) {
+                if (info.matches(device, detector)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private class DeviceDetectorInfo {
+            String vendorId;
+            String productId;
+            private Set<String> classNames;
+            public DeviceDetectorInfo(@NonNull String vendorId, @Nullable String productId) {
+                this.vendorId = vendorId;
+                this.productId = productId;
+                this.classNames = new HashSet<String>();
+            }
+
+            public void addClassName(@NonNull String className) {
+                this.classNames.add(className);
+            }
+
+            public boolean matches(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
+                boolean match = false;
+                if (vendorId.equals(device.getVendorId())) {
+                    match = true;
+                    if (productId != null) {
+                        match = match && productId.equals(device.getProductId());
+                    }
+                }
+                if (match) {
+                    return classNames.contains(detector.getClass().getSimpleName());
+                }
+                return false;
+            }
         }
     }
+
 
 
 }
