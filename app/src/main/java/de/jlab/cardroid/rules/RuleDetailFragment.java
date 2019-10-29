@@ -114,9 +114,9 @@ public class RuleDetailFragment extends Fragment {
                 }
             }).attachToRecyclerView(recyclerView);
 
-            int eventIdentifier = getArguments().getInt(ARG_ITEM_ID);
+            int eventUid = getArguments().getInt(ARG_ITEM_ID);
             eventViewModel = ViewModelProviders.of(this).get(EventViewDetailModel.class);
-            eventViewModel.getAsRule(eventIdentifier).observe(RuleDetailFragment.this, ruleEntity -> {
+            eventViewModel.getAsRule(eventUid).observe(RuleDetailFragment.this, ruleEntity -> {
                 if (ruleEntity != null) {
                     RuleDetailFragment.this.ruleEntity = ruleEntity;
 

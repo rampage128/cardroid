@@ -91,7 +91,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     public void onEventChange(int command, EventEntity eventEntity) {
         if (command == COMMAND_EDIT) {
-            showEventDetails(eventEntity.identifier);
+            showEventDetails(eventEntity.uid);
         }
     }
 
