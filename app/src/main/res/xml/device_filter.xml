@@ -39,9 +39,4 @@
     <usb-device vendor-id="6790" product-id="29987">
         <detector class="UsbSerialDeviceDetector"/>
     </usb-device>
-
-    <!-- 0x1b71 / 0x3002: Fushicai usbtv007 -->
-    <usb-device vendor-id="7025" product-id="12290">
-        <detector class="UsbTv007DeviceDetector"/>
-    </usb-device>
 </resources>
