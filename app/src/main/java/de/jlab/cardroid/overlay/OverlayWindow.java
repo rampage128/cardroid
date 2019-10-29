@@ -20,20 +20,15 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.car.CanDataProvider;
-import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventProvider;
-import de.jlab.cardroid.devices.serial.carduino.CarduinoEventType;
-import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
+import de.jlab.cardroid.car.nissan370z.AcCanController;
+import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.variables.Variable;
+import de.jlab.cardroid.variables.VariableController;
 
 /**
  * @deprecated OverlayWindow is static legacy code. This has to be replaced with the coming "screens" feature.
@@ -46,7 +41,9 @@ public class OverlayWindow {
     private boolean isAttached = false;
 
     private Handler uiHandler;
-    private DeviceService service;
+    private DeviceController deviceController;
+    private VariableController variableStore;
+    private Context context;
 
     private WindowManager windowManager;
 
@@ -66,8 +63,7 @@ public class OverlayWindow {
     private boolean isRearWindowHeating = false;
     private int fanLevel = 0;
 
-    private Timer broadCastTimer;
-    private AcCanController acController = new AcCanController();
+    private AcCanController acController;
 
     private Runnable stopFanInteraction = new Runnable() {
         @Override
@@ -156,8 +152,10 @@ public class OverlayWindow {
         updateUi();
     };
 
-    public OverlayWindow(DeviceService service) {
-        this.service = service;
+    public OverlayWindow(@NonNull DeviceController deviceController, @NonNull VariableController variableStore, @NonNull Context context) {
+        this.deviceController = deviceController;
+        this.variableStore = variableStore;
+        this.context = context;
     }
 
     public void create() {
@@ -167,24 +165,26 @@ public class OverlayWindow {
 
         this.uiHandler = new Handler();
 
-        this.windowManager = (WindowManager) this.service.getSystemService(Context.WINDOW_SERVICE);
+        this.acController = new AcCanController(this.deviceController);
+
+        this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
         // Request user to grant permission for drawing if needed and bail out
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this.service)) {
-            Intent permissionIntent = new Intent(this.service, SettingsActivity.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+            Intent permissionIntent = new Intent(context, SettingsActivity.class);
             permissionIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.OverlayPreferenceFragment.class.getName());
             permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.service.startActivity(permissionIntent);
+            context.startActivity(permissionIntent);
             return;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.service);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.minTemp = Integer.valueOf(prefs.getString("overlay_temperature_min", "16"));
         int maxTemp = Integer.valueOf(prefs.getString("overlay_temperature_max", "30"));
         int maxFan = Integer.valueOf(prefs.getString("overlay_fan_max", "7"));
 
         // initialize views
-        viewHolder.rootView = LayoutInflater.from(this.service).inflate(R.layout.view_overlay, null);
+        viewHolder.rootView = LayoutInflater.from(context).inflate(R.layout.view_overlay, null);
 
         viewHolder.toggleButton = viewHolder.rootView.findViewById(R.id.toggleButton);
         viewHolder.mainText = (TextView)viewHolder.rootView.findViewById(R.id.mainText);
@@ -226,48 +226,32 @@ public class OverlayWindow {
         this.isAttached = true;
 
         // Make overlay toggleable
-        viewHolder.toggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle();
-            }
-        });
-        viewHolder.detailView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle();
-            }
-        });
+        viewHolder.toggleButton.setOnClickListener(v -> toggle());
+        viewHolder.detailView.setOnClickListener(v -> toggle());
 
-        View.OnClickListener buttonListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CarduinoEventProvider eventProvider = service.getDeviceProvider(CarduinoEventProvider.class);
-                if (eventProvider != null) {
-                    switch (view.getId()) {
-                        case R.id.offButton:
-                            acController.pushOffButton();
-                            break;
-                        case R.id.wshButton:
-                            acController.pushWindshieldButton();
-                            break;
-                        case R.id.rwhButton:
-                            acController.pushRearHeaterButton();
-                            break;
-                        case R.id.recirculationButton:
-                            acController.pushRecirculationButton();
-                            break;
-                        case R.id.modeButton:
-                            acController.pushModeButton();
-                            break;
-                        case R.id.autoButton:
-                            acController.pushAutoButton();
-                            break;
-                        case R.id.acButton:
-                            acController.pushAcButton();
-                            break;
-                    }
-                }
+        View.OnClickListener buttonListener = view -> {
+            switch (view.getId()) {
+                case R.id.offButton:
+                    acController.pushOffButton();
+                    break;
+                case R.id.wshButton:
+                    acController.pushWindshieldButton();
+                    break;
+                case R.id.rwhButton:
+                    acController.pushRearHeaterButton();
+                    break;
+                case R.id.recirculationButton:
+                    acController.pushRecirculationButton();
+                    break;
+                case R.id.modeButton:
+                    acController.pushModeButton();
+                    break;
+                case R.id.autoButton:
+                    acController.pushAutoButton();
+                    break;
+                case R.id.acButton:
+                    acController.pushAcButton();
+                    break;
             }
         };
         viewHolder.offButton.setOnClickListener(buttonListener);
@@ -333,32 +317,9 @@ public class OverlayWindow {
         viewHolder.detailView.setVisibility(View.GONE);
         updateUi();
         this.attachBubbleData();
-        startBroadCast();
     }
 
-    private void startBroadCast() {
-        this.broadCastTimer = new Timer();
-        this.broadCastTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                CanDataProvider provider = service.getDeviceProvider(CanDataProvider.class);
-                acController.broadcast(provider);
-            }
-        }, 0, 250);
-    }
 
-    private void stopBroadCast() {
-        if (this.broadCastTimer != null) {
-            this.broadCastTimer.cancel();
-        }
-    }
-
-    private void sendEvent(@NonNull CarduinoEventType event, @Nullable byte[] payload) {
-        CarduinoEventProvider eventProvider = this.service.getDeviceProvider(CarduinoEventProvider.class);
-        if (eventProvider != null) {
-            eventProvider.sendEvent(event, payload);
-        }
-    }
 
     private void attachBubbleData() {
         attach("hvacTargetTemperature", this.bubbleListener);
@@ -378,7 +339,7 @@ public class OverlayWindow {
 
     private void attach(String variableName, Variable.VariableChangeListener listener) {
         detach(variableName, listener);
-        this.service.getVariableStore().subscribe(variableName, listener);
+        this.variableStore.subscribe(variableName, listener);
     }
 
     private void detachBubbleData() {
@@ -398,7 +359,7 @@ public class OverlayWindow {
     }
 
     private void detach(String variableName, Variable.VariableChangeListener listener) {
-        this.service.getVariableStore().unsubscribe(variableName, listener);
+        this.variableStore.unsubscribe(variableName, listener);
     }
 
     private void roundCardViews(View v) {
@@ -415,7 +376,7 @@ public class OverlayWindow {
     }
 
     public void toggle() {
-        float elevation = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, this.service.getResources().getDisplayMetrics());
+        float elevation = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, this.context.getResources().getDisplayMetrics());
         if (this.viewHolder.detailView != null) {
             if (this.viewHolder.detailView.getVisibility() == View.GONE) {
                 this.viewHolder.toggleButton.setVisibility(View.GONE);
@@ -493,7 +454,10 @@ public class OverlayWindow {
     }
 
     public void destroy() {
-        stopBroadCast();
+        if (this.acController != null) {
+            this.acController.dispose();
+        }
+
         if (this.isAttached) {
             this.windowManager.removeView(this.viewHolder.rootView);
             this.isAttached = false;

@@ -1,11 +1,7 @@
 package de.jlab.cardroid.rules;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.MenuItem;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -16,11 +12,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.ActionRepository;
 import de.jlab.cardroid.rules.storage.EventEntity;
-import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
 
 public class RuleActivity extends AppCompatActivity implements FragmentActionListener {
@@ -30,25 +24,10 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     private int eventId = 0;
     private Fragment activeFragment;
 
-    private DeviceService.DeviceServiceBinder serviceBinder;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            RuleActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder)service;
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            RuleActivity.this.serviceBinder = null;
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rule_list);
-
-        // FIXME remove this for production
-        EventRepository repository = new EventRepository(getApplication());
-        repository.insert(new EventEntity(255, "Test Event"));
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,13 +50,11 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     protected void onPause() {
         super.onPause();
-        this.getApplicationContext().unbindService(this.serviceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -114,7 +91,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
     @Override
     public void onEventChange(int command, EventEntity eventEntity) {
         if (command == COMMAND_EDIT) {
-            showEventDetails(eventEntity.identifier);
+            showEventDetails(eventEntity.uid);
         }
     }
 
@@ -142,9 +119,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
 
     @Override
     public void onRuleChange(int command, RuleDefinition ruleDefinition) {
-        if (command == COMMAND_UPDATED) {
-            this.serviceBinder.getRuleHandler().updateRuleDefinition(ruleDefinition);
-        }
+        // Nothing to do here. Rules are now live-data!
     }
 
     private void showActionDetails(int actionId) {

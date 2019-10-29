@@ -65,25 +65,6 @@
     <string name="car_stats_bandwidth">Current: %1$dbps / Avg: %2$dbps (%3$d%%) / Usage: %4$d%%</string>
     <string name="car_stats_packets">Current: %1$dpps / Avg: %2$dpps (%3$d%%)</string>
 
-    <string name="pref_title_car_baud_rate">USB baud rate</string>
-    <string-array name="car_baud_rates">
-        <item>9600</item>
-        <item>19200</item>
-        <item>38400</item>
-        <item>57600</item>
-        <item>115200</item>
-        <item>230400</item>
-        <item>345600</item>
-        <item>460800</item>
-        <item>921600</item>
-        <!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
-        <item>250000</item>
-        <item>500000</item>
-        <item>1000000</item>
-        <item>2000000</item>
--->
-    </string-array>
-
     <string name="pref_title_car_monitor">Car monitor</string>
     <string name="pref_description_car_monitor">View status of Carduino connection</string>
 
@@ -94,12 +75,6 @@
     <string name="pref_header_gps">GPS</string>
     <string name="pref_header_description_gps">Configure an external GPS device</string>
 
-    <string name="pref_title_gps_baud_rate">GPS baud rate</string>
-    <string-array name="gps_baud_rates">
-        <item>4800</item>
-        <item>9600</item>
-    </string-array>
-
     <string name="pref_title_gps_monitor">GPS monitor</string>
     <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
 
@@ -109,6 +84,9 @@
 
     <string name="pref_header_devices">Devices</string>
     <string name="pref_header_description_devices">Manage connected devices</string>
+
+    <string name="pref_title_device">Use Device</string>
+    <string name="pref_device_none">None</string>
 
     <!-- status grids -->
     <string name="status_unavailable">N/A</string>
@@ -277,10 +255,14 @@
     <string name="device_feature_errors_description">Can notify the user about external problems</string>
     <string name="device_feature_location">GPS</string>
     <string name="device_feature_location_description">Provides location information to the system</string>
-    <string name="device_feature_events">Events</string>
-    <string name="device_feature_events_description">Sends events that can trigger user defined rules</string>
-    <string name="device_feature_can">CAN</string>
-    <string name="device_feature_can_description">Sends CAN-bus data which can be used in Variables</string>
+    <string name="device_feature_events_send">Send Events</string>
+    <string name="device_feature_events_send_description">Device sends events that can trigger user defined rules</string>
+    <string name="device_feature_events_receive">Receive Events</string>
+    <string name="device_feature_events_receive_description">Device can receive events to be controlled by the user</string>
+    <string name="device_feature_can">Send CAN-Data</string>
+    <string name="device_feature_can_description">Device sends CAN-bus data which can be used in Variables</string>
+    <string name="device_feature_can_interact">Configure CAN-Interface</string>
+    <string name="device_feature_can_interact_description">Device allows configuration of it\'s CAN-interface</string>
 
     <!-- CARDUINO ERRORS -->
     <string name="carduino_error">%1$s: %2$s x%3$d</string>

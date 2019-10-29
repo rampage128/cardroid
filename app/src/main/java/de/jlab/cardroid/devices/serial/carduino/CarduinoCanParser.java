@@ -7,34 +7,34 @@ import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
-import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
+import de.jlab.cardroid.devices.Device;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 
 public final class CarduinoCanParser extends CarduinoPacketParser implements CanObservable {
 
     private static final int CANID_OFFSET = 0;
     private static final int DATA_OFFSET = 4;
 
-    private CarduinoUsbDeviceHandler device;
+    private CarduinoUsbDevice device;
     private ArrayList<CanObservable.CanPacketListener> listeners = new ArrayList<>();
     private LongSparseArray<CanPacket> canPackets = new LongSparseArray<>();
 
-    public void addCanListener(CanObservable.CanPacketListener listener) {
+    public void addListener(@NonNull CanObservable.CanPacketListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeCanListener(CanObservable.CanPacketListener listener) {
+    public void removeListener(@NonNull CanObservable.CanPacketListener listener) {
         this.listeners.remove(listener);
     }
 
     @Override
-    public void setDevice(@NonNull DeviceHandler device) {
-        this.device = (CarduinoUsbDeviceHandler)device;
+    public void setDevice(@NonNull Device device) {
+        this.device = (CarduinoUsbDevice)device;
     }
 
     @Nullable
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 

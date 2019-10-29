@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.errors.ErrorObservable;
 
 public final class CarduinoErrorParser extends CarduinoPacketParser implements ErrorObservable {
 
-    private DeviceHandler device;
+    private Device device;
     private ArrayList<ErrorObservable.ErrorListener> errorHandlers = new ArrayList<>();
 
     @Override
@@ -27,23 +27,23 @@ public final class CarduinoErrorParser extends CarduinoPacketParser implements E
     }
 
     @Override
-    public void addErrorListener(@NonNull ErrorListener listener) {
+    public void addListener(@NonNull ErrorListener listener) {
         this.errorHandlers.add(listener);
     }
 
     @Override
-    public void removeErrorListener(@NonNull ErrorListener listener) {
+    public void removeListener(@NonNull ErrorListener listener) {
         this.errorHandlers.remove(listener);
     }
 
     @Override
-    public void setDevice(@NonNull DeviceHandler device) {
+    public void setDevice(@NonNull Device device) {
         this.device = device;
     }
 
     @Nullable
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 }

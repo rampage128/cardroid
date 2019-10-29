@@ -1,7 +1,11 @@
 package de.jlab.cardroid.car;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.variables.ObservableValue;
+import de.jlab.cardroid.variables.ScriptEngine;
+import de.jlab.cardroid.variables.Variable;
+import de.jlab.cardroid.variables.VariableController;
 
 public final class CanValue extends ObservableValue {
 
@@ -31,14 +35,26 @@ public final class CanValue extends ObservableValue {
     private int bitIndex;
     private int bitLength;
     private long maxValue;
+    private String name;
+    private String expression;
 
-    public CanValue(int bitIndex, int bitLength, @NonNull DataType type, long defaultValue) {
+    public CanValue(@NonNull String name, @Nullable String expression, int bitIndex, int bitLength, @NonNull DataType type, long defaultValue) {
         super(defaultValue);
 
+        this.name = name;
+        this.expression = expression;
         this.bitIndex = bitIndex;
         this.bitLength = bitLength;
         this.type = type;
         this.maxValue = (long)Math.pow(2, this.bitLength) - 1;
+    }
+
+    public void register(@NonNull VariableController variableStore, @NonNull ScriptEngine scriptEngine) {
+        if (this.expression != null && this.expression.trim().length() > 0 && !this.expression.trim().equals("value")) {
+            variableStore.registerVariable(Variable.createFromExpression(this.name, this.expression, this, new ObservableValue(this.maxValue), scriptEngine));
+        } else {
+            variableStore.registerVariable(Variable.createPlain(this.name, this));
+        }
     }
 
     public long getMaxValue() {
@@ -51,6 +67,10 @@ public final class CanValue extends ObservableValue {
 
     public int getBitLength() {
         return this.bitLength;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public void updateFromCanPacket(CanPacket packet, int offset) {

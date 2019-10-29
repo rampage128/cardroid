@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceDataObservable;
-import de.jlab.cardroid.devices.DeviceDataProvider;
-import de.jlab.cardroid.devices.Interactable;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoFeatureDetector;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoMetaParser;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketParser;
@@ -20,9 +18,9 @@ import de.jlab.cardroid.devices.serial.carduino.CarduinoPacketType;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialPacket;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoSerialReader;
 import de.jlab.cardroid.devices.serial.carduino.CarduinoUidGenerator;
-import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.UsbSerialDevice;
 
-public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<CarduinoSerialReader> {
+public final class CarduinoUsbDevice extends UsbSerialDevice<CarduinoSerialReader> {
 
     private boolean isReady = false;
     private ArrayList<CarduinoPacketParser> packetParsers = new ArrayList<>();
@@ -31,7 +29,7 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
 
     private byte[] carduinoId = null;
 
-    public CarduinoUsbDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
+    public CarduinoUsbDevice(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
 
         this.app = app;
@@ -56,22 +54,15 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
     }
 
     public void addDynamicFeature(@NonNull CarduinoPacketType type) {
-        Class<? extends DeviceDataProvider> providerType = type.getProviderType();
-        DeviceDataObservable observable = type.getObservable();
-        if (observable != null) {
-            this.addObservable(observable);
+        Feature[] features = type.getFeatures();
+        if (features != null) {
+            for (Feature feature : features) {
+                this.addFeature(feature);
+                if (feature instanceof CarduinoPacketParser) {
+                    getReader().addSerialPacketListener((CarduinoPacketParser)feature);
+                }
+            }
         }
-        Interactable interactable = type.getInteractable();
-        if (interactable != null) {
-            this.addInteractable(interactable);
-        }
-        if (providerType != null) {
-            this.notifyFeatureDetected(providerType);
-        }
-        if (observable instanceof CarduinoPacketParser) {
-            getReader().addSerialPacketListener((CarduinoPacketParser)observable);
-        }
-
     }
 
     @Override
@@ -100,7 +91,7 @@ public final class CarduinoUsbDeviceHandler extends UsbSerialDeviceHandler<Cardu
     }
 
     public void onHandshake() {
-        this.notifyStateChanged(State.READY);
+        this.setState(State.READY);
         this.isReady = true;
         while (!this.pendingPackets.isEmpty()) {
             this.sendImmediately(this.pendingPackets.remove(0));

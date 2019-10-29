@@ -4,14 +4,14 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 
 public final class CarduinoFeatureDetector extends CarduinoPacketParser {
 
     private ArrayList<Byte> knownPacketTypes = new ArrayList<>();
-    private CarduinoUsbDeviceHandler device;
+    private CarduinoUsbDevice device;
 
-    public CarduinoFeatureDetector(CarduinoUsbDeviceHandler device) {
+    public CarduinoFeatureDetector(CarduinoUsbDevice device) {
         this.device = device;
     }
 

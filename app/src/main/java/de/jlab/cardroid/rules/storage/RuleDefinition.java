@@ -10,7 +10,7 @@ public class RuleDefinition {
     @Embedded
     public EventEntity event;
 
-    @Relation(parentColumn = "identifier", entityColumn = "event_uid", entity = ActionEntity.class)
+    @Relation(parentColumn = "uid", entityColumn = "event_uid", entity = ActionEntity.class)
     public List<ActionEntity> actions;
 
 }

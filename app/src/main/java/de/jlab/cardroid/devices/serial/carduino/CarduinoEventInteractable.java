@@ -1,11 +1,11 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
-import de.jlab.cardroid.devices.DeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
+import de.jlab.cardroid.devices.Device;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 
 public final class CarduinoEventInteractable implements EventInteractable {
 
-    private CarduinoUsbDeviceHandler device;
+    private CarduinoUsbDevice device;
 
     @Override
     public void sendEvent(byte eventId, byte[] payload) {
@@ -13,12 +13,12 @@ public final class CarduinoEventInteractable implements EventInteractable {
     }
 
     @Override
-    public void setDevice(DeviceHandler device) {
-        this.device = (CarduinoUsbDeviceHandler)device;
+    public void setDevice(Device device) {
+        this.device = (CarduinoUsbDevice)device;
     }
 
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 }

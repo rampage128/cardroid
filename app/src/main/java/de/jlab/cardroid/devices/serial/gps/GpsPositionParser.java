@@ -4,34 +4,34 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.serial.SerialReader;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDevice;
 import de.jlab.cardroid.gps.GpsObservable;
 
 public final class GpsPositionParser implements SerialReader.SerialPacketListener<GpsSerialPacket>, GpsObservable {
 
-    private GpsUsbDeviceHandler device;
+    private GpsUsbDevice device;
     private long lastPositionTime = 0;
     private GpsPosition position = new GpsPosition();
     private ArrayList<PositionListener> positionListeners = new ArrayList<>();
 
     @Override
-    public void setDevice(@NonNull DeviceHandler device) {
-        this.device = (GpsUsbDeviceHandler)device;
+    public void setDevice(@NonNull Device device) {
+        this.device = (GpsUsbDevice)device;
     }
 
     @Nullable
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 
-    public void addPositionListener(PositionListener listener) {
+    public void addListener(@NonNull PositionListener listener) {
         this.positionListeners.add(listener);
     }
 
-    public void removePositionListener(PositionListener listener) {
+    public void removeListener(@NonNull PositionListener listener) {
         this.positionListeners.remove(listener);
     }
 

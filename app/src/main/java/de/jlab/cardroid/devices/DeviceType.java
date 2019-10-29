@@ -5,14 +5,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
+import de.jlab.cardroid.devices.usb.serial.gps.GpsUsbDevice;
 
 public enum DeviceType {
-    UNKNOWN_DEVICE(DeviceHandler.class.getSimpleName(), R.string.device_type_unknown, R.drawable.ic_device_type_unknown),
+    UNKNOWN_DEVICE(Device.class.getSimpleName(), R.string.device_type_unknown, R.drawable.ic_device_type_unknown),
     // TODO: This is not very nice. It would be way cooler if we could resolve device icon/name more specifically for carduino devices
-    CARDUINO_DEVICE(CarduinoUsbDeviceHandler.class.getSimpleName(), R.string.device_type_carduinousbdevicehandler, R.drawable.ic_device_type_carduino),
-    GPS_DEVICE(GpsUsbDeviceHandler.class.getSimpleName(), R.string.device_type_gpsusbdevicehandler, R.drawable.ic_device_type_gps);
+    CARDUINO_DEVICE(CarduinoUsbDevice.class.getSimpleName(), R.string.device_type_carduinousbdevicehandler, R.drawable.ic_device_type_carduino),
+    GPS_DEVICE(GpsUsbDevice.class.getSimpleName(), R.string.device_type_gpsusbdevicehandler, R.drawable.ic_device_type_gps);
 
     private String deviceClass;
     private int typeName;
@@ -35,7 +35,7 @@ public enum DeviceType {
     }
 
     @NonNull
-    public static DeviceType get(@NonNull Class<? extends DeviceHandler> deviceClass) {
+    public static DeviceType get(@NonNull Class<? extends Device> deviceClass) {
         for (DeviceType type : DeviceType.values()) {
             if (type.deviceClass.equals(deviceClass.getSimpleName())) {
                 return type;

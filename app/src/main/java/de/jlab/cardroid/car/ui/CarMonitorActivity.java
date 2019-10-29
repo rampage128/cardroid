@@ -13,15 +13,18 @@ import android.widget.ScrollView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.StatusGridAdapter;
-import de.jlab.cardroid.car.CanDataProvider;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.FeatureFilter;
 
-public class CarMonitorActivity extends AppCompatActivity implements CanObservable.CanPacketListener {
+public class CarMonitorActivity extends AppCompatActivity {
+
+    private boolean canReaderConnected = false;
 
     private GridView statusGridView;
 
@@ -34,21 +37,24 @@ public class CarMonitorActivity extends AppCompatActivity implements CanObservab
     private ScrollView packetListViewContainer;
     private StatusGridAdapter connectionGridAdapter;
 
+    private FeatureFilter<CanObservable> readFilter = new FeatureFilter<>(CanObservable.class, null, this::canReaderConnected, this::canReaderDisconnected);
+    private CanObservable.CanPacketListener canListener = this::onReceiveCanPacket;
+
     private DeviceService.DeviceServiceBinder serviceBinder;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             CarMonitorActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder) service;
 
             CarMonitorActivity.this.initStatusGrid();
             CarMonitorActivity.this.initConnetionGrid();
-            CarMonitorActivity.this.bindDataProvider();
+            CarMonitorActivity.this.serviceBinder.subscribe(CarMonitorActivity.this.readFilter, CanObservable.class);
             //CarMonitorActivity.this.serviceBinder.addBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
             //CarMonitorActivity.this.serviceBinder.addPacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
             CarMonitorActivity.this.carSystemListAdapter.updateFromStore(CarMonitorActivity.this.serviceBinder.getVariableStore());
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            CarMonitorActivity.this.unbindDataProvider();
+            CarMonitorActivity.this.serviceBinder.unsubscribe(CarMonitorActivity.this.readFilter, CanObservable.class);
             //CarMonitorActivity.this.serviceBinder.removeBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
             //CarMonitorActivity.this.serviceBinder.removePacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
             CarMonitorActivity.this.serviceBinder = null;
@@ -99,36 +105,14 @@ public class CarMonitorActivity extends AppCompatActivity implements CanObservab
     };
      */
 
-    private void bindDataProvider() {
-        CanDataProvider provider = this.serviceBinder.getDeviceProvider(CanDataProvider.class);
-        if (provider != null) {
-            provider.addExternalListener(this);
-        }
+    private void canReaderConnected(CanObservable feature) {
+        feature.addListener(this.canListener);
+        this.canReaderConnected = true;
     }
 
-    private void unbindDataProvider() {
-        CanDataProvider provider = this.serviceBinder.getDeviceProvider(CanDataProvider.class);
-        if (provider != null) {
-            provider.removeExternalListener(this);
-        }
-    }
-
-    @Override
-    public void onReceive(CanPacket packet) {
-        this.runOnUiThread(() -> {
-            if (this.packetListView.updatePacket(packet)) {
-                this.packetListView.invalidate();
-            }
-        });
-
-        this.updateConnection(this.carSystemGridAdapter);
-        this.updateConnection(this.connectionGridAdapter);
-        this.carSystemGridAdapter.update(R.string.car_status_variables, Integer.toString(this.carSystemListAdapter.getCount()));
-
-        this.runOnUiThread(() -> {
-            CarMonitorActivity.this.carSystemGridAdapter.notifyDataSetChanged();
-            CarMonitorActivity.this.carSystemListAdapter.notifyDataSetChanged();
-        });
+    private void canReaderDisconnected(CanObservable feature) {
+        feature.removeListener(this.canListener);
+        this.canReaderConnected = false;
     }
 
     @Override
@@ -176,13 +160,13 @@ public class CarMonitorActivity extends AppCompatActivity implements CanObservab
     protected void onPause() {
         super.onPause();
         CarMonitorActivity.this.packetListView.stopLiveMode();
-        this.getApplicationContext().unbindService(this.serviceConnection);
+        this.getApplicationContext().unbindService(this.deviceServiceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
         if (this.bottomBar.getSelectedItemId() == R.id.action_connection) {
             CarMonitorActivity.this.packetListView.startLiveMode();
         }
@@ -205,13 +189,29 @@ public class CarMonitorActivity extends AppCompatActivity implements CanObservab
     }
 
     private void updateConnection(StatusGridAdapter adapter) {
-        CanDataProvider provider = this.serviceBinder.getDeviceProvider(CanDataProvider.class);
-        if (provider != null && provider.getConnectedDeviceCount() > 0) {
+        if (this.canReaderConnected) {
             adapter.update(R.string.status_connection, this.getString(R.string.status_connected));
         }
         else {
             adapter.update(R.string.status_connection, this.getString(R.string.status_disconnected));
         }
+    }
+
+    private void onReceiveCanPacket(@NonNull CanPacket packet) {
+        this.runOnUiThread(() -> {
+            if (this.packetListView.updatePacket(packet)) {
+                this.packetListView.invalidate();
+            }
+        });
+
+        this.updateConnection(this.carSystemGridAdapter);
+        this.updateConnection(this.connectionGridAdapter);
+        this.carSystemGridAdapter.update(R.string.car_status_variables, Integer.toString(this.carSystemListAdapter.getCount()));
+
+        this.runOnUiThread(() -> {
+            CarMonitorActivity.this.carSystemGridAdapter.notifyDataSetChanged();
+            CarMonitorActivity.this.carSystemListAdapter.notifyDataSetChanged();
+        });
     }
 
 }

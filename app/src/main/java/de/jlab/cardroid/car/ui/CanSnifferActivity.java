@@ -8,12 +8,17 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.car.CanDataProvider;
+import de.jlab.cardroid.car.CanInteractable;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.utils.UsageStatistics;
 
 /**
@@ -26,7 +31,50 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanOb
     private TextView packetStatText;
     private CanView canView;
 
-    private CanDataProvider can = null;
+    private ArrayList<CanInteractable> interactables = new ArrayList<>();
+    private ArrayList<CanObservable> observables = new ArrayList<>();
+    private boolean active = false;
+    private FeatureObserver<CanInteractable> canInteractableFeatureObserver = new FeatureObserver<CanInteractable>() {
+        @Override
+        public void onFeatureAvailable(@NonNull CanInteractable feature) {
+            CanSnifferActivity.this.interactables.add(feature);
+            CanSnifferActivity.this.checkActiveStatus();
+        }
+
+        @Override
+        public void onFeatureUnavailable(@NonNull CanInteractable feature) {
+            CanSnifferActivity.this.interactables.remove(feature);
+            CanSnifferActivity.this.checkActiveStatus();
+        }
+    };
+
+    private FeatureObserver<CanObservable> canObservableFeatureObserver = new FeatureObserver<CanObservable>() {
+        @Override
+        public void onFeatureAvailable(@NonNull CanObservable feature) {
+            CanSnifferActivity.this.observables.add(feature);
+            feature.addListener(CanSnifferActivity.this);
+            CanSnifferActivity.this.checkActiveStatus();
+        }
+
+        @Override
+        public void onFeatureUnavailable(@NonNull CanObservable feature) {
+            CanSnifferActivity.this.observables.remove(feature);
+            CanSnifferActivity.this.checkActiveStatus();
+        }
+    };
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            DeviceService.DeviceServiceBinder binder = (DeviceService.DeviceServiceBinder)service;
+            binder.subscribe(canInteractableFeatureObserver, CanInteractable.class);
+            binder.subscribe(canObservableFeatureObserver, CanObservable.class);
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            CanSnifferActivity.this.interactables = new ArrayList<>();
+            CanSnifferActivity.this.observables   = new ArrayList<>();
+        }
+    };
 
     private UsageStatistics.UsageStatisticsListener bandWidthStatListener = new UsageStatistics.UsageStatisticsListener() {
         @Override
@@ -48,20 +96,17 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanOb
         }
     };
 
-    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            DeviceService.DeviceServiceBinder binder = (DeviceService.DeviceServiceBinder)service;
-            CanSnifferActivity.this.can = binder.getDeviceProvider(CanDataProvider.class);
-            if (CanSnifferActivity.this.can != null) {
-                CanSnifferActivity.this.can.startCanSniffer();
-                CanSnifferActivity.this.can.addExternalListener(CanSnifferActivity.this);
+    private void checkActiveStatus() {
+        if (this.active) {
+            for (CanInteractable i: this.interactables) {
+                i.startSniffer();
+            }
+        } else {
+            for (CanInteractable i: this.interactables) {
+                i.stopSniffer();
             }
         }
-
-        public void onServiceDisconnected(ComponentName className) {
-            CanSnifferActivity.this.can = null;
-        }
-    };
+    }
 
     @Override
     public void onReceive(CanPacket packet) {
@@ -86,19 +131,21 @@ public final class CanSnifferActivity extends AppCompatActivity implements CanOb
     @Override
     protected void onPause() {
         super.onPause();
+        this.active = false;
+        this.checkActiveStatus();
         this.canView.stopLiveMode();
 
-        if (this.can != null) {
-            this.can.stopCanSniffer();
-            this.can.removeExternalListener(this);
+        for (CanObservable o: this.observables) {
+            o.removeListener(this);
         }
-        this.getApplicationContext().unbindService(this.deviceServiceConnection);
+        this.getApplicationContext().unbindService(this.serviceConnection);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.active = true;
+        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
 
         this.canView.startLiveMode();
     }

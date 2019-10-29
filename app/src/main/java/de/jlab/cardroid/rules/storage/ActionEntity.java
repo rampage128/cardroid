@@ -15,7 +15,7 @@ import static androidx.room.ForeignKey.CASCADE;
 
 @Entity(tableName = "actions",
         foreignKeys = {
-            @ForeignKey(entity = EventEntity.class, parentColumns = "identifier", childColumns = "event_uid", onDelete = CASCADE)
+            @ForeignKey(entity = EventEntity.class, parentColumns = "uid", childColumns = "event_uid", onDelete = CASCADE)
         },
         indices = {
                 @Index("event_uid")

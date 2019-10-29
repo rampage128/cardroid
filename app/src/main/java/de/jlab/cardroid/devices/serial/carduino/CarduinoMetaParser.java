@@ -5,7 +5,7 @@ import android.app.Application;
 import java.nio.ByteBuffer;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 
 public final class CarduinoMetaParser extends CarduinoPacketParser {
 
@@ -16,14 +16,14 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
     private static final int LENGTH_CARDUINO_ID = 3;
 
     private Application app;
-    private CarduinoUsbDeviceHandler device;
+    private CarduinoUsbDevice device;
     private boolean pingReceived = false;
     private int idRetryCount = 0;
 
     private static final CarduinoSerialPacket PACKET_CONNECTION_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.CONNECTION_REQUEST, new byte[] { PROTOCOL_MAJOR });
     private static final CarduinoSerialPacket PACKET_BAUD_RATE_REQUEST = CarduinoMetaType.createPacket(CarduinoMetaType.BAUD_RATE_REQUEST, ByteBuffer.allocate(4).putInt(115200).array());
 
-    public CarduinoMetaParser(@NonNull CarduinoUsbDeviceHandler device, @NonNull Application app) {
+    public CarduinoMetaParser(@NonNull CarduinoUsbDevice device, @NonNull Application app) {
         this.device = device;
         this.app    = app;
     }

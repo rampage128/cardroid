@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -19,7 +18,7 @@ import de.jlab.cardroid.devices.storage.DeviceRepository;
  * - create a devicehandler wrapper to unify usb and bluetooth handling
  * - create a serial connection wrapper to unify usb and bluetooth serial connection
  */
-public abstract class DeviceHandler {
+public abstract class Device {
 
     public enum State {
         ATTACHED,
@@ -28,8 +27,7 @@ public abstract class DeviceHandler {
         INVALID
     }
 
-    private ArrayList<Interactable> interactables = new ArrayList<>();
-    private ArrayList<DeviceDataObservable> observables = new ArrayList<>();
+    private ArrayList<Feature> features = new ArrayList<>();
     private ArrayList<Observer> observers = new ArrayList<>();
 
     private Application app;
@@ -37,7 +35,7 @@ public abstract class DeviceHandler {
     private DeviceConnectionId connectionId;
     private State state = State.ATTACHED;
 
-    public DeviceHandler(@NonNull Application app) {
+    public Device(@NonNull Application app) {
         this.app = app;
     }
 
@@ -45,27 +43,18 @@ public abstract class DeviceHandler {
     // External methods for app interaction //
     //////////////////////////////////////////
 
+    /* TODO: Remove this, if it turns out to be obsolete
     @Nullable
-    public <InteractableType extends Interactable> InteractableType getInteractable(Class<InteractableType> interactableType) {
-        for (int i = 0; i < this.interactables.size(); i++) {
-            Interactable interactable = this.interactables.get(i);
-            if (interactableType.isInstance(interactable)) {
-                return interactableType.cast(interactable);
+    public <FeatureType extends Feature> FeatureType getFeature(Class<FeatureType> featureType) {
+        for (int i = 0; i < this.features.size(); i++) {
+            Feature feature = this.features.get(i);
+            if (featureType.isInstance(feature)) {
+                return featureType.cast(feature);
             }
         }
         return null;
     }
-
-    @Nullable
-    public <ObservableType extends DeviceDataObservable> ObservableType getObservable(Class<ObservableType> observableType) {
-        for (int i = 0; i < this.observables.size(); i++) {
-            DeviceDataObservable observable = this.observables.get(i);
-            if (observableType.isInstance(observable)) {
-                return observableType.cast(observable);
-            }
-        }
-        return null;
-    }
+    */
 
     public void addObserver(@NonNull Observer observer) {
         this.observers.add(observer);
@@ -88,7 +77,7 @@ public abstract class DeviceHandler {
         return this.descriptor != null && this.descriptor.deviceUid.equals(uid);
     }
 
-    public boolean equals(@NonNull DeviceHandler other) {
+    public boolean equals(@NonNull Device other) {
         return this.getClass().equals(other.getClass()) && this.descriptor != null && other.descriptor != null && this.descriptor.deviceUid.equals(other.descriptor.deviceUid);
     }
 
@@ -107,6 +96,10 @@ public abstract class DeviceHandler {
 
     protected final void setConnectionId(@NonNull DeviceConnectionId connectionId) {
         this.connectionId = connectionId;
+    }
+
+    public final DeviceConnectionId getConnectionId() {
+        return this.connectionId;
     }
 
     protected final void setDeviceUid(@NonNull DeviceUid uid) {
@@ -148,7 +141,15 @@ public abstract class DeviceHandler {
         }
     }
 
-    protected final void notifyStateChanged(@NonNull State newState) {
+    @NonNull
+    public DeviceUid getDeviceUid() {
+        if (this.descriptor == null) {
+            throw new IllegalStateException("Device does not have a DeviceUid yet. Did you call setDeviceUid(DeviceUid) first?");
+        }
+        return this.descriptor.deviceUid;
+    }
+
+    protected final void setState(@NonNull State newState) {
         if (this.state.equals(newState)) {
             return;
         }
@@ -164,6 +165,11 @@ public abstract class DeviceHandler {
             if (newState.ordinal() >= State.READY.ordinal() && this.descriptor == null) {
                 throw new IllegalStateException("Device can not change to state \"" + newState + "\" without a valid descriptor. Did you call setDeviceUid(DeviceUid) first?");
             }
+        } else {
+            while (!this.features.isEmpty()) {
+                Feature feature = this.features.remove(0);
+                this.removeFeature(feature);
+            }
         }
 
         State previous = this.state;
@@ -173,38 +179,47 @@ public abstract class DeviceHandler {
         }
     }
 
-    protected final void addInteractable(@NonNull Interactable interactable) {
-        this.interactables.add(interactable);
-        interactable.setDevice(this);
-    }
-
-    protected final void addObservable(@NonNull DeviceDataObservable observable) {
-        this.observables.add(observable);
-        observable.setDevice(this);
-    }
-
-    protected final void notifyFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature) {
+    protected final void addFeature(@NonNull Feature feature) {
         if (connectionId == null || this.descriptor == null) {
             throw new IllegalStateException("Device can not notify about features without a connectionId and descriptor. Did you call setConnectionId(DeviceConnectionId) and setDeviceUid(DeviceUid) first?");
         }
+
+        this.features.add(feature);
+        feature.setDevice(this);
 
         this.descriptor.addFeature(feature);
         DeviceRepository repo = new DeviceRepository(this.app);
         repo.update(this.descriptor);
 
         for (int i = 0; i < this.observers.size(); i++) {
-            this.observers.get(i).onFeatureDetected(feature, this);
+            this.observers.get(i).onFeatureAvailable(feature);
         }
     }
+
+    protected final void removeFeature(@NonNull Feature feature) {
+        if (connectionId == null || this.descriptor == null) {
+            throw new IllegalStateException("Device can not notify about features without a connectionId and descriptor. Did you call setConnectionId(DeviceConnectionId) and setDeviceUid(DeviceUid) first?");
+        }
+
+        this.features.remove(feature);
+
+        // We never remove features from the DB, so the user can browse them offline
+
+        for (int i = 0; i < this.observers.size(); i++) {
+            this.observers.get(i).onFeatureUnavailable(feature);
+        }
+    }
+
+    public final ArrayList<Feature> getFeatures() { return this.features; }
 
     ////////////////////////
     // Coupled interfaces //
     ////////////////////////
 
     public interface Observer {
-        void onStateChange(@NonNull DeviceHandler device, @NonNull State state, @NonNull State previous);
-        @Nullable
-        void onFeatureDetected(@NonNull Class<? extends DeviceDataProvider> feature, @NonNull DeviceHandler device);
+        void onStateChange(@NonNull Device device, @NonNull State state, @NonNull State previous);
+        void onFeatureAvailable(@NonNull Feature feature);
+        void onFeatureUnavailable(@NonNull Feature feature);
     }
 
 }

@@ -1,15 +1,12 @@
 package de.jlab.cardroid.gps;
 
-import de.jlab.cardroid.devices.DeviceDataObservable;
+import de.jlab.cardroid.devices.ObservableFeature;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 
-public interface GpsObservable extends DeviceDataObservable {
+public interface GpsObservable extends ObservableFeature<GpsObservable.PositionListener> {
 
-    void addPositionListener(PositionListener listener);
-    void removePositionListener(PositionListener listener);
-
-    interface PositionListener {
+    interface PositionListener extends ObservableFeature.Listener {
+        // TODO: Remove sentence from callback. That is serial shit that has to go somewhere else later
         void onUpdate(GpsPosition position, String sentence);
     }
-
 }

@@ -21,7 +21,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -155,7 +155,7 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     @Override
     public void onDeviceDisconnect(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_disconnect, R.string.action_device_disconnect_confirm, R.string.action_device_disconnect, (dialog, which) -> {
-            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            Device device = this.deviceService.getDevice(deviceEntity.deviceUid);
             if (device != null) {
                 device.close();
                 Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_disconnect_success, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
@@ -184,7 +184,7 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
     @Override
     public void onDeviceDeleted(DeviceEntity deviceEntity) {
         this.confirmDeviceAction(R.string.action_device_delete, R.string.action_device_delete_confirm, R.string.action_device_delete, (dialog, which) -> {
-            DeviceHandler device = this.deviceService.getDevice(deviceEntity.deviceUid);
+            Device device = this.deviceService.getDevice(deviceEntity.deviceUid);
             if (device != null) {
                 device.close();
             }

@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.devices.DeviceHandler;
+import de.jlab.cardroid.devices.Device;
 
 public final class CarduinoEventParser extends CarduinoPacketParser implements EventObservable {
 
-    private DeviceHandler device;
+    private Device device;
     private ArrayList<EventListener> listeners = new ArrayList<>();
 
     @Override
@@ -19,26 +19,28 @@ public final class CarduinoEventParser extends CarduinoPacketParser implements E
     @Override
     protected void handlePacket(@NonNull CarduinoSerialPacket packet) {
         for (int i = 0; i < this.listeners.size(); i++) {
-            this.listeners.get(i).onEvent(packet.getPacketId());
+            this.listeners.get(i).onEvent(packet.getPacketId(), this.device.getDeviceUid());
         }
     }
 
-    public void addEventListener(@NonNull EventListener listener) {
+    @Override
+    public void addListener(@NonNull EventListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeEventListener(@NonNull EventListener listener) {
+    @Override
+    public void removeListener(@NonNull EventListener listener) {
         this.listeners.remove(listener);
     }
 
     @Override
-    public void setDevice(@NonNull DeviceHandler device) {
+    public void setDevice(@NonNull Device device) {
         this.device = device;
     }
 
     @Nullable
     @Override
-    public DeviceHandler getDevice() {
+    public Device getDevice() {
         return this.device;
     }
 }

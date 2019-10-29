@@ -1,14 +1,13 @@
 package de.jlab.cardroid.car;
 
-import de.jlab.cardroid.devices.DeviceDataObservable;
+import androidx.annotation.NonNull;
 
-public interface CanObservable extends DeviceDataObservable {
+import de.jlab.cardroid.devices.ObservableFeature;
 
-    void addCanListener(CanPacketListener listener);
-    void removeCanListener(CanPacketListener listener);
+public interface CanObservable extends ObservableFeature<CanObservable.CanPacketListener> {
 
-    interface CanPacketListener {
-        void onReceive(CanPacket packet);
+    interface CanPacketListener extends ObservableFeature.Listener {
+        void onReceive(@NonNull CanPacket packet);
     }
 
 }

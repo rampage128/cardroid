@@ -2,21 +2,20 @@ package de.jlab.cardroid.devices.usb.serial;
 
 import android.app.Application;
 import android.content.Context;
-import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.SerialReader;
-import de.jlab.cardroid.devices.usb.UsbDeviceHandler;
+import de.jlab.cardroid.devices.usb.UsbDevice;
 
-public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> extends UsbDeviceHandler {
+public abstract class UsbSerialDevice<ReaderType extends SerialReader> extends UsbDevice {
 
     private ReaderType reader;
     private UsbSerialConnection serialPort;
     private DeviceUid uid;
 
-    public UsbSerialDeviceHandler(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
+    public UsbSerialDevice(@NonNull android.hardware.usb.UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, app);
 
         UsbManager usbManager = (UsbManager)app.getSystemService(Context.USB_SERVICE);
@@ -33,7 +32,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
         } else {
             this.onOpenFailed();
         }
-        this.notifyStateChanged(newState);
+        this.setState(newState);
     }
 
     @Override
@@ -43,7 +42,7 @@ public abstract class UsbSerialDeviceHandler<ReaderType extends SerialReader> ex
             this.serialPort.disconnect();
         }
         this.onClose(this.reader);
-        this.notifyStateChanged(State.INVALID);
+        this.setState(State.INVALID);
     }
 
     /**

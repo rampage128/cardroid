@@ -12,10 +12,10 @@ import androidx.room.Update;
 @Dao
 public interface DeviceDao {
 
-    @Query("SELECT * FROM devices")
+    @Query("SELECT * FROM devices ORDER BY display_name ASC")
     List<DeviceEntity> getAllSynchronous();
 
-    @Query("SELECT * FROM devices")
+    @Query("SELECT * FROM devices ORDER BY display_name ASC")
     LiveData<List<DeviceEntity>> getAll();
 
     @Query("SELECT * FROM devices WHERE uid = :uid")

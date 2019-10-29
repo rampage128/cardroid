@@ -1,15 +1,12 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
 import androidx.annotation.NonNull;
-import de.jlab.cardroid.devices.DeviceDataObservable;
+import de.jlab.cardroid.devices.ObservableFeature;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
-public interface EventObservable extends DeviceDataObservable {
+public interface EventObservable extends ObservableFeature<EventObservable.EventListener> {
 
-    void addEventListener(@NonNull EventListener listener);
-    void removeEventListener(@NonNull EventListener listener);
-
-    interface EventListener {
-        void onEvent(int eventNum);
+    interface EventListener extends ObservableFeature.Listener {
+        void onEvent(int eventNum, @NonNull DeviceUid deviceUid);
     }
-
 }

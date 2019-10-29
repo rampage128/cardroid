@@ -92,4 +92,14 @@ public final class CanPacket {
         return this.data;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%04X", this.canId));
+        for (byte data : this.data) {
+            sb.append(String.format(" %02X", data));
+        }
+        return sb.toString();
+    }
+
 }

@@ -15,21 +15,23 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 import de.jlab.cardroid.devices.serial.gps.GpsSatellite;
-import de.jlab.cardroid.gps.GpsDataProvider;
 import de.jlab.cardroid.gps.GpsObservable;
 
-public final class GpsMonitorActivity extends AppCompatActivity implements GpsObservable.PositionListener {
+public final class GpsMonitorActivity extends AppCompatActivity implements GpsObservable.PositionListener, FeatureObserver<GpsObservable> {
 
     private ScrollView rawDataScrollView;
     private TextView rawDataTextView;
-    private GpsDataProvider gpsProvider = null;
-
     private GridView statusGridView;
     private StatusGridAdapter statusGridAdapter;
     private StatusGridAdapter rawGridAdapter;
@@ -39,6 +41,10 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     private int sentenceCounter = 0;
     private StringBuilder rawText = new StringBuilder();
 
+    private ArrayList<GpsObservable> gpsSources = new ArrayList<>();
+    private GpsObservable currentGpsSource = null;
+
+
     private ServiceConnection gpsServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             DeviceService.DeviceServiceBinder deviceService = (DeviceService.DeviceServiceBinder)service;
@@ -46,25 +52,43 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
             GpsMonitorActivity.this.updateStatusGrid(null);
             GpsMonitorActivity.this.updateRawGrid();
             GpsMonitorActivity.this.updateSatelliteView(null);
-            GpsMonitorActivity.this.gpsProvider = deviceService.getDeviceProvider(GpsDataProvider.class);
-            if (GpsMonitorActivity.this.gpsProvider != null) {
-                GpsMonitorActivity.this.gpsProvider.addExternalListener(GpsMonitorActivity.this);
-            }
+            deviceService.subscribe(GpsMonitorActivity.this, GpsObservable.class);
+
             //gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
             //gpsService.addSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
             //gpsService.addUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            if (GpsMonitorActivity.this.gpsProvider != null) {
-                GpsMonitorActivity.this.gpsProvider.removeExternalListener(GpsMonitorActivity.this);
-            }
             //gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
             //gpsService.removeSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
             //gpsService.removeUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
             //gpsService = null;
         }
     };
+
+    @Override
+    public void onFeatureAvailable(@NonNull GpsObservable feature) {
+        // TODO: we should filter per device (User preferences, default device)
+        // For now, we use the tactic of "last connected, wins"
+        if (this.currentGpsSource != null) {
+            this.currentGpsSource.removeListener(this);
+        }
+        feature.addListener(this);
+        this.gpsSources.add(feature);
+    }
+
+    @Override
+    public void onFeatureUnavailable(@NonNull GpsObservable feature) {
+        // TODO: remove this logic once we can chose between multiple instances of the feature
+        if (this.gpsSources.contains(feature)) {
+            this.gpsSources.remove(feature);
+        }
+        if (this.gpsSources.size() > 0) {
+            GpsObservable nextFeature = this.gpsSources.remove(this.gpsSources.size() - 1);
+            onFeatureAvailable(nextFeature);
+        }
+    }
 
     /* FIXME: GPS bandwidth display has to be reintroduced somehow
     private UsageStatistics.UsageStatisticsListener bandwidthStatisticsListener = new UsageStatistics.UsageStatisticsListener() {
@@ -128,6 +152,7 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     };
      */
 
+    // TODO: probably this activity should be started with a concrete feature (from a concrete device)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -204,7 +229,7 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
 
     public void updateRawGrid() {
         String na = this.getString(R.string.status_unavailable);
-        if (this.gpsProvider != null && this.gpsProvider.getConnectedDeviceCount() > 0) {
+        if (this.gpsSources.size() > 0) {
             this.rawGridAdapter.update(R.string.status_connection, this.getString(R.string.status_connected));
         }
         else {
