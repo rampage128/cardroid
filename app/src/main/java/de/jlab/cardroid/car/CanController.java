@@ -211,11 +211,13 @@ public final class CanController {
         private void registerCanIds(CanInteractable interactable) {
             for(int i = 0; i < this.packetDescriptors.size(); i++) {
                 CanPacketDescriptor descriptor = this.packetDescriptors.valueAt(i);
+                /*
                 StringBuilder sb = new StringBuilder("Register can id " + String.format("%04X", this.packetDescriptors.valueAt(i).getCanId()) + ": ");
                 for (int y = 0; y < 8; y++) {
                     sb.append((descriptor.getByteMask() >> (7 - y)) & 0x01);
                 }
                 Log.e(this.getClass().getSimpleName(), sb.toString());
+                 */
                 interactable.registerCanId(descriptor);
             }
         }
