@@ -20,11 +20,11 @@ import androidx.annotation.Nullable;
 import de.jlab.cardroid.car.CanController;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
-import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
-import de.jlab.cardroid.devices.usb.UsbDeviceIdentificationTask;
-import de.jlab.cardroid.devices.usb.serial.UsbSerialDeviceDetector;
-import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoSerialMatcher;
-import de.jlab.cardroid.devices.usb.serial.gps.GpsSerialMatcher;
+import de.jlab.cardroid.devices.detection.UsbDeviceDetector;
+import de.jlab.cardroid.devices.detection.UsbDeviceDetectionController;
+import de.jlab.cardroid.devices.detection.UsbSerialDeviceDetector;
+import de.jlab.cardroid.devices.detection.CarduinoSerialMatcher;
+import de.jlab.cardroid.devices.detection.GpsSerialMatcher;
 import de.jlab.cardroid.errors.ErrorController;
 import de.jlab.cardroid.gps.GpsController;
 import de.jlab.cardroid.overlay.OverlayWindow;
@@ -48,7 +48,7 @@ public final class DeviceService extends Service {
     private GpsController gpsController;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
-    private UsbDeviceIdentificationTask deviceIdentificationTask;
+    private UsbDeviceDetectionController detectionController;
     private Timer timer = new Timer();
     private TimerTask disposalTask;
     private DeviceObserver observer = new DeviceObserver();
@@ -61,15 +61,6 @@ public final class DeviceService extends Service {
 
         this.uiHandler = new Handler();
 
-        // Create device identification task for newly attached devices
-        this.deviceIdentificationTask = new UsbDeviceIdentificationTask(
-                this,
-                new UsbDeviceDetectionObserver(),
-                new UsbSerialDeviceDetector(
-                        new CarduinoSerialMatcher(),
-                        new GpsSerialMatcher()
-                ));
-
         // Initialize common storage/handlers/controllers
         this.deviceController = new DeviceController();
         this.variableController = new VariableController();
@@ -79,6 +70,16 @@ public final class DeviceService extends Service {
         this.ruleController = new RuleController(this.deviceController, this.getApplication());
         this.errorController = new ErrorController(this.deviceController, this);
         this.gpsController = new GpsController(this.deviceController, this);
+
+        // Initialize DeviceDetectionController for newly attached devices
+        this.detectionController = new UsbDeviceDetectionController(
+                this,
+                this::deviceDetected,
+                this::deviceDetectionFailed,
+                new UsbSerialDeviceDetector(
+                        new CarduinoSerialMatcher(),
+                        new GpsSerialMatcher()
+                ));
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -117,7 +118,7 @@ public final class DeviceService extends Service {
     private void usbDeviceAttached(@NonNull UsbDevice device) {
         Log.e(this.getClass().getSimpleName(), "Device attached " + device.getDeviceId());
 
-        this.deviceIdentificationTask.identify(device);
+        this.detectionController.identify(device);
     }
 
     private void usbDeviceDetached(@NonNull UsbDevice usbDevice) {
@@ -147,9 +148,14 @@ public final class DeviceService extends Service {
         this.timer.schedule(this.disposalTask, 20000);
     }
 
-    private void deviceDetected(@NonNull Device device) {
+    private void deviceDetected(@NonNull Device device, @Nullable DeviceUid predictedDeviceUid) {
         device.addObserver(this.observer);
-        deviceController.add(device);
+        this.deviceController.add(device, predictedDeviceUid);
+    }
+
+    private void deviceDetectionFailed() {
+        Log.w(this.getClass().getSimpleName(), "Detection of device failed!");
+        this.disposeIfEmpty();
     }
 
     private void runOnUiThread(Runnable runnable) {
@@ -227,20 +233,6 @@ public final class DeviceService extends Service {
             for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
                 DeviceService.this.externalObservers.get(i).onFeatureUnavailable(feature);
             }
-        }
-    }
-
-    private class UsbDeviceDetectionObserver implements UsbDeviceDetector.DetectionObserver {
-        @Override
-        public void deviceDetected(@NonNull Device device) {
-            DeviceService.this.deviceDetected(device);
-        }
-
-        @Override
-        public void detectionFailed() {
-            // TODO: notify user if the attached device is not supported
-            Log.e(this.getClass().getSimpleName(), "Detection of device failed!");
-            DeviceService.this.disposeIfEmpty();
         }
     }
 

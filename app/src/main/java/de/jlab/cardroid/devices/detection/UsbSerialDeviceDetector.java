@@ -1,4 +1,4 @@
-package de.jlab.cardroid.devices.usb.serial;
+package de.jlab.cardroid.devices.detection;
 
 import android.app.Application;
 import android.content.Context;
@@ -14,9 +14,10 @@ import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.SerialPacket;
 import de.jlab.cardroid.devices.serial.SerialReader;
-import de.jlab.cardroid.devices.usb.UsbDeviceDetector;
+import de.jlab.cardroid.devices.usb.serial.UsbSerialConnection;
 
 public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 
@@ -61,10 +62,10 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         return connectionSuccess;
     }
 
-    protected void deviceDetected(@NonNull Device handler) {
+    protected void deviceDetected(@NonNull Device handler, @Nullable DeviceUid predictedDeviceUid) {
         Log.e(this.getClass().getSimpleName(), "Serial device detected " + handler.getClass().getSimpleName());
         this.dispose();
-        super.deviceDetected(handler);
+        super.deviceDetected(handler, predictedDeviceUid);
     }
 
     protected void detectionFailed() {
@@ -112,7 +113,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
                 for (SerialMatcher matcher : matchers) {
                     Device device = matcher.detect(data, this.device, baudRate, this.app);
                     if (device != null) {
-                        deviceDetected(device);
+                        deviceDetected(device, matcher.predictDeviceUid(this.device));
                     }
                 }
             }
@@ -124,6 +125,9 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
     public interface SerialMatcher {
         @Nullable
         Device detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
+
+        @Nullable
+        DeviceUid predictDeviceUid(@NonNull UsbDevice device);
 
         void clear();
     }

@@ -1,5 +1,7 @@
 package de.jlab.cardroid.devices;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +13,7 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public final class DeviceController {
 
+    private HashMap<DeviceUid, Device> newDeviceQueue = new HashMap<>();
     private ArrayList<Device> devices = new ArrayList<>();
     private HashMap<Class<? extends Feature>, ArrayList<FeatureObserver>> subscribers = new HashMap<>();
     private Device.Observer deviceObserver = new Device.Observer() {
@@ -18,6 +21,11 @@ public final class DeviceController {
         public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
             if (state == Device.State.INVALID) {
                 DeviceController.this.remove(device);
+                DeviceUid deviceUid = device.getDeviceUid();
+                Device newDevice = DeviceController.this.newDeviceQueue.get(deviceUid);
+                if (newDevice != null && newDevice.getClass().equals(device.getClass())) {
+                    DeviceController.this.openFromQueue(deviceUid);
+                }
             }
         }
 
@@ -55,12 +63,35 @@ public final class DeviceController {
         }
     };
 
-    public void add(@NonNull Device device) {
+    private void openFromQueue(@NonNull DeviceUid deviceUid) {
+        Device device = DeviceController.this.newDeviceQueue.remove(deviceUid);
+        if (device != null) {
+            DeviceController.this.open(device);
+            Log.e(this.getClass().getSimpleName(), "Device " + deviceUid + " opened from queue...");
+        }
+    }
+
+    private void open(@NonNull Device device) {
         synchronized (this.devices) {
             this.devices.add(device);
             device.addObserver(this.deviceObserver);
             device.open();
         }
+    }
+
+    public void add(@NonNull Device device, @Nullable DeviceUid predictedDeviceUid) {
+        if (predictedDeviceUid != null) {
+            for (Device activeDevice : this.devices) {
+                if (activeDevice.getDeviceUid().equals(predictedDeviceUid)) {
+                    Log.e(this.getClass().getSimpleName(), "Device " + predictedDeviceUid + " already in list. Queueing up ...");
+                    this.newDeviceQueue.put(predictedDeviceUid, device);
+                    return;
+                }
+            }
+        }
+
+        Log.e(this.getClass().getSimpleName(), "Opening Device " + predictedDeviceUid);
+        this.open(device);
     }
 
     public boolean isEmpty() {
