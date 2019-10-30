@@ -32,4 +32,5 @@ public final class Event {
     public boolean equals(@Nullable Event other) {
         return other != null && Objects.equals(this.descriptor, other.descriptor);
     }
+
 }
