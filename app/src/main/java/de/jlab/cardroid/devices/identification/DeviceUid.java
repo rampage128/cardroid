@@ -56,6 +56,12 @@ public final class DeviceUid {
         return this.uid;
     }
 
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj == this ||
+                (obj instanceof DeviceUid) && this.equals((DeviceUid)obj);
+    }
+
     public boolean equals(@NonNull DeviceUid other) {
         return this.uid.equals(other.uid);
     }
