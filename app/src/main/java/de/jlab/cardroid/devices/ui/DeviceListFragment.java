@@ -55,7 +55,7 @@ public final class DeviceListFragment extends Fragment {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.addExternalDeviceObserver(null);
+            deviceService.removeExternalDeviceObserver(adapter);
             deviceService = null;
         }
     };
