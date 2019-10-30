@@ -297,16 +297,6 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_car);
             setHasOptionsMenu(true);
-
-            ListPreference baudRate = (ListPreference)findPreference("car_baud_rate");
-            baudRate.setSummary(baudRate.getValue());
-            findPreference("car_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    //mainService.requestBaudRate(Integer.valueOf((String)newValue));
-                    return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
-                }
-            });
         }
 
         @Override
@@ -331,7 +321,6 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_gps);
             setHasOptionsMenu(true);
-            bindPreferenceSummaryToValue(findPreference("gps_baud_rate"));
             bindPreferenceSummaryToValue(findPreference("gps_device_uid"));
 
             ListPreference devicePreference = (ListPreference)findPreference("gps_device_uid");
