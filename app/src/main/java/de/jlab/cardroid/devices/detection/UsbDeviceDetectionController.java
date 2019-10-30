@@ -6,11 +6,9 @@ import android.util.Log;
 import java.util.Iterator;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.Device;
+import de.jlab.cardroid.devices.DeviceConnectionRequest;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public final class UsbDeviceDetectionController {
 
@@ -44,8 +42,8 @@ public final class UsbDeviceDetectionController {
         }
     }
 
-    private void deviceDetected(@NonNull Device device, @Nullable DeviceUid deviceUid) {
-        this.sink.deviceDetected(device, deviceUid);
+    private void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest) {
+        this.sink.deviceDetected(connectionRequest);
         this.endIdentification();
     }
 

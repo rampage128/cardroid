@@ -5,6 +5,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,7 +15,8 @@ import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public final class DeviceController {
 
-    private HashMap<DeviceUid, Device> newDeviceQueue = new HashMap<>();
+    private NewDeviceWaitingList newDeviceWaitingList = new NewDeviceWaitingList();
+
     private ArrayList<Device> devices = new ArrayList<>();
     private HashMap<Class<? extends Feature>, ArrayList<FeatureObserver>> subscribers = new HashMap<>();
     private Device.Observer deviceObserver = new Device.Observer() {
@@ -21,11 +24,6 @@ public final class DeviceController {
         public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
             if (state == Device.State.INVALID) {
                 DeviceController.this.remove(device);
-                DeviceUid deviceUid = device.getDeviceUid();
-                Device newDevice = DeviceController.this.newDeviceQueue.get(deviceUid);
-                if (newDevice != null && newDevice.getClass().equals(device.getClass())) {
-                    DeviceController.this.openFromQueue(deviceUid);
-                }
             }
         }
 
@@ -62,37 +60,6 @@ public final class DeviceController {
             }
         }
     };
-
-    private void openFromQueue(@NonNull DeviceUid deviceUid) {
-        Device device = DeviceController.this.newDeviceQueue.remove(deviceUid);
-        if (device != null) {
-            DeviceController.this.open(device);
-            Log.e(this.getClass().getSimpleName(), "Device " + deviceUid + " opened from queue...");
-        }
-    }
-
-    private void open(@NonNull Device device) {
-        synchronized (this.devices) {
-            this.devices.add(device);
-            device.addObserver(this.deviceObserver);
-            device.open();
-        }
-    }
-
-    public void add(@NonNull Device device, @Nullable DeviceUid predictedDeviceUid) {
-        if (predictedDeviceUid != null) {
-            for (Device activeDevice : this.devices) {
-                if (activeDevice.getDeviceUid().equals(predictedDeviceUid)) {
-                    Log.e(this.getClass().getSimpleName(), "Device " + predictedDeviceUid + " already in list. Queueing up ...");
-                    this.newDeviceQueue.put(predictedDeviceUid, device);
-                    return;
-                }
-            }
-        }
-
-        Log.e(this.getClass().getSimpleName(), "Opening Device " + predictedDeviceUid);
-        this.open(device);
-    }
 
     public boolean isEmpty() {
         return this.devices.size() < 1;
@@ -152,31 +119,113 @@ public final class DeviceController {
         return null;
     }
 
-    @Nullable
-    public Device remove(@NonNull DeviceConnectionId connectionId) {
+    public void add(@NonNull DeviceConnectionRequest connectionRequest) {
+        if (connectionRequest.hasIdentity()) {
+            for (Device activeDevice : this.devices) {
+                if (connectionRequest.shouldYieldFor(activeDevice)) {
+                    Log.e(this.getClass().getSimpleName(), "Device " + activeDevice + " already in list. Queueing up request from " + connectionRequest);
+                    this.newDeviceWaitingList.add(connectionRequest);
+                    return;
+                }
+            }
+        }
+
+        Log.e(this.getClass().getSimpleName(), "Opening Device " + connectionRequest);
+        this.open(connectionRequest.getDevice());
+    }
+
+    public void close(@NonNull DeviceConnectionId connectionId) {
         Device device = this.get(connectionId);
         if (device != null) {
             device.close();
-            this.devices.remove(device);
-            device.removeObserver(this.deviceObserver);
+            this.remove(device);
         }
-        return device;
     }
 
-    @Nullable
-    public Device remove(@NonNull DeviceUid uid) {
+    public void close(@NonNull DeviceUid uid) {
         Device device = this.get(uid);
         if (device != null) {
             device.close();
-            this.devices.remove(device);
-            device.removeObserver(this.deviceObserver);
+            this.remove(device);
         }
-        return device;
     }
 
-    public boolean remove(@NonNull Device device) {
+    private void open(@NonNull Device device) {
+        synchronized (this.devices) {
+            this.devices.add(device);
+            device.addObserver(this.deviceObserver);
+            device.open();
+        }
+    }
+
+    private void remove(@NonNull Device device) {
+        this.devices.remove(device);
         device.removeObserver(this.deviceObserver);
-        return this.devices.remove(device);
+
+        DeviceConnectionRequest matchingRequest = this.newDeviceWaitingList.pick(device);
+        if (matchingRequest != null) {
+            Log.e(this.getClass().getSimpleName(), "Opening device " + matchingRequest + " from queue");
+            this.open(matchingRequest.getDevice());
+        }
+    }
+
+    private static class NewDeviceWaitingList {
+
+        private static final long REQUEST_TIMEOUT = 5000;
+
+        private ArrayList<DeviceConnectionRequest> requests = new ArrayList<>();
+        private Timer timer = null;
+
+        public void add(@NonNull DeviceConnectionRequest connectionRequest) {
+            this.requests.add(connectionRequest);
+            this.startSchedule();
+        }
+
+        @Nullable
+        public DeviceConnectionRequest pick(@NonNull Device device) {
+            for (Iterator<DeviceConnectionRequest> it = this.requests.iterator(); it.hasNext(); ) {
+                DeviceConnectionRequest request = it.next();
+                if (request.shouldYieldFor(device)) {
+                    this.stopScheduleIfEmpty();
+                    it.remove();
+                    return request;
+                }
+            }
+
+            return null;
+        }
+
+        private void stopScheduleIfEmpty() {
+            if (this.requests.size() < 1) {
+                this.stopSchedule();
+            }
+        }
+
+        private void stopSchedule() {
+            if (this.timer != null) {
+                this.timer.cancel();
+                this.timer = null;
+            }
+        }
+
+        private void startSchedule() {
+            if (this.timer == null) {
+                this.timer = new Timer();
+                this.timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        for (Iterator<DeviceConnectionRequest> it = NewDeviceWaitingList.this.requests.iterator(); it.hasNext(); ) {
+                            DeviceConnectionRequest request = it.next();
+                            if (request.hasTimedOut(REQUEST_TIMEOUT)) {
+                                it.remove();
+                            }
+                        }
+                        NewDeviceWaitingList.this.stopScheduleIfEmpty();
+                    }
+                }, REQUEST_TIMEOUT, REQUEST_TIMEOUT);
+            }
+        }
+
     }
 
 }

@@ -12,9 +12,8 @@ import java.util.TimerTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.devices.Device;
+import de.jlab.cardroid.devices.DeviceConnectionRequest;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.SerialPacket;
 import de.jlab.cardroid.devices.serial.SerialReader;
 import de.jlab.cardroid.devices.usb.serial.UsbSerialConnection;
@@ -62,10 +61,10 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         return connectionSuccess;
     }
 
-    protected void deviceDetected(@NonNull Device handler, @Nullable DeviceUid predictedDeviceUid) {
-        Log.e(this.getClass().getSimpleName(), "Serial device detected " + handler.getClass().getSimpleName());
+    protected void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest) {
+        Log.e(this.getClass().getSimpleName(), "Serial device detected " + connectionRequest);
         this.dispose();
-        super.deviceDetected(handler, predictedDeviceUid);
+        super.deviceDetected(connectionRequest);
     }
 
     protected void detectionFailed() {
@@ -111,9 +110,9 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
             if (UsbSerialDeviceDetector.this.baudRates.length > UsbSerialDeviceDetector.this.currentBaudRateIndex) {
                 int baudRate = UsbSerialDeviceDetector.this.baudRates[UsbSerialDeviceDetector.this.currentBaudRateIndex];
                 for (SerialMatcher matcher : matchers) {
-                    Device device = matcher.detect(data, this.device, baudRate, this.app);
-                    if (device != null) {
-                        deviceDetected(device, matcher.predictDeviceUid(this.device));
+                    DeviceConnectionRequest connectionRequest = matcher.detect(data, this.device, baudRate, this.app);
+                    if (connectionRequest != null) {
+                        deviceDetected(connectionRequest);
                     }
                 }
             }
@@ -124,10 +123,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 
     public interface SerialMatcher {
         @Nullable
-        Device detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
-
-        @Nullable
-        DeviceUid predictDeviceUid(@NonNull UsbDevice device);
+        DeviceConnectionRequest detect(@NonNull byte[] data, @NonNull UsbDevice device, int baudRate, @NonNull Application app);
 
         void clear();
     }

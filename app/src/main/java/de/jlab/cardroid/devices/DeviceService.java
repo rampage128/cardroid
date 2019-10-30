@@ -18,13 +18,12 @@ import java.util.TimerTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.car.CanController;
-import de.jlab.cardroid.devices.identification.DeviceConnectionId;
-import de.jlab.cardroid.devices.identification.DeviceUid;
-import de.jlab.cardroid.devices.detection.UsbDeviceDetector;
-import de.jlab.cardroid.devices.detection.UsbDeviceDetectionController;
-import de.jlab.cardroid.devices.detection.UsbSerialDeviceDetector;
 import de.jlab.cardroid.devices.detection.CarduinoSerialMatcher;
 import de.jlab.cardroid.devices.detection.GpsSerialMatcher;
+import de.jlab.cardroid.devices.detection.UsbDeviceDetectionController;
+import de.jlab.cardroid.devices.detection.UsbSerialDeviceDetector;
+import de.jlab.cardroid.devices.identification.DeviceConnectionId;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.errors.ErrorController;
 import de.jlab.cardroid.gps.GpsController;
 import de.jlab.cardroid.overlay.OverlayWindow;
@@ -123,10 +122,7 @@ public final class DeviceService extends Service {
 
     private void usbDeviceDetached(@NonNull UsbDevice usbDevice) {
         Log.e(this.getClass().getSimpleName(), "Device detached " + usbDevice.getDeviceId());
-        Device device = this.deviceController.remove(DeviceConnectionId.fromUsbDevice(usbDevice));
-        if (device != null) {
-            device.close();
-        }
+        this.deviceController.close(DeviceConnectionId.fromUsbDevice(usbDevice));
     }
 
     private void cancelDisposal() {
@@ -148,9 +144,9 @@ public final class DeviceService extends Service {
         this.timer.schedule(this.disposalTask, 20000);
     }
 
-    private void deviceDetected(@NonNull Device device, @Nullable DeviceUid predictedDeviceUid) {
-        device.addObserver(this.observer);
-        this.deviceController.add(device, predictedDeviceUid);
+    private void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest) {
+        connectionRequest.getDevice().addObserver(this.observer);
+        this.deviceController.add(connectionRequest);
     }
 
     private void deviceDetectionFailed() {
