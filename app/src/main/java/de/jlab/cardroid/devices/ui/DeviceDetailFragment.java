@@ -34,6 +34,7 @@ import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 import de.jlab.cardroid.utils.ui.DialogUtils;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,7 +44,7 @@ import de.jlab.cardroid.utils.ui.DialogUtils;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements View.OnClickListener, Device.Observer, FeatureObserver<Feature> {
+public final class DeviceDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment, View.OnClickListener, Device.Observer, FeatureObserver<Feature> {
     private static final String ARG_DEVICE_ID = "deviceId";
 
     private DeviceDetailViewModel model;

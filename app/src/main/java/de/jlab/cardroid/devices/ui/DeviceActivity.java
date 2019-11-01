@@ -1,5 +1,6 @@
 package de.jlab.cardroid.devices.ui;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,16 +9,13 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Html;
-import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
@@ -26,53 +24,41 @@ import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public final class DeviceActivity extends AppCompatActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener {
+public final class DeviceActivity extends MasterDetailFlowActivity implements DeviceListFragment.DeviceListInteractionListener, DeviceDetailFragment.DeviceDetailInteractionListener {
 
     public static final String EXTRA_DEVICE_ID = "deviceId";
-
-    private boolean isTwoPane;
-
-    private Fragment activeFragment;
-    private Fragment listFragment;
 
     private DeviceService.DeviceServiceBinder deviceService;
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            // FIXME: we have to observe the devices somehow
-            //deviceService.addConnectionObserver(DeviceActivity.this);
+            // TODO observe device state and features and relay information to fragments
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            //deviceService.removeConnectionObserver(DeviceActivity.this);
             deviceService = null;
         }
     };
 
     @Override
+    protected Fragment createMasterFragment() {
+        return DeviceListFragment.newInstance();
+    }
+
+    @Override
+    protected Class<? extends Activity> getParentActivity() {
+        return SettingsActivity.class;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_devices);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        if (findViewById(R.id.detail_container) != null) {
-            this.isTwoPane = true;
-        }
-
-        if (savedInstanceState == null) {
-            showList();
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         int deviceId = this.getIntent().getIntExtra(EXTRA_DEVICE_ID, 0);
         if (deviceId > 0) {
@@ -94,57 +80,8 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
         this.getApplicationContext().unbindService(this.connection);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            this.handleBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.handleBackPressed();
-    }
-
-    private void handleBackPressed() {
-        if (!this.isTwoPane) {
-            if (this.activeFragment instanceof DeviceDetailFragment) {
-                this.showList();
-                return;
-            }
-        }
-
-        navigateUpTo(new Intent(this, SettingsActivity.class));
-    }
-
-    private void showList() {
-        DeviceListFragment fragment = DeviceListFragment.newInstance();
-        if (this.isTwoPane) {
-            this.listFragment = fragment;
-        }
-
-        this.activeFragment = fragment;
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.list_container, fragment)
-                .commit();
-    }
-
     private void showDevice(int deviceId) {
-        this.switchFragment(DeviceDetailFragment.newInstance(deviceId));
-    }
-
-    private void switchFragment(Fragment fragment) {
-        int container = this.isTwoPane ? R.id.detail_container : R.id.list_container;
-
-        this.activeFragment = fragment;
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(container, fragment)
-                .commit();
+        this.navigateTo(DeviceDetailFragment.newInstance(deviceId));
     }
 
     @Override
@@ -194,8 +131,7 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
 
             // TODO: maybe add undo button to snackbar (only if device is not reset as well)?
             Snackbar.make(findViewById(R.id.list_container), getString(R.string.action_device_delete_success, deviceEntity.displayName), Snackbar.LENGTH_LONG).show();
-            getSupportFragmentManager().beginTransaction().remove(this.activeFragment).commit();
-            showList();
+            this.navigateToList();
         });
     }
 
@@ -215,4 +151,5 @@ public final class DeviceActivity extends AppCompatActivity implements DeviceLis
             startActivity(intent);
         }
     }
+
 }

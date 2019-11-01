@@ -19,8 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventViewListModel;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class RuleListFragment extends Fragment {
+public class RuleListFragment extends Fragment implements MasterDetailFlowActivity.MasterFragment {
 
     private EventViewListModel eventListModel;
     private FragmentActionListener actionListener;

@@ -7,18 +7,17 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context=".devices.ui.DeviceActivity">
+    tools:context=".utils.ui.MasterDetailFlowActivity">
 
     <!--
-    This layout is a two-pane layout for the Devices
+    This layout is a two-pane layout for the
     master/detail flow.
     -->
 
     <FrameLayout
         android:id="@+id/list_container"
         android:layout_width="@dimen/item_width"
-        android:layout_height="match_parent"
-        tools:context=".devices.ui.DeviceActivity"/>
+        android:layout_height="match_parent"/>
 
     <FrameLayout
         android:id="@+id/detail_container"

@@ -4,4 +4,9 @@
     android:id="@+id/list_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".devices.ui.DeviceActivity"/>
+    tools:context=".utils.ui.MasterDetailFlowActivity"/>
+
+    <!--
+    This layout is a single-pane layout for the
+    master/detail flow.
+    -->

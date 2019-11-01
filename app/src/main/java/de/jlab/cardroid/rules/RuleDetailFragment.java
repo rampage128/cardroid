@@ -32,8 +32,9 @@ import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventViewDetailModel;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class RuleDetailFragment extends Fragment {
+public class RuleDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment {
 
     public static final String ARG_ITEM_ID = "item_id";
 

@@ -29,6 +29,7 @@ import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -38,7 +39,7 @@ import de.jlab.cardroid.devices.storage.DeviceEntity;
  * Use the {@link DeviceListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceListFragment extends Fragment {
+public final class DeviceListFragment extends Fragment implements MasterDetailFlowActivity.MasterFragment {
 
     private DeviceListInteractionListener mListener;
 
