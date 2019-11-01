@@ -44,13 +44,14 @@ import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment, View.OnClickListener, Device.Observer, FeatureObserver<Feature> {
+public final class DeviceDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment, View.OnClickListener, FeatureObserver<Feature> {
     private static final String ARG_DEVICE_ID = "deviceId";
 
     private DeviceDetailViewModel model;
     private DeviceEntity deviceEntity;
     private DeviceDetailFragment.DeviceFeatureAdapter adapter;
     private boolean isDeviceOnline = false;
+    private Device.StateObserver deviceStateObserver = this::onDeviceStateChange;
 
     private DeviceDetailInteractionListener mListener;
 
@@ -63,11 +64,13 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
+            deviceService.subscribeDeviceState(DeviceDetailFragment.this.deviceStateObserver);
             deviceService.subscribe(DeviceDetailFragment.this, Feature.class);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            deviceService.unsubscribeDeviceState(DeviceDetailFragment.this.deviceStateObserver);
             deviceService.unsubscribe(DeviceDetailFragment.this, Feature.class);
             deviceService = null;
         }
@@ -183,8 +186,7 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
         }
     }
 
-    @Override
-    public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+    public void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
         if (this.deviceEntity != null && device.isDevice(this.deviceEntity.deviceUid)) {
             if (state == Device.State.READY) {
                 this.isDeviceOnline = true;

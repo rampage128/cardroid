@@ -26,7 +26,6 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
-import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
@@ -51,12 +50,12 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.addExternalDeviceObserver(adapter);
+            deviceService.subscribeDeviceState(adapter);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            deviceService.removeExternalDeviceObserver(adapter);
+            deviceService.unsubscribeDeviceState(adapter);
             deviceService = null;
         }
     };
@@ -146,7 +145,7 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
         }
     }
 
-    public static class DeviceListAdapter extends RecyclerView.Adapter<DeviceListFragment.DeviceListAdapter.ViewHolder> implements Device.Observer {
+    public static class DeviceListAdapter extends RecyclerView.Adapter<DeviceListFragment.DeviceListAdapter.ViewHolder> implements Device.StateObserver {
 
         private final DeviceListFragment fragment;
         private List<DeviceEntity> mValues = new ArrayList<>();
@@ -184,12 +183,6 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
                 }
             }
         }
-
-        @Override
-        public void onFeatureAvailable(@NonNull Feature feature) {}
-
-        @Override
-        public void onFeatureUnavailable(@NonNull Feature feature) {}
 
         @Override
         public DeviceListFragment.DeviceListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

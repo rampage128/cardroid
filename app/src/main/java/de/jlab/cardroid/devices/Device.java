@@ -28,7 +28,8 @@ public abstract class Device {
     }
 
     private ArrayList<Feature> features = new ArrayList<>();
-    private ArrayList<Observer> observers = new ArrayList<>();
+    private ArrayList<StateObserver> stateObservers = new ArrayList<>();
+    private ArrayList<FeatureObserver<Feature>> featureObservers = new ArrayList<>();
 
     private Application app;
     private DeviceEntity descriptor;
@@ -56,12 +57,20 @@ public abstract class Device {
     }
     */
 
-    public void addObserver(@NonNull Observer observer) {
-        this.observers.add(observer);
+    public void addObserver(@NonNull StateObserver observer) {
+        this.stateObservers.add(observer);
     }
 
-    public void removeObserver(@NonNull Observer observer) {
-        this.observers.remove(observer);
+    public void removeObserver(@NonNull StateObserver observer) {
+        this.stateObservers.remove(observer);
+    }
+
+    public void addFeatureObserver(@NonNull FeatureObserver<Feature> observer) {
+        this.featureObservers.add(observer);
+    }
+
+    public void removeFeatureObserver(@NonNull FeatureObserver<Feature> observer) {
+        this.featureObservers.remove(observer);
     }
 
     @NonNull
@@ -174,8 +183,8 @@ public abstract class Device {
 
         State previous = this.state;
         this.state = newState;
-        for (int i = 0; i < this.observers.size(); i++) {
-            this.observers.get(i).onStateChange(this, newState, previous);
+        for (int i = 0; i < this.stateObservers.size(); i++) {
+            this.stateObservers.get(i).onStateChange(this, newState, previous);
         }
     }
 
@@ -191,8 +200,8 @@ public abstract class Device {
         DeviceRepository repo = new DeviceRepository(this.app);
         repo.update(this.descriptor);
 
-        for (int i = 0; i < this.observers.size(); i++) {
-            this.observers.get(i).onFeatureAvailable(feature);
+        for (int i = 0; i < this.stateObservers.size(); i++) {
+            this.featureObservers.get(i).onFeatureAvailable(feature);
         }
     }
 
@@ -205,8 +214,8 @@ public abstract class Device {
 
         // We never remove features from the DB, so the user can browse them offline
 
-        for (int i = 0; i < this.observers.size(); i++) {
-            this.observers.get(i).onFeatureUnavailable(feature);
+        for (int i = 0; i < this.stateObservers.size(); i++) {
+            this.featureObservers.get(i).onFeatureUnavailable(feature);
         }
     }
 
@@ -216,10 +225,8 @@ public abstract class Device {
     // Coupled interfaces //
     ////////////////////////
 
-    public interface Observer {
+    public interface StateObserver {
         void onStateChange(@NonNull Device device, @NonNull State state, @NonNull State previous);
-        void onFeatureAvailable(@NonNull Feature feature);
-        void onFeatureUnavailable(@NonNull Feature feature);
     }
 
 }

@@ -19,13 +19,11 @@ public final class DeviceController {
 
     private ArrayList<Device> devices = new ArrayList<>();
     private HashMap<Class<? extends Feature>, ArrayList<FeatureObserver>> subscribers = new HashMap<>();
-    private Device.Observer deviceObserver = new Device.Observer() {
-        @Override
-        public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-            if (state == Device.State.INVALID) {
-                DeviceController.this.remove(device);
-            }
-        }
+    private ArrayList<Device.StateObserver> stateSubscribers = new ArrayList<>();
+
+    private Device.StateObserver stateObserver = this::onDeviceStateChange;
+
+    private FeatureObserver<Feature> featureObserver = new FeatureObserver<Feature>() {
 
         @Override
         public void onFeatureAvailable(@NonNull Feature feature) {
@@ -97,6 +95,18 @@ public final class DeviceController {
         }
     }
 
+    public void addStateSubscriber(@NonNull Device.StateObserver subscriber) {
+        this.stateSubscribers.add(subscriber);
+        for (int i = 0; i < this.devices.size(); i++) {
+            Device device = this.devices.get(i);
+            subscriber.onStateChange(device, device.getState(), device.getState());
+        }
+    }
+
+    public void removeStateSubscriber(@NonNull Device.StateObserver subscriber) {
+        this.stateSubscribers.remove(subscriber);
+    }
+
     @Nullable
     public Device get(@NonNull DeviceConnectionId connectionId) {
         for (int i = 0; i < this.devices.size(); i++) {
@@ -153,19 +163,31 @@ public final class DeviceController {
     private void open(@NonNull Device device) {
         synchronized (this.devices) {
             this.devices.add(device);
-            device.addObserver(this.deviceObserver);
+            device.addObserver(this.stateObserver);
+            device.addFeatureObserver(this.featureObserver);
             device.open();
         }
     }
 
     private void remove(@NonNull Device device) {
         this.devices.remove(device);
-        device.removeObserver(this.deviceObserver);
+        device.removeObserver(this.stateObserver);
+        device.removeFeatureObserver(this.featureObserver);
 
         DeviceConnectionRequest matchingRequest = this.newDeviceWaitingList.pick(device);
         if (matchingRequest != null) {
             Log.e(this.getClass().getSimpleName(), "Opening device " + matchingRequest + " from queue");
             this.open(matchingRequest.getDevice());
+        }
+    }
+
+    private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+        for (int i = 0; i < this.stateSubscribers.size(); i++) {
+            this.stateSubscribers.get(i).onStateChange(device, state, previous);
+        }
+
+        if (state == Device.State.INVALID) {
+            DeviceController.this.remove(device);
         }
     }
 

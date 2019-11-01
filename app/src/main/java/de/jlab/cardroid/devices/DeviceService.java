@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -45,13 +44,12 @@ public final class DeviceService extends Service {
     private RuleController ruleController;
     private ErrorController errorController;
     private GpsController gpsController;
+    private UsbDeviceDetectionController detectionController;
 
     private DeviceServiceBinder binder = new DeviceServiceBinder();
-    private UsbDeviceDetectionController detectionController;
     private Timer timer = new Timer();
     private TimerTask disposalTask;
-    private DeviceObserver observer = new DeviceObserver();
-    private ArrayList<Device.Observer> externalObservers = new ArrayList<>();
+    private Device.StateObserver deviceStateObserver = this::onDeviceStateChange;
 
 
     @Override
@@ -79,6 +77,8 @@ public final class DeviceService extends Service {
                         new CarduinoSerialMatcher(),
                         new GpsSerialMatcher()
                 ));
+
+        this.deviceController.addStateSubscriber(this.deviceStateObserver);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -110,6 +110,8 @@ public final class DeviceService extends Service {
         this.ruleController.dispose();
         this.errorController.dispose();
         this.gpsController.dispose();
+
+        this.deviceController.removeStateSubscriber(this.deviceStateObserver);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
@@ -145,13 +147,28 @@ public final class DeviceService extends Service {
     }
 
     private void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest) {
-        connectionRequest.getDevice().addObserver(this.observer);
         this.deviceController.add(connectionRequest);
     }
 
     private void deviceDetectionFailed() {
         Log.w(this.getClass().getSimpleName(), "Detection of device failed!");
         this.disposeIfEmpty();
+    }
+
+    private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DeviceService.this);
+        String deviceUid = prefs.getString("overlay_device_uid", null);
+        if (deviceUid != null && device.isDevice(new DeviceUid(deviceUid))) {
+            DeviceService.this.runOnUiThread(() -> {
+                if (state == Device.State.READY) {
+                    DeviceService.this.overlay.create();
+                } else if (state == Device.State.INVALID) {
+                    DeviceService.this.overlay.destroy();
+                }
+            });
+        }
+
+        DeviceService.this.disposeIfEmpty();
     }
 
     private void runOnUiThread(Runnable runnable) {
@@ -178,12 +195,12 @@ public final class DeviceService extends Service {
             DeviceService.this.deviceController.addSubscriber(observer, featureClass);
         }
 
-        public void addExternalDeviceObserver(Device.Observer observer) {
-            DeviceService.this.externalObservers.add(observer);
+        public void subscribeDeviceState(@NonNull Device.StateObserver observer) {
+            DeviceService.this.deviceController.addStateSubscriber(observer);
         }
 
-        public void removeExternalDeviceObserver(Device.Observer observer) {
-            DeviceService.this.externalObservers.remove(observer);
+        public void unsubscribeDeviceState(@NonNull Device.StateObserver observer) {
+            DeviceService.this.deviceController.removeStateSubscriber(observer);
         }
 
         public VariableController getVariableStore() {
@@ -192,43 +209,6 @@ public final class DeviceService extends Service {
 
         public OverlayWindow getOverlay() {
             return DeviceService.this.overlay;
-        }
-    }
-
-    private class DeviceObserver implements Device.Observer {
-
-        @Override
-        public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-            DeviceService.this.disposeIfEmpty();
-            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
-                DeviceService.this.externalObservers.get(i).onStateChange(device, state, previous);
-            }
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DeviceService.this);
-            String deviceUid = prefs.getString("overlay_device_uid", null);
-            if (deviceUid != null && device.isDevice(new DeviceUid(deviceUid))) {
-                DeviceService.this.runOnUiThread(() -> {
-                    if (state == Device.State.READY) {
-                        DeviceService.this.overlay.create();
-                    } else if (state == Device.State.INVALID) {
-                        DeviceService.this.overlay.destroy();
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void onFeatureAvailable(@NonNull Feature feature) {
-            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
-                DeviceService.this.externalObservers.get(i).onFeatureAvailable(feature);
-            }
-        }
-
-        @Override
-        public void onFeatureUnavailable(@NonNull Feature feature) {
-            for (int i = 0; i < DeviceService.this.externalObservers.size(); i++) {
-                DeviceService.this.externalObservers.get(i).onFeatureUnavailable(feature);
-            }
         }
     }
 
