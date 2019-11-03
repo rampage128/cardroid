@@ -57,7 +57,7 @@ public abstract class UsbSerialDevice<ReaderType extends SerialReader> extends U
      * @deprecated TODO setBaudRate and send should probably be part of an interactable? Yes, no?
      */
     @Deprecated
-    protected void send(byte[] data) {
+    public void send(byte[] data) {
         this.serialPort.send(data);
     }
 

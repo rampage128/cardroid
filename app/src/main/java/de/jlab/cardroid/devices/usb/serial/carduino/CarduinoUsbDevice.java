@@ -26,11 +26,14 @@ public final class CarduinoUsbDevice extends UsbSerialDevice<CarduinoSerialReade
     private ArrayList<CarduinoPacketParser> packetParsers = new ArrayList<>();
     private ArrayList<CarduinoSerialPacket> pendingPackets = new ArrayList<>();
     private Application app;
+    private KeepAlive keepAlive;
 
     private byte[] carduinoId = null;
 
     public CarduinoUsbDevice(@NonNull UsbDevice device, int defaultBaudrate, @NonNull Application app) {
         super(device, defaultBaudrate, app);
+
+        this.keepAlive = new KeepAlive(500, 250, new byte[] { 0x21 }, this, app);
 
         this.app = app;
     }
@@ -48,6 +51,7 @@ public final class CarduinoUsbDevice extends UsbSerialDevice<CarduinoSerialReade
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             packet.serialize(bos);
             this.send(bos.toByteArray());
+            this.keepAlive.start();
         } catch (IOException e) {
             Log.e(this.getClass().getSimpleName(), "Error serializing packet " + String.format("%02x", packet.getPacketId()));
         }
@@ -78,6 +82,7 @@ public final class CarduinoUsbDevice extends UsbSerialDevice<CarduinoSerialReade
 
     @Override
     protected void onClose(CarduinoSerialReader reader) {
+        this.keepAlive.stop();
         for (int i = 0; i < this.packetParsers.size(); i++) {
             reader.removeSerialPacketListener(this.packetParsers.remove(i));
         }
