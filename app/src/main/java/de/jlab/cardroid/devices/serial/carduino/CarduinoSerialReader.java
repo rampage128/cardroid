@@ -47,7 +47,7 @@ public final class CarduinoSerialReader extends SerialReader<CarduinoSerialPacke
                     if (i + length + 1 >= data.length || data[i + length + 1] != CarduinoSerialPacket.FOOTER) {
                         // got wrong packet length? Hard to tell why ... lets just skip this packet
                         Log.w(this.getClass().getSimpleName(), "Wrong length given for packet type \"" + String.format("%02X", packetType) + "\" with id \"" + String.format("%02X", packetId) + "\". Length given: " + length);
-                        this.dumpData(Log.WARN, "Data", data);
+                        this.dumpData(Log.WARN, "Data", data, packetStartIndex, i + length + 1);
                         foundPacket = false;
                         packetType = 0x00;
                         continue;
@@ -67,11 +67,15 @@ public final class CarduinoSerialReader extends SerialReader<CarduinoSerialPacke
         return packetList.toArray(new CarduinoSerialPacket[0]);
     }
 
-    private void dumpData(int priority, String caption, byte[] data) {
-        StringBuilder builder = new StringBuilder(caption).append(" -> ");
-        for (byte b : data) {
-            builder.append(" ");
-            builder.append(String.format("%02X", b));
+    private void dumpData(int priority, String caption, byte[] data, int startIndex, int endIndex) {
+        StringBuilder builder = new StringBuilder(caption).append(" ->");
+        for (int i = 0; i < data.length; i++) {
+            if (i == startIndex) {
+                builder.append(" >>");
+            } else if (i == endIndex + 1) {
+                builder.append(" <<");
+            }
+            builder.append(String.format(" %02X", data[i]));
         }
         Log.println(priority, this.getClass().getSimpleName(), builder.toString());
     }

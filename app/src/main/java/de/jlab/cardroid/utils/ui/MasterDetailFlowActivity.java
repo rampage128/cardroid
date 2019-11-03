@@ -118,7 +118,10 @@ public abstract class MasterDetailFlowActivity extends AppCompatActivity {
         }
     }
 
-    protected Fragment getActiveFragment() {
+    protected final Fragment getMaster() {
+        return this.master;
+    }
+    protected final Fragment getActiveFragment() {
         return this.active;
     }
 

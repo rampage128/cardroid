@@ -1,12 +1,7 @@
 package de.jlab.cardroid.devices.ui;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +21,11 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.Device;
-import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureObserver;
 import de.jlab.cardroid.devices.FeatureType;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.usb.serial.carduino.CarduinoUsbDevice;
 import de.jlab.cardroid.utils.ui.DialogUtils;
@@ -44,38 +39,23 @@ import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
  * Use the {@link DeviceDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment, View.OnClickListener, FeatureObserver<Feature> {
+public final class DeviceDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment, View.OnClickListener, FeatureObserver<Feature>, Device.StateObserver {
     private static final String ARG_DEVICE_ID = "deviceId";
+    private static final String ARG_DEVICE_UID = "deviceUid";
 
     private DeviceDetailViewModel model;
     private DeviceEntity deviceEntity;
+    private DeviceUid deviceUid;
     private DeviceDetailFragment.DeviceFeatureAdapter adapter;
     private boolean isDeviceOnline = false;
-    private Device.StateObserver deviceStateObserver = this::onDeviceStateChange;
+    private boolean canDeviceReset = false;
+    private boolean canDeviceReboot = false;
 
     private DeviceDetailInteractionListener mListener;
 
     private Button rebootButton;
     private Button resetButton;
     private Button disconnectButton;
-
-    private DeviceService.DeviceServiceBinder deviceService;
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeDeviceState(DeviceDetailFragment.this.deviceStateObserver);
-            deviceService.subscribe(DeviceDetailFragment.this, Feature.class);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeDeviceState(DeviceDetailFragment.this.deviceStateObserver);
-            deviceService.unsubscribe(DeviceDetailFragment.this, Feature.class);
-            deviceService = null;
-        }
-    };
-
 
     public DeviceDetailFragment() {
         // Required empty public constructor
@@ -88,10 +68,11 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
      * @param deviceEntityId database uid of DeviceEntity to edit.
      * @return A new instance of fragment DeviceDetailFragment.
      */
-    public static DeviceDetailFragment newInstance(int deviceEntityId) {
+    public static DeviceDetailFragment newInstance(int deviceEntityId, @NonNull DeviceUid deviceUid) {
         DeviceDetailFragment fragment = new DeviceDetailFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_DEVICE_ID, deviceEntityId);
+        args.putString(ARG_DEVICE_UID, deviceUid.toString());
         fragment.setArguments(args);
         return fragment;
     }
@@ -122,6 +103,7 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
 
         if (getArguments() != null) {
             int deviceEntityId = getArguments().getInt(ARG_DEVICE_ID, 0);
+            this.deviceUid = new DeviceUid(getArguments().getString(ARG_DEVICE_UID, null));
             assert this.getActivity() != null;
 
             RecyclerView recyclerView = rootView.findViewById(R.id.feature_list);
@@ -140,25 +122,16 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
                     toolbar.setTitle(deviceEntity.displayName);
                 }
 
-                // TODO: Disable reboot, reset and disconnect button if device is not connected
-                // TODO: Device interactability should be determined with an Interactable directly from the device
-                boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDevice.class.getSimpleName());
-
-                rebootButton.setEnabled(isInteractableDevice);
-                resetButton.setEnabled(isInteractableDevice);
-                disconnectButton.setEnabled(isDeviceOnline);
-                rebootButton.setAlpha(isInteractableDevice ? 1f : .25f);
-                resetButton.setAlpha(isInteractableDevice ? 1f : .25f);
-                disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
-
-
                 displayNameText.setText(deviceEntity.displayName);
                 uidText.setText(deviceEntity.deviceUid.toString());
                 typeIcon.setImageResource(type.getTypeIcon());
 
                 adapter.setFeatures(FeatureType.get(deviceEntity));
+                this.updateUi();
             });
         }
+
+        mListener.onDeviceDetailStart(this);
 
         return rootView;
     }
@@ -186,45 +159,49 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
         }
     }
 
-    public void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-        if (this.deviceEntity != null && device.isDevice(this.deviceEntity.deviceUid)) {
-            if (state == Device.State.READY) {
-                this.isDeviceOnline = true;
-            } else {
-                this.isDeviceOnline = false;
-            }
+    @Override
+    public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+        if (device.isDevice(this.deviceUid)) {
+            this.isDeviceOnline = state == Device.State.READY;
 
-            if (this.getActivity() != null) {
-                this.getActivity().runOnUiThread(() -> {
-                    boolean isInteractableDevice = isDeviceOnline && deviceEntity.className.equals(CarduinoUsbDevice.class.getSimpleName());
+            // TODO: Device interactability should be determined by feature, not by device type
+            this.canDeviceReboot = this.canDeviceReset = device instanceof CarduinoUsbDevice && this.isDeviceOnline;
 
-                    rebootButton.setEnabled(isInteractableDevice);
-                    resetButton.setEnabled(isInteractableDevice);
-                    disconnectButton.setEnabled(isDeviceOnline);
-                    rebootButton.setAlpha(isInteractableDevice ? 1f : .25f);
-                    resetButton.setAlpha(isInteractableDevice ? 1f : .25f);
-                    disconnectButton.setAlpha(isDeviceOnline ? 1f : .25f);
-                });
-            }
+            this.updateUi();
         }
+    }
+
+    private void updateUi() {
+        if (this.getActivity() != null) {
+            this.getActivity().runOnUiThread(() -> {
+                this.toggleButton(this.rebootButton, this.canDeviceReboot);
+                this.toggleButton(this.resetButton, this.canDeviceReset);
+                this.toggleButton(this.disconnectButton, this.isDeviceOnline);
+            });
+        }
+    }
+
+    private void toggleButton(Button button, boolean state) {
+        button.setEnabled(state);
+        button.setAlpha(state ? 1f : .25f);
     }
 
     @Override
     public void onFeatureAvailable(@NonNull Feature feature) {
-        if (this.getActivity() != null) {
+        if (feature.getDevice().isDevice(this.deviceUid) && this.getActivity() != null) {
             this.getActivity().runOnUiThread(() -> this.adapter.addActiveFeature(feature));
         }
     }
 
     @Override
     public void onFeatureUnavailable(@NonNull Feature feature) {
-        if (this.getActivity() != null) {
+        if (feature.getDevice().isDevice(this.deviceUid) && this.getActivity() != null) {
             this.getActivity().runOnUiThread(() -> this.adapter.removeActiveFeature(feature));
         }
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof DeviceDetailInteractionListener) {
             mListener = (DeviceDetailInteractionListener) context;
@@ -235,29 +212,9 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
-        if (this.deviceService != null && this.getContext() != null) {
-            this.getContext().getApplicationContext().unbindService(this.connection);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        final Handler handler = new Handler();
-        handler.postDelayed(() -> {
-            if (this.getContext() != null) {
-                this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
-            }
-        }, 500);
-    }
-
-    @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onDeviceDetailEnd(this);
         mListener = null;
     }
 
@@ -382,5 +339,7 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
         void onDeviceReset(DeviceEntity deviceEntity);
         void onDeviceDeleted(DeviceEntity deviceEntity);
         void onFeatureSelected(FeatureType feature);
+        void onDeviceDetailStart(@NonNull DeviceDetailFragment fragment);
+        void onDeviceDetailEnd(@NonNull DeviceDetailFragment fragment);
     }
 }

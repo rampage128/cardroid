@@ -1,12 +1,8 @@
 package de.jlab.cardroid.devices.ui;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +20,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.Device;
-import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceType;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -38,27 +33,13 @@ import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
  * Use the {@link DeviceListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public final class DeviceListFragment extends Fragment implements MasterDetailFlowActivity.MasterFragment {
+public final class DeviceListFragment extends Fragment implements MasterDetailFlowActivity.MasterFragment, Device.StateObserver {
 
     private DeviceListInteractionListener mListener;
 
     private DeviceListViewModel viewModel;
     private DeviceListAdapter adapter;
-    private DeviceService.DeviceServiceBinder deviceService;
 
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            deviceService = (DeviceService.DeviceServiceBinder) service;
-            deviceService.subscribeDeviceState(adapter);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            deviceService.unsubscribeDeviceState(adapter);
-            deviceService = null;
-        }
-    };
 
     public DeviceListFragment() {
         // Required empty public constructor
@@ -98,6 +79,8 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
         this.viewModel = ViewModelProviders.of(this).get(DeviceListViewModel.class);
         this.viewModel.getAll().observe(this, adapter::setDevices);
 
+        mListener.onDeviceListStart(this);
+
         return rootView;
     }
 
@@ -115,28 +98,13 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onDeviceListEnd(this);
         mListener = null;
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
-        if (this.deviceService != null && this.getContext() != null) {
-            this.getContext().getApplicationContext().unbindService(this.connection);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        //final Handler handler = new Handler();
-        //handler.postDelayed(() -> {
-        if (this.getContext() != null) {
-            this.getContext().getApplicationContext().bindService(new Intent(this.getContext().getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
-        }
-    //    }, 500);
+    public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
+        this.adapter.onStateChange(device, state, previous);
     }
 
     private void onDeviceSelected(DeviceEntity deviceEntity) {
@@ -169,18 +137,14 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
 
         @Override
         public void onStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-            for (int i = 0; i < this.mValues.size(); i++) {
-                DeviceEntity descriptor = this.mValues.get(i);
-                if (device.isDevice(descriptor.deviceUid) && this.fragment.getActivity() != null) {
-                    this.fragment.getActivity().runOnUiThread(() -> {
-                        if (state == Device.State.READY) {
-                            liveDevices.put(descriptor.deviceUid, device);
-                        } else {
-                            liveDevices.remove(descriptor.deviceUid);
-                        }
-                        notifyDataSetChanged();
-                    });
-                }
+            if (state == Device.State.READY) {
+                liveDevices.put(device.getDeviceUid(), device);
+            } else if (state == Device.State.INVALID) {
+                liveDevices.remove(device.getDeviceUid());
+            }
+
+            if (this.fragment.getActivity() != null) {
+                this.fragment.getActivity().runOnUiThread(this::notifyDataSetChanged);
             }
         }
 
@@ -195,8 +159,7 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
         public void onBindViewHolder(final DeviceListFragment.DeviceListAdapter.ViewHolder holder, int position) {
             DeviceEntity descriptor = mValues.get(position);
             DeviceType type = DeviceType.get(descriptor);
-            Device device = this.liveDevices.get(descriptor.deviceUid);
-            boolean isOnline = device != null;
+            boolean isOnline = this.liveDevices.containsKey(descriptor.deviceUid);
 
             holder.name.setText(descriptor.displayName);
             holder.uid.setText(descriptor.deviceUid.toString());
@@ -239,7 +202,8 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface DeviceListInteractionListener {
-        // TODO: Update argument type and name
         void onDeviceSelected(DeviceEntity deviceEntity);
+        void onDeviceListStart(@NonNull DeviceListFragment fragment);
+        void onDeviceListEnd(@NonNull DeviceListFragment fragment);
     }
 }

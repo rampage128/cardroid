@@ -33,6 +33,7 @@ public final class NewDeviceNotifier {
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addNextIntentWithParentStack(notificationIntent);
         notificationIntent.putExtra(DeviceActivity.EXTRA_DEVICE_ID, deviceEntity.uid);
+        notificationIntent.putExtra(DeviceActivity.EXTRA_DEVICE_UID, deviceEntity.deviceUid.toString());
         PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
 
         Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
