@@ -2,13 +2,11 @@ package de.jlab.cardroid.devices;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.Timer;
@@ -156,9 +154,7 @@ public final class DeviceService extends Service {
     }
 
     private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(DeviceService.this);
-        String deviceUid = prefs.getString("overlay_device_uid", null);
-        if (deviceUid != null && device.isDevice(new DeviceUid(deviceUid))) {
+        if (OverlayWindow.isDevice(device, this)) {
             DeviceService.this.runOnUiThread(() -> {
                 if (state == Device.State.READY) {
                     DeviceService.this.overlay.create();

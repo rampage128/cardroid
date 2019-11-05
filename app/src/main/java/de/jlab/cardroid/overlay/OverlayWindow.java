@@ -26,7 +26,9 @@ import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.variables.Variable;
 import de.jlab.cardroid.variables.VariableController;
 
@@ -156,6 +158,12 @@ public class OverlayWindow {
         this.deviceController = deviceController;
         this.variableStore = variableStore;
         this.context = context;
+    }
+
+    public static final boolean isDevice(@NonNull Device device, @NonNull Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String deviceUid = prefs.getString("overlay_device_uid", null);
+        return deviceUid != null && device.isDevice(new DeviceUid(deviceUid));
     }
 
     public void create() {
