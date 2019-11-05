@@ -5,10 +5,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.car.CanInteractable;
-import de.jlab.cardroid.car.CanObservable;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.Feature;
+import de.jlab.cardroid.devices.identification.DeviceUid;
 
 public final class AcCanController {
 
@@ -22,9 +24,9 @@ public final class AcCanController {
 
     private DeviceController deviceController;
     private Timer broadCastTimer;
-    private FeatureFilter<CanInteractable> writeFilter = new FeatureFilter<>(CanInteractable.class, null, this::canWriterConnected, this::canWriterDisconnected);
+    private Device.FeatureChangeObserver<CanInteractable> writeFilter;
 
-    public AcCanController(@NonNull DeviceController deviceController) {
+    public AcCanController(@NonNull DeviceController deviceController, @Nullable DeviceUid deviceUid) {
         this.deviceController = deviceController;
 
         this.canPacket540.put(0, (byte)0x20);
@@ -33,11 +35,13 @@ public final class AcCanController {
         this.canPacket542.put(0, (byte)0x18);
         this.canPacket542.put(1, (byte)0x2F);
 
-        deviceController.addSubscriber(this.writeFilter, CanInteractable.class);
+        this.writeFilter = this::canWriterStateChange;
+
+        deviceController.subscribeFeature(this.writeFilter, CanInteractable.class, deviceUid);
     }
 
     public void dispose() {
-        this.deviceController.removeSubscriber(this.writeFilter);
+        this.deviceController.unsubscribeFeature(this.writeFilter, CanInteractable.class);
         this.stopBroadCast();
     }
 
@@ -132,12 +136,12 @@ public final class AcCanController {
         }
     }
 
-    private void canWriterConnected(@NonNull CanInteractable interactable) {
-        this.startBroadCast(interactable);
-    }
-
-    private void canWriterDisconnected(@NonNull CanInteractable interactable) {
-        this.stopBroadCast();
+    private void canWriterStateChange(@NonNull CanInteractable interactable, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            this.startBroadCast(interactable);
+        } else {
+            this.stopBroadCast();
+        }
     }
 
     private void startBroadCast(@NonNull CanInteractable interactable) {

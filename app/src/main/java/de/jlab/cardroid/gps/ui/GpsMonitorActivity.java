@@ -1,11 +1,6 @@
 package de.jlab.cardroid.gps.ui;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.format.DateUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -15,20 +10,21 @@ import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.StatusGridAdapter;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.FeatureObserver;
+import de.jlab.cardroid.devices.DeviceServiceConnection;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 import de.jlab.cardroid.devices.serial.gps.GpsSatellite;
 import de.jlab.cardroid.gps.GpsObservable;
 
-public final class GpsMonitorActivity extends AppCompatActivity implements GpsObservable.PositionListener, FeatureObserver<GpsObservable> {
+public final class GpsMonitorActivity extends AppCompatActivity implements GpsObservable.PositionListener, Device.FeatureChangeObserver<GpsObservable> {
 
     private ScrollView rawDataScrollView;
     private TextView rawDataTextView;
@@ -44,49 +40,25 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     private ArrayList<GpsObservable> gpsSources = new ArrayList<>();
     private GpsObservable currentGpsSource = null;
 
-
-    private ServiceConnection gpsServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            DeviceService.DeviceServiceBinder deviceService = (DeviceService.DeviceServiceBinder)service;
-
-            GpsMonitorActivity.this.updateStatusGrid(null);
-            GpsMonitorActivity.this.updateRawGrid();
-            GpsMonitorActivity.this.updateSatelliteView(null);
-            deviceService.subscribe(GpsMonitorActivity.this, GpsObservable.class);
-
-            //gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
-            //gpsService.addSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
-            //gpsService.addUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            //gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
-            //gpsService.removeSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
-            //gpsService.removeUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
-            //gpsService = null;
-        }
-    };
+    private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
 
     @Override
-    public void onFeatureAvailable(@NonNull GpsObservable feature) {
-        // TODO: we should filter per device (User preferences, default device)
-        // For now, we use the tactic of "last connected, wins"
-        if (this.currentGpsSource != null) {
-            this.currentGpsSource.removeListener(this);
-        }
-        feature.addListener(this);
-        this.gpsSources.add(feature);
-    }
-
-    @Override
-    public void onFeatureUnavailable(@NonNull GpsObservable feature) {
-        // TODO: remove this logic once we can chose between multiple instances of the feature
-        if (this.gpsSources.contains(feature)) {
+    public void onFeatureChange(@NonNull GpsObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            // TODO: we should filter per device (User preferences, default device)
+            // For now, we use the tactic of "last connected, wins"
+            if (this.currentGpsSource != null) {
+                this.currentGpsSource.removeListener(this);
+            }
+            feature.addListener(this);
+            this.gpsSources.add(feature);
+        } else {
+            // TODO: remove this logic once we can chose between multiple instances of the feature
             this.gpsSources.remove(feature);
-        }
-        if (this.gpsSources.size() > 0) {
-            GpsObservable nextFeature = this.gpsSources.remove(this.gpsSources.size() - 1);
-            onFeatureAvailable(nextFeature);
+            if (this.gpsSources.size() > 0) {
+                GpsObservable nextFeature = this.gpsSources.remove(this.gpsSources.size() - 1);
+                onFeatureChange(nextFeature, Feature.State.AVAILABLE);
+            }
         }
     }
 
@@ -152,6 +124,23 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     };
      */
 
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            GpsMonitorActivity.this.updateStatusGrid(null);
+            GpsMonitorActivity.this.updateRawGrid();
+            GpsMonitorActivity.this.updateSatelliteView(null);
+            deviceService.subscribeFeature(GpsMonitorActivity.this, GpsObservable.class);
+            //gpsService.addBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
+            //gpsService.addSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
+            //gpsService.addUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
+        } else {
+            deviceService.unsubscribeFeature(GpsMonitorActivity.this, GpsObservable.class);
+            //gpsService.removeBandwidthStatisticsListener(GpsMonitorActivity.this.bandwidthStatisticsListener);
+            //gpsService.removeSentenceStatisticsListener(GpsMonitorActivity.this.sentenceStatisticsListener);
+            //gpsService.removeUpdateStatisticsListener(GpsMonitorActivity.this.updateStatisticsListener);
+        }
+    }
+
     // TODO: probably this activity should be started with a concrete feature (from a concrete device)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,13 +202,15 @@ public final class GpsMonitorActivity extends AppCompatActivity implements GpsOb
     @Override
     protected void onPause() {
         super.onPause();
-        this.getApplicationContext().unbindService(this.gpsServiceConnection);
+
+        this.serviceConnection.unbind(this.getApplicationContext());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.gpsServiceConnection, Context.BIND_AUTO_CREATE);
+
+        this.serviceConnection.bind(this.getApplicationContext());
     }
 
     public void updateRawText(String rawData) {

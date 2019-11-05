@@ -4,8 +4,9 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.Feature;
 
 public final class ErrorController {
 
@@ -14,18 +15,18 @@ public final class ErrorController {
     private DeviceController deviceController;
     private ErrorNotifier errorNotifier;
 
-    private FeatureFilter<ErrorObservable> errorFilter = new FeatureFilter<>(ErrorObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
+    private Device.FeatureChangeObserver<ErrorObservable> errorFilter = this::onErrorFeatureChange;
     private ErrorObservable.ErrorListener errorListener = this::onError;
 
 
     public ErrorController(@NonNull DeviceController deviceController, @NonNull Context context) {
         this.deviceController = deviceController;
         this.errorNotifier = new ErrorNotifier(context);
-        deviceController.addSubscriber(this.errorFilter, ErrorObservable.class);
+        deviceController.subscribeFeature(this.errorFilter, ErrorObservable.class);
     }
 
     public void dispose() {
-        this.deviceController.removeSubscriber(this.errorFilter);
+        this.deviceController.unsubscribeFeature(this.errorFilter, ErrorObservable.class);
     }
 
     private void onError(int errorNumber) {
@@ -38,12 +39,12 @@ public final class ErrorController {
         this.errorNotifier.onError(error);
     }
 
-    private void onFeatureAvailable(@NonNull ErrorObservable feature) {
-        feature.addListener(this.errorListener);
-    }
-
-    private void onFeatureUnavailable(@NonNull ErrorObservable feature) {
-        feature.removeListener(this.errorListener);
+    private void onErrorFeatureChange(@NonNull ErrorObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            feature.addListener(this.errorListener);
+        } else {
+            feature.removeListener(this.errorListener);
+        }
     }
 
 }

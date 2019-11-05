@@ -6,12 +6,14 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
+import de.jlab.cardroid.utils.MultiMap;
 
 /* TODO add bluetooth support
  * - create a device wrapper to unify usb and bluetooth devices
@@ -29,7 +31,9 @@ public abstract class Device {
 
     private ArrayList<Feature> features = new ArrayList<>();
     private ArrayList<StateObserver> stateObservers = new ArrayList<>();
-    private ArrayList<FeatureObserver<Feature>> featureObservers = new ArrayList<>();
+    //private ArrayList<FeatureObserver<? extends Feature>> featureObservers = new ArrayList<>();
+
+    private MultiMap<Class<? extends Feature>, FeatureChangeObserver> featureObservers = new MultiMap<>();
 
     private Application app;
     private DeviceEntity descriptor;
@@ -57,20 +61,37 @@ public abstract class Device {
     }
     */
 
-    public void addObserver(@NonNull StateObserver observer) {
+    public void addStateObserver(@NonNull StateObserver observer) {
         this.stateObservers.add(observer);
+
+        // Notify new observer about the current state
+        observer.onStateChange(this, this.state, this.state);
     }
 
-    public void removeObserver(@NonNull StateObserver observer) {
+    public void removeStateObserver(@NonNull StateObserver observer) {
         this.stateObservers.remove(observer);
     }
 
-    public void addFeatureObserver(@NonNull FeatureObserver<Feature> observer) {
-        this.featureObservers.add(observer);
+    public <FT extends Feature> void addFeatureObserver(@NonNull FeatureChangeObserver<FT> observer, @NonNull Class<FT> featureClass) {
+        this.featureObservers.put(featureClass, observer);
+
+        for (int i = 0; i < this.features.size(); i++) {
+            Feature feature = this.features.get(i);
+            if (featureClass.isAssignableFrom(feature.getClass())) {
+                observer.onFeatureChange(Objects.requireNonNull(featureClass.cast(feature)), Feature.State.AVAILABLE);
+            }
+        }
     }
 
-    public void removeFeatureObserver(@NonNull FeatureObserver<Feature> observer) {
-        this.featureObservers.remove(observer);
+    public <FT extends Feature> void removeFeatureObserver(@NonNull FeatureChangeObserver<FT> observer, @NonNull Class<FT> featureClass) {
+        this.featureObservers.remove(featureClass, observer);
+
+        for (int i = 0; i < this.features.size(); i++) {
+            Feature feature = this.features.get(i);
+            if (featureClass.isAssignableFrom(feature.getClass())) {
+                observer.onFeatureChange(Objects.requireNonNull(featureClass.cast(feature)), Feature.State.UNAVAILABLE);
+            }
+        }
     }
 
     @NonNull
@@ -186,6 +207,12 @@ public abstract class Device {
         for (int i = 0; i < this.stateObservers.size(); i++) {
             this.stateObservers.get(i).onStateChange(this, newState, previous);
         }
+
+        // Clean up after ourselves
+        if (this.state == State.INVALID) {
+            this.stateObservers.clear();
+            this.featureObservers.clear();
+        }
     }
 
     protected final void addFeature(@NonNull Feature feature) {
@@ -200,9 +227,7 @@ public abstract class Device {
         DeviceRepository repo = new DeviceRepository(this.app);
         repo.update(this.descriptor);
 
-        for (int i = 0; i < this.stateObservers.size(); i++) {
-            this.featureObservers.get(i).onFeatureAvailable(feature);
-        }
+        this.notifyFeatureStateChanged(feature, Feature.State.AVAILABLE);
     }
 
     protected final void removeFeature(@NonNull Feature feature) {
@@ -214,12 +239,20 @@ public abstract class Device {
 
         // We never remove features from the DB, so the user can browse them offline
 
-        for (int i = 0; i < this.stateObservers.size(); i++) {
-            this.featureObservers.get(i).onFeatureUnavailable(feature);
+        this.notifyFeatureStateChanged(feature, Feature.State.UNAVAILABLE);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void notifyFeatureStateChanged(@NonNull Feature feature, @NonNull Feature.State state) {
+        ArrayList<FeatureChangeObserver> observers = this.featureObservers.getAssignable(feature.getClass());
+        for (FeatureChangeObserver observer : observers) {
+            observer.onFeatureChange(feature, state);
         }
     }
 
+    /* TODO: Remove this, if it turns out to be obsolete
     public final ArrayList<Feature> getFeatures() { return this.features; }
+    */
 
     ////////////////////////
     // Coupled interfaces //
@@ -227,6 +260,10 @@ public abstract class Device {
 
     public interface StateObserver {
         void onStateChange(@NonNull Device device, @NonNull State state, @NonNull State previous);
+    }
+
+    public interface FeatureChangeObserver<FT> {
+        void onFeatureChange(@NonNull FT feature, @NonNull Feature.State state);
     }
 
 }

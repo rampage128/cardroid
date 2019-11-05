@@ -1,11 +1,6 @@
 package de.jlab.cardroid.car.ui;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ListView;
@@ -19,8 +14,10 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.StatusGridAdapter;
 import de.jlab.cardroid.car.CanObservable;
 import de.jlab.cardroid.car.CanPacket;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.DeviceServiceConnection;
+import de.jlab.cardroid.devices.Feature;
 
 public class CarMonitorActivity extends AppCompatActivity {
 
@@ -37,29 +34,11 @@ public class CarMonitorActivity extends AppCompatActivity {
     private ScrollView packetListViewContainer;
     private StatusGridAdapter connectionGridAdapter;
 
-    private FeatureFilter<CanObservable> readFilter = new FeatureFilter<>(CanObservable.class, null, this::canReaderConnected, this::canReaderDisconnected);
+    private Device.FeatureChangeObserver<CanObservable> readFilter = this::canReaderStateChange;
     private CanObservable.CanPacketListener canListener = this::onReceiveCanPacket;
 
-    private DeviceService.DeviceServiceBinder serviceBinder;
-    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            CarMonitorActivity.this.serviceBinder = (DeviceService.DeviceServiceBinder) service;
+    private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
 
-            CarMonitorActivity.this.initStatusGrid();
-            CarMonitorActivity.this.initConnetionGrid();
-            CarMonitorActivity.this.serviceBinder.subscribe(CarMonitorActivity.this.readFilter, CanObservable.class);
-            //CarMonitorActivity.this.serviceBinder.addBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
-            //CarMonitorActivity.this.serviceBinder.addPacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
-            CarMonitorActivity.this.carSystemListAdapter.updateFromStore(CarMonitorActivity.this.serviceBinder.getVariableStore());
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            CarMonitorActivity.this.serviceBinder.unsubscribe(CarMonitorActivity.this.readFilter, CanObservable.class);
-            //CarMonitorActivity.this.serviceBinder.removeBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
-            //CarMonitorActivity.this.serviceBinder.removePacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
-            CarMonitorActivity.this.serviceBinder = null;
-        }
-    };
 
     /*
     private UsageStatistics.UsageStatisticsListener bandwidthStatisticsListener = new UsageStatistics.UsageStatisticsListener() {
@@ -105,14 +84,30 @@ public class CarMonitorActivity extends AppCompatActivity {
     };
      */
 
-    private void canReaderConnected(CanObservable feature) {
-        feature.addListener(this.canListener);
-        this.canReaderConnected = true;
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            this.initStatusGrid();
+            this.initConnetionGrid();
+            // FIXME: This will cause problems when multiple can devices are connected. The activity should be limited to one device. Maybe abstract a FeatureActivity?
+            deviceService.subscribeFeature(CarMonitorActivity.this.readFilter, CanObservable.class);
+            //CarMonitorActivity.this.serviceBinder.addBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
+            //CarMonitorActivity.this.serviceBinder.addPacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
+            this.carSystemListAdapter.updateFromStore(deviceService.getVariableStore());
+        } else {
+            deviceService.unsubscribeFeature(CarMonitorActivity.this.readFilter, CanObservable.class);
+            //CarMonitorActivity.this.serviceBinder.removeBandwidthStatisticsListener(CarMonitorActivity.this.bandwidthStatisticsListener);
+            //CarMonitorActivity.this.serviceBinder.removePacketStatisticsListener(CarMonitorActivity.this.packetStatisticsListener);
+        }
     }
 
-    private void canReaderDisconnected(CanObservable feature) {
-        feature.removeListener(this.canListener);
-        this.canReaderConnected = false;
+    private void canReaderStateChange(@NonNull CanObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            feature.addListener(this.canListener);
+            this.canReaderConnected = true;
+        } else {
+            feature.removeListener(this.canListener);
+            this.canReaderConnected = false;
+        }
     }
 
     @Override
@@ -160,13 +155,13 @@ public class CarMonitorActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         CarMonitorActivity.this.packetListView.stopLiveMode();
-        this.getApplicationContext().unbindService(this.deviceServiceConnection);
+        this.serviceConnection.unbind(this.getApplicationContext());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.serviceConnection.bind(this.getApplicationContext());
         if (this.bottomBar.getSelectedItemId() == R.id.action_connection) {
             CarMonitorActivity.this.packetListView.startLiveMode();
         }

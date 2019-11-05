@@ -3,16 +3,13 @@ package de.jlab.cardroid;
 
 import android.annotation.TargetApi;
 import android.app.Application;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -30,8 +27,10 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
+import de.jlab.cardroid.overlay.OverlayWindow;
 
 /**
  * FIXME: Migrate this legacy crap to androix.preferences
@@ -47,17 +46,8 @@ import de.jlab.cardroid.devices.storage.DeviceRepository;
  */
 public final class SettingsActivity extends AppCompatPreferenceActivity {
 
-    private DeviceService.DeviceServiceBinder deviceService;
-
-    private ServiceConnection deviceServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            deviceService = (DeviceService.DeviceServiceBinder) service;
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            deviceService = null;
-        }
-    };
+    private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
+    private OverlayWindow overlay = null;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -119,6 +109,14 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            this.overlay = deviceService.getOverlay();
+        } else {
+            this.overlay = null;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,14 +128,14 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onResume() {
         super.onResume();
 
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.deviceServiceConnection, Context.BIND_AUTO_CREATE);
+        this.serviceConnection.bind(this.getApplicationContext());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        this.getApplicationContext().unbindService(this.deviceServiceConnection);
+        this.serviceConnection.unbind(this.getApplicationContext());
     }
 
     /**
@@ -152,11 +150,15 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     private void showOverlay() {
-        this.deviceService.getOverlay().create();
+        if (this.overlay != null) {
+            this.overlay.create();
+        }
     }
 
     private void hideOverlay() {
-        this.deviceService.getOverlay().destroy();
+        if (this.overlay != null) {
+            this.overlay.destroy();
+        }
     }
 
     /**

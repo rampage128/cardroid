@@ -16,8 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import de.jlab.cardroid.R;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
 
@@ -27,14 +28,14 @@ public class GpsController {
     private Context context;
     private DeviceController deviceController;
     private LocationManager locationManager;
-    private FeatureFilter<GpsObservable> gpsFilter = new FeatureFilter<>(GpsObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
+    private Device.FeatureChangeObserver<GpsObservable> gpsFilter = this::onGpsFeatureStateChange;
     private GpsObservable.PositionListener positionListener = this::updatePosition;
 
     public GpsController(@NonNull DeviceController deviceController, @NonNull Context context) {
         this.deviceController = deviceController;
         this.context = context;
 
-        this.deviceController.addSubscriber(this.gpsFilter, GpsObservable.class);
+        this.deviceController.subscribeFeature(this.gpsFilter, GpsObservable.class);
 
         this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
@@ -79,7 +80,7 @@ public class GpsController {
             }
         }
 
-        this.deviceController.removeSubscriber(this.gpsFilter);
+        this.deviceController.unsubscribeFeature(this.gpsFilter, GpsObservable.class);
     }
 
     private void updatePosition(@NonNull GpsPosition position, String sentence) {
@@ -90,16 +91,16 @@ public class GpsController {
         }
     }
 
-    private void onFeatureAvailable(@NonNull GpsObservable feature) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
-        String deviceUid = prefs.getString("gps_device_uid", null);
-        if (deviceUid != null && feature.getDevice() != null && feature.getDevice().isDevice(new DeviceUid(deviceUid))) {
-            feature.addListener(this.positionListener);
+    private void onGpsFeatureStateChange(@NonNull GpsObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
+            String deviceUid = prefs.getString("gps_device_uid", null);
+            if (deviceUid != null && feature.getDevice() != null && feature.getDevice().isDevice(new DeviceUid(deviceUid))) {
+                feature.addListener(this.positionListener);
+            }
+        } else {
+            feature.removeListener(this.positionListener);
         }
-    }
-
-    private void onFeatureUnavailable(@NonNull GpsObservable feature) {
-        feature.removeListener(this.positionListener);
     }
 
     private boolean checkGpsPermissions() {

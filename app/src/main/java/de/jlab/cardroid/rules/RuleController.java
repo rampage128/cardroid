@@ -8,8 +8,9 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.carduino.EventObservable;
 import de.jlab.cardroid.rules.storage.ActionEntity;
@@ -21,7 +22,7 @@ public final class RuleController {
 
     private KnownEvents knownEvents;
     private HashMap<EventEntity, Rule> rules = new HashMap<>();
-    private FeatureFilter<EventObservable> eventFilter = new FeatureFilter<>(EventObservable.class, null, this::onFeatureAvailable, this::onFeatureUnavailable);
+    private Device.FeatureChangeObserver<EventObservable> eventFilter = this::onEventFeatureStateChange;
 
     private Application app;
     private DeviceController deviceController;
@@ -35,7 +36,7 @@ public final class RuleController {
     public RuleController(@NonNull DeviceController deviceController, @NonNull Application app) {
         this.app = app;
         this.deviceController = deviceController;
-        this.deviceController.addSubscriber(this.eventFilter, EventObservable.class);
+        this.deviceController.subscribeFeature(this.eventFilter, EventObservable.class);
 
         this.knownEvents = new KnownEvents();
         this.eventRepo = new EventRepository(app);
@@ -46,15 +47,15 @@ public final class RuleController {
     public void dispose() {
         this.eventRepo.getAll().removeObserver(this.knownEventUpdater);
         this.eventRepo.getAllRules().removeObserver(this.ruleUpdater);
-        this.deviceController.removeSubscriber(this.eventFilter);
+        this.deviceController.unsubscribeFeature(this.eventFilter, EventObservable.class);
     }
 
-    private void onFeatureAvailable(@NonNull EventObservable feature) {
-        feature.addListener(this.eventTrigger);
-    }
-
-    private void onFeatureUnavailable(@NonNull EventObservable feature) {
-        feature.removeListener(this.eventTrigger);
+    private void onEventFeatureStateChange(@NonNull EventObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            feature.addListener(this.eventTrigger);
+        } else {
+            feature.removeListener(this.eventTrigger);
+        }
     }
 
     private void triggerRule(int identifier, @NonNull DeviceUid deviceUid) {

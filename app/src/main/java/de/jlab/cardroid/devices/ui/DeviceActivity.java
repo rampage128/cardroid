@@ -1,13 +1,9 @@
 package de.jlab.cardroid.devices.ui;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.Html;
 import android.view.WindowManager;
 
@@ -22,6 +18,7 @@ import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.identification.DeviceUid;
@@ -34,22 +31,8 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
     public static final String EXTRA_DEVICE_ID = "deviceId";
     public static final String EXTRA_DEVICE_UID = "deviceUid";
 
+    private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
     private DeviceService.DeviceServiceBinder deviceService;
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            deviceService = (DeviceService.DeviceServiceBinder) service;
-            DeviceActivity.this.subscribeFragment(DeviceActivity.this.getMaster());
-            DeviceActivity.this.subscribeFragment(DeviceActivity.this.getActiveFragment());
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            DeviceActivity.this.unsubscribeFragment(DeviceActivity.this.getMaster());
-            DeviceActivity.this.unsubscribeFragment(DeviceActivity.this.getActiveFragment());
-            deviceService = null;
-        }
-    };
 
     @Override
     public void onDeviceDetailStart(@NonNull DeviceDetailFragment fragment) {
@@ -71,11 +54,24 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
         unsubscribeFragment(fragment);
     }
 
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            DeviceActivity.this.subscribeFragment(DeviceActivity.this.getMaster());
+            DeviceActivity.this.subscribeFragment(DeviceActivity.this.getActiveFragment());
+            this.deviceService = deviceService;
+        } else {
+            DeviceActivity.this.unsubscribeFragment(DeviceActivity.this.getMaster());
+            DeviceActivity.this.unsubscribeFragment(DeviceActivity.this.getActiveFragment());
+            this.deviceService = null;
+        }
+    }
+
     private void unsubscribeFragment(@Nullable Fragment fragment) {
         if (this.deviceService != null) {
             if (fragment instanceof DeviceDetailFragment) {
                 this.deviceService.unsubscribeDeviceState((DeviceDetailFragment) fragment);
-                this.deviceService.unsubscribe((DeviceDetailFragment) fragment, Feature.class);
+                // TODO: Add deviceUid, so we don't have to filter inside DeviceDetailFragment
+                this.deviceService.subscribeFeature((DeviceDetailFragment) fragment, Feature.class);
             } else if (fragment instanceof DeviceListFragment) {
                 this.deviceService.unsubscribeDeviceState((DeviceListFragment) fragment);
             }
@@ -86,7 +82,7 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
         if (this.deviceService != null) {
             if (fragment instanceof DeviceDetailFragment) {
                 this.deviceService.subscribeDeviceState((DeviceDetailFragment) fragment);
-                this.deviceService.subscribe((DeviceDetailFragment) fragment, Feature.class);
+                this.deviceService.unsubscribeFeature((DeviceDetailFragment) fragment, Feature.class);
             } else if (fragment instanceof DeviceListFragment) {
                 this.deviceService.subscribeDeviceState((DeviceListFragment) fragment);
             }
@@ -120,14 +116,14 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
     protected void onResume() {
         super.onResume();
 
-        this.getApplicationContext().bindService(new Intent(this.getApplicationContext(), DeviceService.class), this.connection, Context.BIND_AUTO_CREATE);
+        this.serviceConnection.bind(this.getApplicationContext());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        this.getApplicationContext().unbindService(this.connection);
+        this.serviceConnection.unbind(this.getApplicationContext());
     }
 
     private void showDevice(int deviceId, @NonNull DeviceUid deviceUid) {

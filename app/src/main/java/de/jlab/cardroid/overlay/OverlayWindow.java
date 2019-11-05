@@ -22,6 +22,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
@@ -160,10 +161,16 @@ public class OverlayWindow {
         this.context = context;
     }
 
-    public static final boolean isDevice(@NonNull Device device, @NonNull Context context) {
+    @Nullable
+    private static DeviceUid getDeviceUid(@NonNull Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String deviceUid = prefs.getString("overlay_device_uid", null);
-        return deviceUid != null && device.isDevice(new DeviceUid(deviceUid));
+        return deviceUid != null ? new DeviceUid(deviceUid) : null;
+    }
+
+    public static boolean isDevice(@NonNull Device device, @NonNull Context context) {
+        DeviceUid deviceUid = getDeviceUid(context);
+        return deviceUid != null && device.isDevice(deviceUid);
     }
 
     public void create() {
@@ -173,7 +180,7 @@ public class OverlayWindow {
 
         this.uiHandler = new Handler();
 
-        this.acController = new AcCanController(this.deviceController);
+        this.acController = new AcCanController(this.deviceController, getDeviceUid(this.context));
 
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 

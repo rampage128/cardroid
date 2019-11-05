@@ -6,7 +6,7 @@ public class UsageStatistics {
     private ArrayList<UsageStatisticsListener> listeners = new ArrayList<>();
 
     private ArrayList<Integer> history = new ArrayList<>();
-    private long firstTime = 0;
+    private StopWatch stopWatch = new StopWatch();
     private int count = 0;
 
     private long interval;
@@ -18,8 +18,7 @@ public class UsageStatistics {
     }
 
     public void count(int amount) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - this.firstTime > this.interval) {
+        if (stopWatch.take(StopWatch.Unit.MILLIS) > this.interval) {
             this.history.add(0, this.count);
             if (this.history.size() > this.historyLength) {
                 this.history.subList(this.historyLength, this.history.size()).clear();
@@ -30,7 +29,7 @@ public class UsageStatistics {
             }
 
             this.count = 0;
-            this.firstTime = currentTime;
+            stopWatch.start();
         }
 
         this.count += amount;

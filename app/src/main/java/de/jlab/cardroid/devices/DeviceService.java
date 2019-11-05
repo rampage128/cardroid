@@ -76,7 +76,7 @@ public final class DeviceService extends Service {
                         new GpsSerialMatcher()
                 ));
 
-        this.deviceController.addStateSubscriber(this.deviceStateObserver);
+        this.deviceController.subscribeState(this.deviceStateObserver);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE CREATED");
     }
@@ -109,7 +109,7 @@ public final class DeviceService extends Service {
         this.errorController.dispose();
         this.gpsController.dispose();
 
-        this.deviceController.removeStateSubscriber(this.deviceStateObserver);
+        this.deviceController.unsubscribeState(this.deviceStateObserver);
 
         Log.e(this.getClass().getSimpleName(), "SERVICE DESTROYED");
     }
@@ -183,20 +183,20 @@ public final class DeviceService extends Service {
             return DeviceService.this.deviceController.get(uid);
         }
 
-        public <FT extends Feature> void subscribe(@NonNull FeatureObserver<FT> observer, Class<FT> featureClass) {
-            DeviceService.this.deviceController.addSubscriber(observer, featureClass);
+        public <FT extends Feature> void subscribeFeature(@NonNull Device.FeatureChangeObserver<FT> observer, @NonNull Class<FT> featureClass, @NonNull DeviceUid... deviceUids) {
+            DeviceService.this.deviceController.subscribeFeature(observer, featureClass, deviceUids);
         }
 
-        public <FT extends Feature> void unsubscribe(@NonNull FeatureObserver<FT> observer, Class<FT> featureClass) {
-            DeviceService.this.deviceController.addSubscriber(observer, featureClass);
+        public <FT extends Feature> void unsubscribeFeature(@NonNull Device.FeatureChangeObserver<FT> observer, @NonNull Class<FT> featureClass) {
+            DeviceService.this.deviceController.unsubscribeFeature(observer, featureClass);
         }
 
-        public void subscribeDeviceState(@NonNull Device.StateObserver observer) {
-            DeviceService.this.deviceController.addStateSubscriber(observer);
+        public void subscribeDeviceState(@NonNull Device.StateObserver observer, @NonNull DeviceUid... deviceUids) {
+            DeviceService.this.deviceController.subscribeState(observer, deviceUids);
         }
 
         public void unsubscribeDeviceState(@NonNull Device.StateObserver observer) {
-            DeviceService.this.deviceController.removeStateSubscriber(observer);
+            DeviceService.this.deviceController.unsubscribeState(observer);
         }
 
         public VariableController getVariableStore() {

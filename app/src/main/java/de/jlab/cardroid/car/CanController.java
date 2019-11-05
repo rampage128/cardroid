@@ -1,14 +1,14 @@
 package de.jlab.cardroid.car;
 
-import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
-import de.jlab.cardroid.devices.FeatureFilter;
+import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.VariableController;
@@ -168,19 +168,18 @@ public final class CanController {
     }
 
     private static class CanConfig {
-        private FeatureFilter<CanInteractable> sendFilter;
-        private FeatureFilter<CanObservable> receiveFilter;
+        // FIXME CanConfig creates a lot of Observers. Maybe we can reduce this in a smart way?
+        private Device.FeatureChangeObserver<CanInteractable> sendFilter;
+        private Device.FeatureChangeObserver<CanObservable> receiveFilter;
 
         private SparseArray<CanPacketDescriptor> packetDescriptors = new SparseArray<>();
 
         public CanConfig(@Nullable DeviceUid deviceUid, @NonNull DeviceController deviceController) {
             // Register feature filters for deviceUid in DeviceController
-            this.receiveFilter = new FeatureFilter<>(CanObservable.class, deviceUid,
-                    this::registerVariables, this::unregisterVariables);
-            this.sendFilter = new FeatureFilter<>(CanInteractable.class, deviceUid,
-                    this::registerCanIds, this::unregisterCanIds);
-            deviceController.addSubscriber(this.receiveFilter, CanObservable.class);
-            deviceController.addSubscriber(this.sendFilter, CanInteractable.class);
+            this.sendFilter = this::interactableStateChange;
+            this.receiveFilter = this::observableStateChange;
+            deviceController.subscribeFeature(this.receiveFilter, CanObservable.class, deviceUid);
+            deviceController.subscribeFeature(this.sendFilter, CanInteractable.class, deviceUid);
         }
 
         public void addCanValues(int canId, @NonNull CanValue... values) {
@@ -204,13 +203,14 @@ public final class CanController {
         }
 
         public void dispose(@NonNull DeviceController deviceController) {
-            deviceController.removeSubscriber(this.sendFilter);
-            deviceController.removeSubscriber(this.receiveFilter);
+            deviceController.unsubscribeFeature(this.sendFilter, CanInteractable.class);
+            deviceController.unsubscribeFeature(this.receiveFilter, CanObservable.class);
         }
 
-        private void registerCanIds(CanInteractable interactable) {
-            for(int i = 0; i < this.packetDescriptors.size(); i++) {
-                CanPacketDescriptor descriptor = this.packetDescriptors.valueAt(i);
+        private void interactableStateChange(@NonNull CanInteractable interactable, @NonNull Feature.State state) {
+            if (state == Feature.State.AVAILABLE) {
+                for (int i = 0; i < this.packetDescriptors.size(); i++) {
+                    CanPacketDescriptor descriptor = this.packetDescriptors.valueAt(i);
                 /*
                 StringBuilder sb = new StringBuilder("Register can id " + String.format("%04X", this.packetDescriptors.valueAt(i).getCanId()) + ": ");
                 for (int y = 0; y < 8; y++) {
@@ -218,25 +218,24 @@ public final class CanController {
                 }
                 Log.e(this.getClass().getSimpleName(), sb.toString());
                  */
-                interactable.registerCanId(descriptor);
+                    interactable.registerCanId(descriptor);
+                }
+            } else {
+                for(int i = 0; i < this.packetDescriptors.size(); i++) {
+                    interactable.unregisterCanId(this.packetDescriptors.valueAt(i));
+                }
             }
         }
 
-        private void unregisterCanIds(CanInteractable interactable) {
-            for(int i = 0; i < this.packetDescriptors.size(); i++) {
-                interactable.unregisterCanId(this.packetDescriptors.valueAt(i));
-            }
-        }
-
-        private void registerVariables(CanObservable observable) {
-            for(int i = 0; i < this.packetDescriptors.size(); i++) {
-                observable.addListener(this.packetDescriptors.valueAt(i));
-            }
-        }
-
-        private void unregisterVariables(CanObservable observable) {
-            for(int i = 0; i < this.packetDescriptors.size(); i++) {
-                observable.removeListener(this.packetDescriptors.valueAt(i));
+        private void observableStateChange(@NonNull CanObservable observable, @NonNull Feature.State state) {
+            if (state == Feature.State.AVAILABLE) {
+                for (int i = 0; i < this.packetDescriptors.size(); i++) {
+                    observable.addListener(this.packetDescriptors.valueAt(i));
+                }
+            } else {
+                for(int i = 0; i < this.packetDescriptors.size(); i++) {
+                    observable.removeListener(this.packetDescriptors.valueAt(i));
+                }
             }
         }
     }
