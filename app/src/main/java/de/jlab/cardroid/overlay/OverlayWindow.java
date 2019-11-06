@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceActivity;
@@ -90,6 +91,10 @@ public class OverlayWindow {
         View toggleButton;
         TextView mainText;
         SeekArc mainFanIcon;
+
+        View volumeContainer;
+        SeekArc volumeArc;
+        TextView volumeText;
 
         View detailView;
 
@@ -205,6 +210,11 @@ public class OverlayWindow {
         viewHolder.mainText = (TextView)viewHolder.rootView.findViewById(R.id.mainText);
         viewHolder.mainFanIcon = (SeekArc)viewHolder.rootView.findViewById(R.id.mainFanIcon);
 
+
+        viewHolder.volumeContainer = viewHolder.rootView.findViewById(R.id.volumeContainer);
+        viewHolder.volumeArc = viewHolder.rootView.findViewById(R.id.volumeArc);
+        viewHolder.volumeText = viewHolder.rootView.findViewById(R.id.volumeText);
+
         viewHolder.detailView = viewHolder.rootView.findViewById(R.id.detailContainer);
 
         viewHolder.offButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.offButton);
@@ -243,6 +253,62 @@ public class OverlayWindow {
         // Make overlay toggleable
         viewHolder.toggleButton.setOnClickListener(v -> toggle());
         viewHolder.detailView.setOnClickListener(v -> toggle());
+
+        AudioManager audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+        viewHolder.toggleButton.setOnTouchListener(new TapTouchListener(this.uiHandler, (view, action, motionEvent) -> {
+            if (action == TapTouchListener.Action.START_HOLD) {
+                viewHolder.volumeContainer.setVisibility(View.VISIBLE);
+                //viewHolder.volumeArc.dispatchTouchEvent(motionEvent);
+
+                int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                int initialProgress = Math.round(viewHolder.volumeArc.getMax() * (currentVolume / (float)maxVolume));
+                viewHolder.volumeArc.setProgress(initialProgress);
+                String text = (initialProgress * 10) + "%";
+                viewHolder.volumeText.setText(text);
+
+                viewHolder.mainText.setVisibility(View.GONE);
+                viewHolder.mainFanIcon.setVisibility(View.GONE);
+                viewHolder.volumeText.setVisibility(View.VISIBLE);
+            } else if (action == TapTouchListener.Action.STOP_HOLD) {
+                viewHolder.volumeArc.dispatchTouchEvent(motionEvent);
+                viewHolder.volumeContainer.setVisibility(View.GONE);
+            } else if (action == TapTouchListener.Action.MOVE_HOLD) {
+                viewHolder.volumeArc.dispatchTouchEvent(motionEvent);
+            }
+        }));
+
+        viewHolder.volumeArc.setOnSeekArcChangeListener(new SeekArc.OnSeekArcChangeListener() {
+
+            private int progress = -1;
+
+            @Override
+            public void onProgressChanged(SeekArc seekArc, int progress, boolean fromUser) {
+                // TODO only update if touch position is outside toggleButton radius
+                String text = (progress * 10) + "%";
+                viewHolder.volumeText.setText(text);
+                this.progress = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekArc seekArc) {
+                // This can not be used with injected touch events, because the MotionEvent will never fire ACTION_DOWN
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekArc seekArc) {
+                if (this.progress > -1) {
+                    int newVolume = Math.round(maxVolume * (this.progress / (float) seekArc.getMax()));
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0);
+
+                    viewHolder.volumeText.setVisibility(View.GONE);
+                    viewHolder.mainText.setVisibility(View.VISIBLE);
+                    viewHolder.mainFanIcon.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
 
         View.OnClickListener buttonListener = view -> {
             switch (view.getId()) {
@@ -330,11 +396,10 @@ public class OverlayWindow {
 
         // Set up initial view state
         viewHolder.detailView.setVisibility(View.GONE);
+        viewHolder.volumeContainer.setVisibility(View.GONE);
         updateUi();
         this.attachBubbleData();
     }
-
-
 
     private void attachBubbleData() {
         attach("hvacTargetTemperature", this.bubbleListener);
