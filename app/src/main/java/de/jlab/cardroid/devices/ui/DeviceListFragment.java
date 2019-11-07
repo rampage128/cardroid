@@ -77,9 +77,10 @@ public final class DeviceListFragment extends Fragment implements MasterDetailFl
         recyclerView.setAdapter(adapter);
 
         this.viewModel = ViewModelProviders.of(this).get(DeviceListViewModel.class);
-        this.viewModel.getAll().observe(this, adapter::setDevices);
-
-        mListener.onDeviceListStart(this);
+        this.viewModel.getAll().observe(this, deviceEntities -> {
+            adapter.setDevices(deviceEntities);
+            mListener.onDeviceListStart(this);
+        });
 
         return rootView;
     }

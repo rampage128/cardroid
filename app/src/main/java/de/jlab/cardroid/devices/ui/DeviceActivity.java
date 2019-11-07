@@ -36,6 +36,7 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
 
     @Override
     public void onDeviceDetailStart(@NonNull DeviceDetailFragment fragment) {
+        unsubscribeFragment(fragment);
         subscribeFragment(fragment);
     }
 
@@ -46,6 +47,7 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
 
     @Override
     public void onDeviceListStart(@NonNull DeviceListFragment fragment) {
+        unsubscribeFragment(fragment);
         subscribeFragment(fragment);
     }
 
@@ -71,7 +73,7 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
             if (fragment instanceof DeviceDetailFragment) {
                 this.deviceService.unsubscribeDeviceState((DeviceDetailFragment) fragment);
                 // TODO: Add deviceUid, so we don't have to filter inside DeviceDetailFragment
-                this.deviceService.subscribeFeature((DeviceDetailFragment) fragment, Feature.class);
+                this.deviceService.unsubscribeFeature((DeviceDetailFragment) fragment, Feature.class);
             } else if (fragment instanceof DeviceListFragment) {
                 this.deviceService.unsubscribeDeviceState((DeviceListFragment) fragment);
             }
@@ -82,7 +84,7 @@ public final class DeviceActivity extends MasterDetailFlowActivity implements De
         if (this.deviceService != null) {
             if (fragment instanceof DeviceDetailFragment) {
                 this.deviceService.subscribeDeviceState((DeviceDetailFragment) fragment);
-                this.deviceService.unsubscribeFeature((DeviceDetailFragment) fragment, Feature.class);
+                this.deviceService.subscribeFeature((DeviceDetailFragment) fragment, Feature.class);
             } else if (fragment instanceof DeviceListFragment) {
                 this.deviceService.subscribeDeviceState((DeviceListFragment) fragment);
             }

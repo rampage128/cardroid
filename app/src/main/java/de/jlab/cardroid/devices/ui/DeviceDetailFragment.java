@@ -127,10 +127,10 @@ public final class DeviceDetailFragment extends Fragment implements MasterDetail
 
                 adapter.setFeatures(FeatureType.get(deviceEntity));
                 this.updateUi();
+
+                mListener.onDeviceDetailStart(this);
             });
         }
-
-        mListener.onDeviceDetailStart(this);
 
         return rootView;
     }
