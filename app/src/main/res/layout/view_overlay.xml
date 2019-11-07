@@ -198,11 +198,11 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    seekarc:arcWidth="4dp"
+                    seekarc:arcWidth="8dp"
                     seekarc:clockwise="false"
                     seekarc:max="7"
                     seekarc:progress="0"
-                    seekarc:progressWidth="4dp"
+                    seekarc:progressWidth="8dp"
                     seekarc:roundEdges="true"
                     seekarc:segmentGap="12"
                     seekarc:segments="7"
@@ -265,15 +265,15 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    seekarc:arcWidth="4dp"
+                    seekarc:arcWidth="8dp"
                     seekarc:max="28"
                     seekarc:progress="0"
-                    seekarc:progressWidth="4dp"
+                    seekarc:progressWidth="8dp"
                     seekarc:roundEdges="true"
-                    seekarc:segmentGap="6"
+                    seekarc:segmentGap="7"
                     seekarc:segments="28"
                     seekarc:startAngle="100"
-                    seekarc:sweepAngle="250"/>
+                    seekarc:sweepAngle="250" />
 
                 <TextView
                     android:id="@+id/temperatureChangeText"
@@ -502,7 +502,8 @@
             seekarc:segmentGap="12"
             seekarc:segments="10"
             seekarc:startAngle="75"
-            seekarc:sweepAngle="210"/>
+            seekarc:sweepAngle="210"
+            seekarc:touchInside="false" />
 
     </androidx.cardview.widget.CardView>
 
