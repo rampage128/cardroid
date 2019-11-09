@@ -15,9 +15,12 @@ public final class VolumeControls extends Overlay {
     private SeekArc muteDial;
     private SeekArc volumeDial;
     private TextView volumeText;
+    private int steps;
 
-    public VolumeControls(@NonNull Context context) {
+    public VolumeControls(@NonNull Context context, int steps) {
         super(context);
+
+        this.steps = steps;
     }
 
     @Override
@@ -29,6 +32,9 @@ public final class VolumeControls extends Overlay {
         this.muteDial = findViewById(R.id.muteDial);
         this.volumeDial = findViewById(R.id.volumeDial);
         this.volumeText = findViewById(R.id.text);
+
+        this.volumeDial.setMax(this.steps);
+        this.volumeDial.setSegments(this.steps);
 
         windowParams.width = windowParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         windowParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
@@ -49,7 +55,7 @@ public final class VolumeControls extends Overlay {
 
     private void updateOther() {
         int progress = this.volumeDial.getProgress();
-        String text = (progress * 10) + "%";
+        String text = ((100f / this.volumeDial.getMax()) * progress) + "%";
         this.volumeText.setText(text);
         this.muteDial.setProgress(progress > 0 ? 0 : 1);
     }

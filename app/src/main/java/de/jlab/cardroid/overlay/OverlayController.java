@@ -37,7 +37,11 @@ public final class OverlayController {
         int minTemperature = Integer.valueOf(prefs.getString("overlay_temperature_min", "16"));
         int maxTemperature = Integer.valueOf(prefs.getString("overlay_temperature_max", "30"));
 
-        this.bubble = new CarBubble(variableController, this, context, maxFanLevel, minTemperature, maxTemperature);
+        int volumeSteps = Integer.valueOf(prefs.getString("overlay_volume_steps", "10"));
+        long volumeTouchDuration = Long.valueOf(prefs.getString("overlay_volume_touch_duration", "100"));
+        boolean enableVolumeControls = prefs.getBoolean("overlay_volume_enabled", true);
+
+        this.bubble = new CarBubble(variableController, this, context, maxFanLevel, minTemperature, maxTemperature, enableVolumeControls, volumeTouchDuration);
         this.bubble.create();
 
 
@@ -49,7 +53,7 @@ public final class OverlayController {
 
         this.carControls = new CarControls(variableController, this.acController, context, maxFanLevel, minTemperature, maxTemperature);
         this.carControls.create();
-        this.volumeControls = new VolumeControls(context);
+        this.volumeControls = new VolumeControls(context, volumeSteps);
         this.volumeControls.create();
     }
 

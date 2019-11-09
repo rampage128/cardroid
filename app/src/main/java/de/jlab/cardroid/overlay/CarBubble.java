@@ -24,17 +24,21 @@ public final class CarBubble extends Overlay {
     private int maxFanLevel;
     private int minTemperature;
     private int maxTemperature;
+    private boolean enableVolumeControl;
+    private long volumeControlTouchDuration;
 
     private Variable.VariableChangeListener variableListener = this::onVariableChange;
     private TapTouchListener.ActionListener onTapTouch = this::onTapTouch;
 
-    public CarBubble(@NonNull VariableController variableController, @NonNull OverlayController overlayController, @NonNull Context context, int maxFanLevel, int minTemperature, int maxTemperature) {
+    public CarBubble(@NonNull VariableController variableController, @NonNull OverlayController overlayController, @NonNull Context context, int maxFanLevel, int minTemperature, int maxTemperature, boolean enableVolumeControl, long volumeControlTouchDuration) {
         super(context);
         this.variableController = variableController;
         this.overlayController = overlayController;
         this.maxFanLevel = maxFanLevel;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
+        this.enableVolumeControl = enableVolumeControl;
+        this.volumeControlTouchDuration = volumeControlTouchDuration;
     }
 
     private void onVariableChange(Object oldValue, Object newValue, String variableName) {
@@ -80,13 +84,9 @@ public final class CarBubble extends Overlay {
         this.fanSeekBar.setSegments(this.maxFanLevel);
 
         contentView.setOnClickListener(v -> showCarControls());
-        contentView.setOnTouchListener(new TapTouchListener(new Handler(context.getMainLooper()), this.onTapTouch));
-
-        /* TODO integrate volume control ...
-         * on touch longer than 100ms we show VolumeOverlay (If touch stops before 100ms we trigger a click)
-         * when moving outside of a defined radius (> than this view) we calculate volume based on angle and update VolumeOverlay
-         * when stop touching we apply volume and hide VolumeOverlay
-         */
+        if (this.enableVolumeControl) {
+            contentView.setOnTouchListener(new TapTouchListener(new Handler(context.getMainLooper()), this.onTapTouch, this.volumeControlTouchDuration));
+        }
 
         windowParams.width = windowParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         windowParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;

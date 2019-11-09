@@ -206,6 +206,13 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_overlay);
             setHasOptionsMenu(true);
 
+            ListPreference volumeStepsPreference = (ListPreference)findPreference("overlay_volume_steps");
+            volumeStepsPreference.setEntryValues(R.array.overlay_volume_steps);
+            volumeStepsPreference.setEntries(R.array.overlay_volume_steps);
+
+            bindPreferenceSummaryToValue(findPreference("overlay_volume_touch_duration"));
+            bindPreferenceSummaryToValue(volumeStepsPreference);
+
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_max"));
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_min"));
             bindPreferenceSummaryToValue(findPreference("overlay_fan_max"));

@@ -21,10 +21,12 @@ public class TapTouchListener implements View.OnTouchListener {
     private MotionEvent event;
     private View view;
     private boolean isHolding = false;
+    private long touchDuration;
 
-    public TapTouchListener(@NonNull Handler handler, @NonNull ActionListener actionListener) {
+    public TapTouchListener(@NonNull Handler handler, @NonNull ActionListener actionListener, long touchDuration) {
         this.handler = handler;
         this.actionListener = actionListener;
+        this.touchDuration = touchDuration;
     }
 
     private void startHolding() {
@@ -36,7 +38,7 @@ public class TapTouchListener implements View.OnTouchListener {
         this.stopCheckHolding();
         this.view = view;
         this.event = event;
-        this.handler.postDelayed(this.checkHolding, 100);
+        this.handler.postDelayed(this.checkHolding, this.touchDuration);
     }
 
     private void stopCheckHolding() {
