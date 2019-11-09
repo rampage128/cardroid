@@ -6,7 +6,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-public final class TapTouchListener implements View.OnTouchListener {
+public class TapTouchListener implements View.OnTouchListener {
 
     public enum Action {
         START_HOLD,

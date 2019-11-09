@@ -23,7 +23,7 @@ import de.jlab.cardroid.devices.identification.DeviceConnectionId;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.errors.ErrorController;
 import de.jlab.cardroid.gps.GpsController;
-import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.overlay.OverlayController;
 import de.jlab.cardroid.rules.RuleController;
 import de.jlab.cardroid.variables.ScriptEngine;
 import de.jlab.cardroid.variables.VariableController;
@@ -38,7 +38,7 @@ public final class DeviceService extends Service {
     private VariableController variableController;
     private ScriptEngine scriptEngine;
     private CanController canController;
-    private OverlayWindow overlay;
+    private OverlayController overlayController;
     private RuleController ruleController;
     private ErrorController errorController;
     private GpsController gpsController;
@@ -61,7 +61,7 @@ public final class DeviceService extends Service {
         this.variableController = new VariableController();
         this.scriptEngine = new ScriptEngine();
         this.canController = new CanController(this.deviceController, this.variableController, this.scriptEngine);
-        this.overlay = new OverlayWindow(this.deviceController, this.variableController, this);
+        this.overlayController = new OverlayController(this.variableController, this.deviceController, this);
         this.ruleController = new RuleController(this.deviceController, this.getApplication());
         this.errorController = new ErrorController(this.deviceController, this);
         this.gpsController = new GpsController(this.deviceController, this);
@@ -108,6 +108,7 @@ public final class DeviceService extends Service {
         this.ruleController.dispose();
         this.errorController.dispose();
         this.gpsController.dispose();
+        this.overlayController.dispose();
 
         this.deviceController.unsubscribeState(this.deviceStateObserver);
 
@@ -154,16 +155,6 @@ public final class DeviceService extends Service {
     }
 
     private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-        if (OverlayWindow.isDevice(device, this)) {
-            DeviceService.this.runOnUiThread(() -> {
-                if (state == Device.State.READY) {
-                    DeviceService.this.overlay.create();
-                } else if (state == Device.State.INVALID) {
-                    DeviceService.this.overlay.destroy();
-                }
-            });
-        }
-
         DeviceService.this.disposeIfEmpty();
     }
 
@@ -203,8 +194,8 @@ public final class DeviceService extends Service {
             return DeviceService.this.variableController;
         }
 
-        public OverlayWindow getOverlay() {
-            return DeviceService.this.overlay;
+        public OverlayController getOverlayController() {
+            return DeviceService.this.overlayController;
         }
     }
 

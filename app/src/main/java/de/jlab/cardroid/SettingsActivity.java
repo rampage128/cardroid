@@ -30,7 +30,7 @@ import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
-import de.jlab.cardroid.overlay.OverlayWindow;
+import de.jlab.cardroid.overlay.OverlayController;
 
 /**
  * FIXME: Migrate this legacy crap to androix.preferences
@@ -47,7 +47,7 @@ import de.jlab.cardroid.overlay.OverlayWindow;
 public final class SettingsActivity extends AppCompatPreferenceActivity {
 
     private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
-    private OverlayWindow overlay = null;
+    private OverlayController overlayController = null;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -111,9 +111,9 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
 
     private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
         if (action == DeviceServiceConnection.Action.BOUND) {
-            this.overlay = deviceService.getOverlay();
+            this.overlayController = deviceService.getOverlayController();
         } else {
-            this.overlay = null;
+            this.overlayController = null;
         }
     }
 
@@ -150,14 +150,14 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     private void showOverlay() {
-        if (this.overlay != null) {
-            this.overlay.create();
+        if (this.overlayController != null) {
+            this.overlayController.start();
         }
     }
 
     private void hideOverlay() {
-        if (this.overlay != null) {
-            this.overlay.destroy();
+        if (this.overlayController != null) {
+            this.overlayController.stop();
         }
     }
 

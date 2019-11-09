@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:seekarc="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/toggleButton"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="48dp"
+        app:cardElevation="6dp">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="OFF" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/volumeContainer"
+        android:layout_width="192dp"
+        android:layout_height="192dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        android:translationY="-56dp"
+        app:cardBackgroundColor="@color/colorOverlayBG"
+        app:cardCornerRadius="96dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <de.jlab.cardroid.overlay.SeekArc
+            android:id="@+id/muteDial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:padding="48dp"
+            seekarc:progressColor="#F44336"
+            seekarc:arcWidth="6dp"
+            seekarc:clockwise="false"
+            seekarc:enabled="false"
+            seekarc:max="1"
+            seekarc:progress="0"
+            seekarc:progressWidth="6dp"
+            seekarc:roundEdges="true"
+            seekarc:startAngle="75"
+            seekarc:sweepAngle="20"
+            seekarc:touchInside="false" />
+
+        <de.jlab.cardroid.overlay.SeekArc
+            android:id="@+id/volumeDial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:padding="48dp"
+            seekarc:arcWidth="6dp"
+            seekarc:clockwise="false"
+            seekarc:enabled="false"
+            seekarc:max="10"
+            seekarc:progress="0"
+            seekarc:progressWidth="6dp"
+            seekarc:roundEdges="true"
+            seekarc:segmentGap="12"
+            seekarc:segments="10"
+            seekarc:startAngle="107"
+            seekarc:sweepAngle="178"
+            seekarc:touchInside="false"
+            seekarc:autoLimit="true" />
+
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>

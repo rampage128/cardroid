@@ -12,9 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
 
-/**
- * @deprecated This is deprecated together with OverlayWindow
- */
 public class OverlayToggleButton extends FrameLayout {
 
     private ImageView iconImage;

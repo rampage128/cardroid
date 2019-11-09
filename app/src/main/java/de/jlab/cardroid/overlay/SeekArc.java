@@ -15,14 +15,12 @@ import android.view.View;
 import de.jlab.cardroid.R;
 
 /**
- * @deprecated This is deprecated together with OverlayWindow
  * SeekArc.java
  *
  * This is a class that functions much like a SeekBar but
  * follows a circle path instead of a straight line.
  *
  */
-@Deprecated
 public class SeekArc extends View {
 
     private static final String TAG = SeekArc.class.getSimpleName();
@@ -95,6 +93,8 @@ public class SeekArc extends View {
      */
     private boolean mEnabled = true;
 
+    private boolean mAutoLimit = false;
+
     // Internal variables
     private int mArcRadius = 0;
     private float mProgressSweep = 0;
@@ -108,6 +108,12 @@ public class SeekArc extends View {
     private double mTouchAngle;
     private float mTouchIgnoreRadius;
     private OnSeekArcChangeListener mOnSeekArcChangeListener;
+    private OnSeekArcEventListener mOnSeekArcEventListener;
+    private SeekArcEvent currentEvent = new SeekArcEvent(this);
+
+    public interface OnSeekArcEventListener {
+        void onSeekArcEvent(SeekArcEvent event);
+    }
 
     public interface OnSeekArcChangeListener {
 
@@ -212,6 +218,7 @@ public class SeekArc extends View {
             mClockwise = a.getBoolean(R.styleable.SeekArc_clockwise,
                     mClockwise);
             mEnabled = a.getBoolean(R.styleable.SeekArc_enabled, mEnabled);
+            mAutoLimit = a.getBoolean(R.styleable.SeekArc_autoLimit, mAutoLimit);
 
             arcColor = a.getColor(R.styleable.SeekArc_arcColor, arcColor);
             progressColor = a.getColor(R.styleable.SeekArc_progressColor,
@@ -345,12 +352,20 @@ public class SeekArc extends View {
     }
 
     private void onStartTrackingTouch() {
+        if (mOnSeekArcEventListener != null) {
+            this.currentEvent.update(mProgress, true, SeekArcEvent.Type.TRACKING_STARTED);
+            mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
+        }
         if (mOnSeekArcChangeListener != null) {
             mOnSeekArcChangeListener.onStartTrackingTouch(this);
         }
     }
 
     private void onStopTrackingTouch() {
+        if (mOnSeekArcEventListener != null) {
+            this.currentEvent.update(mProgress, true, SeekArcEvent.Type.TRACKING_STOPPED);
+            mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
+        }
         if (mOnSeekArcChangeListener != null) {
             mOnSeekArcChangeListener.onStopTrackingTouch(this);
         }
@@ -397,10 +412,18 @@ public class SeekArc extends View {
     private int getProgressForAngle(double angle) {
         int touchProgress = (int) Math.round(valuePerDegree() * angle);
 
-        touchProgress = (touchProgress < 0) ? INVALID_PROGRESS_VALUE
-                : touchProgress;
-        touchProgress = (touchProgress > mMax) ? INVALID_PROGRESS_VALUE
-                : touchProgress;
+        if (mAutoLimit) {
+            touchProgress = (touchProgress < 0) ? 0
+                    : touchProgress;
+            touchProgress = (touchProgress > mMax) ? mMax
+                    : touchProgress;
+        } else {
+            touchProgress = (touchProgress < 0) ? INVALID_PROGRESS_VALUE
+                    : touchProgress;
+            touchProgress = (touchProgress > mMax) ? INVALID_PROGRESS_VALUE
+                    : touchProgress;
+        }
+
         return touchProgress;
     }
 
@@ -441,6 +464,10 @@ public class SeekArc extends View {
             updateThumbPosition();
             invalidate();
 
+            if (mOnSeekArcEventListener != null) {
+                this.currentEvent.update(mProgress, fromUser, SeekArcEvent.Type.PROGRESS_CHANGED);
+                mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
+            }
             if (mOnSeekArcChangeListener != null) {
                 mOnSeekArcChangeListener
                         .onProgressChanged(this, progress, fromUser);
@@ -458,6 +485,31 @@ public class SeekArc extends View {
      */
     public void setOnSeekArcChangeListener(OnSeekArcChangeListener l) {
         mOnSeekArcChangeListener = l;
+    }
+
+    public void setOnSeekArcEventListener(OnSeekArcEventListener l) {
+        mOnSeekArcEventListener = l;
+    }
+
+    public void setProgressFromAngle(double angle) {
+        int progress = getProgressForAngle(angle);
+        updateProgress(progress, false);
+    }
+
+    public boolean setProgressFromCoords(int x, int y, boolean fromCenter) {
+        if (fromCenter) {
+            x += mTranslateX;
+            y += mTranslateY;
+        }
+
+        boolean ignoreTouch = ignoreTouch(x, y);
+        if (ignoreTouch) {
+            return false;
+        }
+        double angle = getTouchDegrees(x, y);
+        this.setProgressFromAngle(angle);
+
+        return true;
     }
 
     public void setProgress(int progress) {
@@ -559,6 +611,10 @@ public class SeekArc extends View {
 
     public void setEnabled(boolean enabled) {
         this.mEnabled = enabled;
+    }
+
+    public void setAutoLimit(boolean autoLimit) {
+        mAutoLimit = autoLimit;
     }
 
     public int getProgressColor() {

@@ -32,6 +32,12 @@ public final class VariableController {
         this.subscribers.remove(name);
     }
 
+    public void subscribe(@NonNull Variable.VariableChangeListener subscriber, @NonNull String... variableNames) {
+        for (String variableName : variableNames) {
+            this.subscribe(variableName, subscriber);
+        }
+    }
+
     public void subscribe(@NonNull String variableName, @NonNull Variable.VariableChangeListener subscriber) {
         ArrayList<Variable.VariableChangeListener> variableSubscribers = this.getOrCreateSubscriberList(variableName);
         variableSubscribers.add(subscriber);
@@ -39,6 +45,12 @@ public final class VariableController {
         Variable variable = this.variables.get(variableName);
         if (variable != null) {
             variable.addChangeListener(subscriber);
+        }
+    }
+
+    public void unsubscribe(@NonNull Variable.VariableChangeListener subscriber, @NonNull String... variableNames) {
+        for (String variableName : variableNames) {
+            this.unsubscribe(variableName, subscriber);
         }
     }
 
