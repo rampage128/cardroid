@@ -48,7 +48,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
                 @Override
                 public void run() {
                     currentBaudRateIndex++;
-                    if (currentBaudRateIndex < baudRates.length) {
+                    if (baudRates != null && currentBaudRateIndex < baudRates.length) {
                         connection.setBaudRate(baudRates[currentBaudRateIndex]);
                         UsbSerialDeviceDetector.this.reader.clear();
                     } else {
