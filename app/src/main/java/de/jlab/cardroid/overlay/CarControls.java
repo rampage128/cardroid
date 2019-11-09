@@ -2,7 +2,6 @@ package de.jlab.cardroid.overlay;
 
 import android.content.Context;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
 import de.jlab.cardroid.utils.ui.UnitValues;
@@ -38,7 +36,6 @@ public final class CarControls extends Overlay {
     private int maxFanLevel;
     private int minTemperature;
     private int maxTemperature;
-    private boolean isRounded = false;
     private boolean isTrackingTemperature = false;
     private boolean isTrackingFanLevel = false;
 
@@ -101,8 +98,6 @@ public final class CarControls extends Overlay {
 
         this.views.temperatureDial.setOnSeekArcEventListener(this::onTemperatureEvent);
         this.views.fanDial.setOnSeekArcEventListener(this::onFanLevelEvent);
-
-        this.isRounded = false;
 
         windowParams.width = windowParams.height = WindowManager.LayoutParams.MATCH_PARENT;
     }
@@ -268,29 +263,8 @@ public final class CarControls extends Overlay {
         });
     }
 
-    // FIXME: This is time consuming and makes the initial fade-in of the overlay lag for ~500ms ...
-    private void roundCardViews(View v) {
-        if (v instanceof CardView) {
-            ((CardView)v).setRadius(v.getWidth() / 2f);
-        }
-        else if (v instanceof ViewGroup) {
-            ViewGroup viewGroup = (ViewGroup) v;
-            for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                View child = viewGroup.getChildAt(i);
-                roundCardViews(child);
-            }
-        }
-    }
-
     @Override
     protected void onShow() {
-        if (!this.isRounded) {
-            this.runOnUiThread(() -> {
-                this.roundCardViews(this.views.contentView);
-                this.isRounded = true;
-            });
-        }
-
         this.variableController.subscribe(this.onVariableChange, VARIABLES);
     }
 

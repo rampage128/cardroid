@@ -6,7 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/toggleButton"
         android:layout_width="96dp"
         android:layout_height="96dp"
@@ -29,9 +29,9 @@
             android:textSize="18sp"
             android:textStyle="bold"
             tools:text="OFF" />
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/volumeContainer"
         android:layout_width="192dp"
         android:layout_height="192dp"
@@ -39,6 +39,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:elevation="6dp"
         android:translationY="-56dp"
         app:cardBackgroundColor="@color/colorOverlayBG"
@@ -85,6 +86,6 @@
             seekarc:touchInside="false"
             seekarc:autoLimit="true" />
 
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
 </FrameLayout>

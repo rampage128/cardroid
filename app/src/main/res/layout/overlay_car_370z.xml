@@ -66,7 +66,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_overlay_close"/>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/autoView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -86,9 +86,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="top|start"
             overlaytogglebutton:src="@drawable/ic_cc_auto"/>
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/acView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -109,9 +109,9 @@
             android:layout_height="match_parent"
             overlaytogglebutton:src="@drawable/ic_cc_ac"/>
 
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/modeView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -161,9 +161,9 @@
 
         </FrameLayout>
 
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/fanView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -228,9 +228,9 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/tempView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -312,9 +312,9 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/offView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -335,9 +335,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|center_horizontal"
             overlaytogglebutton:src="@drawable/ic_cc_off"/>
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/wshView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -358,9 +358,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|center_horizontal"
             overlaytogglebutton:src="@drawable/ic_cc_wsh"/>
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/rwhView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -381,9 +381,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|center_horizontal"
             overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
-    <androidx.cardview.widget.CardView
+    <de.jlab.cardroid.utils.ui.RoundCardView
         android:id="@+id/recirculationView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -404,6 +404,6 @@
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|center_horizontal"
             overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
-    </androidx.cardview.widget.CardView>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
