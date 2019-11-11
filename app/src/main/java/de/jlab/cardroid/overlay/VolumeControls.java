@@ -55,7 +55,7 @@ public final class VolumeControls extends Overlay {
 
     private void updateOther() {
         int progress = this.volumeDial.getProgress();
-        String text = ((100f / this.volumeDial.getMax()) * progress) + "%";
+        String text = (int)((100f / this.volumeDial.getMax()) * progress) + "%";
         this.volumeText.setText(text);
         this.muteDial.setProgress(progress > 0 ? 0 : 1);
     }
