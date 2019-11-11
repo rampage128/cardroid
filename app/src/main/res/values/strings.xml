@@ -99,9 +99,12 @@
 
     <!-- status grids -->
     <string name="status_unavailable">N/A</string>
+    <string name="status_device">Device</string>
+    <string name="status_device_none">None</string>
     <string name="status_connection">Connection</string>
     <string name="status_connected">Connected</string>
     <string name="status_disconnected">Disconnected</string>
+    <string name="status_ups">Updates per second</string>
     <string name="status_bps">Serial bps</string>
     <string name="status_usage">Serial usage</string>
     <string name="status_usage_value">%1$d%%</string>
@@ -122,7 +125,8 @@
     <string name="gps_status_bearing">Bearing</string>
     <string name="gps_status_altitude">Altitude</string>
     <string name="gps_status_accuracy">Accuracy</string>
-    <string name="gps_status_satellite_count">Number of satellites</string>
+    <string name="gps_status_satellites_visible">Visible satellites</string>
+    <string name="gps_status_satellites_used">Used satellites</string>
     <string name="gps_status_sps">Sentences per second</string>
     <string name="gps_status_frequency">Frequency</string>
 

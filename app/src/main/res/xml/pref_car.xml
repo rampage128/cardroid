@@ -1,7 +1,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <ListPreference
+        android:key="car_device_uid"
+        android:title="@string/pref_title_device"
+        />
+
     <Preference
-        android:key="gps_monitor"
+        android:key="car_monitor"
         android:title="@string/pref_title_car_monitor"
         android:summary="@string/pref_description_car_monitor">
         <intent android:targetPackage="de.jlab.cardroid"

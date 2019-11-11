@@ -25,6 +25,7 @@ public final class GpsUsbDevice extends UsbSerialDevice<GpsSerialReader> {
         GpsSerialReader reader = new GpsSerialReader();
         reader.addSerialPacketListener(this.positionParser);
         this.setDeviceUid(this.uid);
+        this.setState(State.READY);
         this.addFeature(this.positionParser);
         return reader;
     }

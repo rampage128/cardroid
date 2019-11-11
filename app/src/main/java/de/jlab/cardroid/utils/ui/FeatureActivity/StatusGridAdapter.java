@@ -1,4 +1,4 @@
-package de.jlab.cardroid;
+package de.jlab.cardroid.utils.ui.FeatureActivity;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.LinkedHashMap;
+
+import androidx.annotation.StringRes;
 
 public final class StatusGridAdapter extends BaseAdapter {
 
@@ -48,32 +50,26 @@ public final class StatusGridAdapter extends BaseAdapter {
             convertView = layoutInflater.inflate(android.R.layout.simple_list_item_2, null);
             holder.line1 = (TextView) convertView.findViewById(android.R.id.text1);
             holder.line2 = (TextView) convertView.findViewById(android.R.id.text2);
-            holder.line1.setText(this.context.getString(this.indexList[position]));
             convertView.setTag(holder);
         }
         else {
             holder = (ViewHolder)convertView.getTag();
         }
 
+        holder.line1.setText(this.context.getString(this.indexList[position]));
         holder.line2.setText(this.dataMap.get(this.indexList[position]));
 
         return convertView;
     }
 
-    public void update(int key, String value) {
+    public void clear() {
+        this.dataMap.clear();
+        this.indexList = new Integer[0];
+    }
+
+    public void update(@StringRes int key, String value) {
         this.dataMap.put(key, value);
         this.indexList = this.dataMap.keySet().toArray(this.indexList.length == this.dataMap.size() ? this.indexList : new Integer[this.dataMap.size()]);
     }
 
-    public void updateStatistics(int key, int count, int average, int unit) {
-        this.update(
-                key,
-                this.context.getString(
-                        R.string.status_statistics_value,
-                        count,
-                        this.context.getString(unit),
-                        average
-            )
-        );
-    }
 }

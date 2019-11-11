@@ -7,12 +7,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.TreeMap;
 
+import androidx.annotation.NonNull;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.variables.Expression;
 import de.jlab.cardroid.variables.Variable;
-import de.jlab.cardroid.variables.VariableController;
 
 public class VariableListAdapter extends BaseAdapter {
 
@@ -30,12 +31,24 @@ public class VariableListAdapter extends BaseAdapter {
         this.context = context;
     }
 
-    public void updateFromStore(VariableController store) {
-        Variable[] variables = store.getAll();
+    public void clear() {
+        this.variables.clear();
+        this.variablesByIndex = new Variable[0];
+    }
+
+    public void update(List<Variable> variables) {
         for (Variable variable : variables) {
             this.variables.put(variable.getName(), variable);
         }
         this.variablesByIndex = this.variables.values().toArray(new Variable[0]);
+        this.notifyDataSetChanged();
+    }
+
+    public void update(@NonNull String variableName) {
+        boolean isPresent = this.variables.containsKey(variableName);
+        if (isPresent) {
+            this.notifyDataSetChanged();
+        }
     }
 
     @Override

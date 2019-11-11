@@ -78,7 +78,7 @@ public enum FeatureType {
 
     @NonNull
     public static FeatureType get(@NonNull Class<? extends Feature> featureClass) {
-        return get(featureClass.getSimpleName());
+        return get(featureClass.getCanonicalName());
     }
 
     @NonNull

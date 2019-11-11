@@ -7,9 +7,9 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
-
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.Feature;
+import de.jlab.cardroid.devices.FeatureType;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 
 @Entity(tableName = "devices")
@@ -45,6 +45,17 @@ public final class DeviceEntity {
     // TODO: replace this with ArrayList<Class<? extends Feature>>
     @TypeConverters(DeviceConverters.class)
     public ArrayList<String> features;
+
+    public boolean hasFeature(@NonNull Class<? extends Feature> featureClass) {
+        FeatureType requestedType = FeatureType.get(featureClass);
+        for (String featureName : features) {
+            FeatureType existingType = FeatureType.get(featureName);
+            if (existingType == requestedType) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean isDeviceType(@NonNull Device device) {
         return device.getClass().getSimpleName().equals(this.className);

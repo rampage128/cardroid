@@ -306,6 +306,10 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_car);
             setHasOptionsMenu(true);
+
+            ListPreference devicePreference = (ListPreference)findPreference("car_device_uid");
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
+            bindPreferenceSummaryToValue(devicePreference);
         }
 
         @Override
@@ -330,10 +334,10 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_gps);
             setHasOptionsMenu(true);
-            bindPreferenceSummaryToValue(findPreference("gps_device_uid"));
 
             ListPreference devicePreference = (ListPreference)findPreference("gps_device_uid");
             new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
+            bindPreferenceSummaryToValue(devicePreference);
         }
 
         @Override

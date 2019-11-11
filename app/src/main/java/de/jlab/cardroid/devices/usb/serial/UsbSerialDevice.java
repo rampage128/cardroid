@@ -26,13 +26,13 @@ public abstract class UsbSerialDevice<ReaderType extends SerialReader> extends U
     @Override
     public final void open() {
         State newState = this.serialPort.connect() ? State.OPEN : State.INVALID;
+        this.setState(newState);
         if (newState == State.OPEN) {
             this.reader = this.onOpenSuccess();
             this.serialPort.addUsbSerialReader(this.reader);
         } else {
             this.onOpenFailed();
         }
-        this.setState(newState);
     }
 
     @Override
