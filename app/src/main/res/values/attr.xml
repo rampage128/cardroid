@@ -22,6 +22,7 @@
         <attr name="touchInside" format="boolean" />
         <attr name="clockwise" format="boolean" />
         <attr name="enabled" format="boolean" />
+        <attr name="autoLimit" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="SeekArcTheme">

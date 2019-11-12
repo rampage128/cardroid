@@ -5,16 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.PowerManager;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.view.KeyEvent;
-import android.view.WindowManager;
 
-public class PowerManagementReceiver extends BroadcastReceiver {
+/**
+ * @deprecated This class contains legacy logic to control screen timeout, wifi and music controls
+ * based on charger detection. The new logic is completely provider, rule and device based.
+ * This code is not really supported anymore.
+ */
+@Deprecated
+public final class PowerManagementReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -32,7 +35,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             if (toggleScreen) {
                 toggleScreen(true, powerPrefs, context);
             }
-            context.startService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
         else if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
             AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
@@ -43,7 +45,6 @@ public class PowerManagementReceiver extends BroadcastReceiver {
             if (toggleScreen) {
                 toggleScreen(false, powerPrefs, context);
             }
-            context.stopService(new Intent(context.getApplicationContext(), WatchDogService.class));
         }
     }
 

@@ -5,7 +5,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 import java.util.ArrayList;
 
-public class Expression extends ObservableValue {
+public final class Expression extends ObservableValue {
 
     private ArrayList<VariableHandler> variableHandlers = new ArrayList<>();
 
@@ -21,10 +21,12 @@ public class Expression extends ObservableValue {
         this.contextName = contextName;
         this.scope = scope;
         this.engine = engine;
-        String[] variableNames = variables.getNames();
-        for (String name : variableNames) {
-            if (expression.contains(name)) {
-                this.addVariable(name, variables.get(name));
+        if (variables != null) {
+            String[] variableNames = variables.getNames();
+            for (String name : variableNames) {
+                if (expression.contains(name)) {
+                    this.addVariable(name, variables.get(name));
+                }
             }
         }
     }
@@ -51,6 +53,7 @@ public class Expression extends ObservableValue {
                 ScriptableObject.putProperty(Expression.this.scope, this.name, newValue);
                 Expression.this.change(Expression.this.evaluate());
             };
+            ScriptableObject.putProperty(Expression.this.scope, this.name, value.getValue());
             value.addObserver(this.listener);
         }
     }

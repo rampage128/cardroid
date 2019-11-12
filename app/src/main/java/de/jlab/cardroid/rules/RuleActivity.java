@@ -1,122 +1,56 @@
 package de.jlab.cardroid.rules;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.app.Activity;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.SettingsActivity;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.ActionRepository;
 import de.jlab.cardroid.rules.storage.EventEntity;
-import de.jlab.cardroid.rules.storage.EventRepository;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class RuleActivity extends AppCompatActivity implements FragmentActionListener {
-
-    private boolean isTwoPane;
+public class RuleActivity extends MasterDetailFlowActivity implements FragmentActionListener {
 
     private int eventId = 0;
-    private Fragment activeFragment;
-
-    private CarduinoService.MainServiceBinder serviceBinder;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            RuleActivity.this.serviceBinder = (CarduinoService.MainServiceBinder)service;
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            RuleActivity.this.serviceBinder = null;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rule_list);
 
-        // FIXME remove this for production
-        EventRepository repository = new EventRepository(getApplication());
-        repository.insert(new EventEntity(255, "Test Event"));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        if (findViewById(R.id.detail_container) != null) {
-            this.isTwoPane = true;
-        }
-
-        if (savedInstanceState == null) {
-            showList();
-        }
+        // TODO Allow directly opening a rule when the activity is started with a rule-id
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        unbindService(this.serviceConnection);
+    protected Fragment createMasterFragment() {
+        return new RuleListFragment();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        bindService(new Intent(this, CarduinoService.class), this.serviceConnection, Context.BIND_AUTO_CREATE);
+    protected Class<? extends Activity> getParentActivity() {
+        return SettingsActivity.class;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            this.handleBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.handleBackPressed();
-    }
-
-    private void handleBackPressed() {
-        if (this.activeFragment instanceof ActionDetailFragment) {
+    public void navigateBack() {
+        if (this.getActiveFragment() instanceof ActionDetailFragment) {
             this.showEventDetails(this.eventId);
-            return;
+        } else {
+            super.navigateBack();
         }
-
-        if (!this.isTwoPane) {
-            if (this.activeFragment instanceof RuleDetailFragment) {
-                this.showList();
-                return;
-            }
-        }
-
-        navigateUpTo(new Intent(this, SettingsActivity.class));
     }
 
     @Override
     public void onEventChange(int command, EventEntity eventEntity) {
-        switch (command) {
-            case COMMAND_EDIT:
-                showEventDetails(eventEntity.identifier);
-                break;
+        if (command == COMMAND_EDIT) {
+            showEventDetails(eventEntity.uid);
         }
     }
 
@@ -144,11 +78,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
 
     @Override
     public void onRuleChange(int command, RuleDefinition ruleDefinition) {
-        switch (command) {
-            case COMMAND_UPDATED:
-                this.serviceBinder.updateRule(ruleDefinition);
-                break;
-        }
+        // Nothing to do here. Rules are now live-data!
     }
 
     private void showActionDetails(int actionId) {
@@ -160,7 +90,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
         ActionDetailFragment fragment = new ActionDetailFragment();
         fragment.setArguments(arguments);
 
-        switchFragment(fragment);
+        this.navigateTo(fragment);
     }
 
     private void showEventDetails(int eventId) {
@@ -173,27 +103,7 @@ public class RuleActivity extends AppCompatActivity implements FragmentActionLis
         RuleDetailFragment fragment = new RuleDetailFragment();
         fragment.setArguments(arguments);
 
-        switchFragment(fragment);
-    }
-
-    private void showList() {
-        RuleListFragment fragment = new RuleListFragment();
-
-        this.activeFragment = fragment;
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.list_container, fragment)
-                .commit();
-    }
-
-    private void switchFragment(Fragment fragment) {
-        int container = this.isTwoPane ? R.id.detail_container : R.id.list_container;
-
-        this.activeFragment = fragment;
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(container, fragment)
-                .commit();
+        this.navigateTo(fragment);
     }
 
 }

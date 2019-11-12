@@ -8,6 +8,8 @@
     <color name="colorTabActive">#ffffffff</color>
     <color name="colorTabInactive">#99ffffff</color>
 
+    <color name="colorDeviceUnavailable">#99AAAAAA</color>
+
     <color name="colorGpsSatelliteTimeout">#99AAAAAA</color>
     <color name="colorGpsSatelliteNoFix">#ffEEDC82</color>
     <color name="colorGpsSatelliteFix">#55D456</color>

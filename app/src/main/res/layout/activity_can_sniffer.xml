@@ -6,7 +6,7 @@
                                              android:layout_width="match_parent"
                                              android:layout_height="match_parent"
                                              android:orientation="vertical"
-                                             tools:context="de.jlab.cardroid.cansniffer.CanSnifferActivity">
+                                             tools:context="de.jlab.cardroid.car.ui.CanSnifferActivity">
 
 
     <TextView
@@ -46,7 +46,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-        <de.jlab.cardroid.cansniffer.CanView
+        <de.jlab.cardroid.car.ui.CanView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/packet_list" />

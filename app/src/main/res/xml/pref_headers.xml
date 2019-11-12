@@ -13,6 +13,14 @@
         android:summary="@string/pref_header_description_car" />
 
     <header
+        android:icon="@drawable/ic_pref_devices"
+        android:title="@string/pref_header_devices"
+        android:summary="@string/pref_header_description_devices">
+        <intent android:targetPackage="de.jlab.cardroid"
+            android:targetClass="de.jlab.cardroid.devices.ui.DeviceActivity" />
+    </header>
+
+    <header
         android:icon="@drawable/ic_pref_rules"
         android:title="@string/pref_header_rules"
         android:summary="@string/pref_header_description_rules">

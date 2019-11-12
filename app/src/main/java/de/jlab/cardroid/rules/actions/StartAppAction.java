@@ -3,8 +3,6 @@ package de.jlab.cardroid.rules.actions;
 import android.content.Context;
 import android.content.Intent;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.HashMap;
 
 import de.jlab.cardroid.rules.Action;

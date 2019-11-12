@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="serial_detection_baud_rates">
+        <item>115200</item>
+        <item>4800</item>
+        <item>9600</item>
+    </integer-array>
+
+    <string-array name="overlay_volume_steps">
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
+</resources>

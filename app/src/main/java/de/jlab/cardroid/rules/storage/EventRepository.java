@@ -6,13 +6,14 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
+import de.jlab.cardroid.storage.CardroidDatabase;
 
 public class EventRepository {
 
     private EventDao eventDao;
 
     public EventRepository(Application application) {
-        RulesDatabase db = RulesDatabase.getDatabase(application);
+        CardroidDatabase db = CardroidDatabase.getDatabase(application);
         this.eventDao = db.eventDao();
     }
 
@@ -20,20 +21,12 @@ public class EventRepository {
         return this.eventDao.getAll();
     }
 
-    public List<EventEntity> getAllSynchronous() {
-        return this.eventDao.getAllSynchronous();
-    }
-
-    public LiveData<EventEntity> get(int identifier) {
-        return this.eventDao.get(identifier);
-    }
-
-    public List<RuleDefinition> getAllRules() {
+    public LiveData<List<RuleDefinition>> getAllRules() {
         return this.eventDao.getAllRules();
     }
 
-    public LiveData<RuleDefinition> getAsRule(int identifier) {
-        return this.eventDao.getAsRule(identifier);
+    public LiveData<RuleDefinition> getAsRule(int eventUid) {
+        return this.eventDao.getAsRule(eventUid);
     }
 
     public void insert(EventEntity... eventEntities) {

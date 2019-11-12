@@ -2,15 +2,14 @@ package de.jlab.cardroid;
 
 
 import android.annotation.TargetApi;
-import android.content.ComponentName;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -19,14 +18,22 @@ import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Objects;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import de.jlab.cardroid.usb.carduino.CarduinoService;
+import de.jlab.cardroid.devices.DeviceService;
+import de.jlab.cardroid.devices.DeviceServiceConnection;
+import de.jlab.cardroid.devices.storage.DeviceEntity;
+import de.jlab.cardroid.devices.storage.DeviceRepository;
+import de.jlab.cardroid.overlay.OverlayController;
 
 /**
+ * FIXME: Migrate this legacy crap to androix.preferences
  * A {@link PreferenceActivity} that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,
  * settings are split by category, with category headers shown to the left of
@@ -37,18 +44,10 @@ import de.jlab.cardroid.usb.carduino.CarduinoService;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends AppCompatPreferenceActivity {
-    private static CarduinoService.MainServiceBinder mainService;
+public final class SettingsActivity extends AppCompatPreferenceActivity {
 
-    private ServiceConnection mainServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mainService = (CarduinoService.MainServiceBinder)service;
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            mainService = null;
-        }
-    };
+    private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
+    private OverlayController overlayController = null;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -110,25 +109,33 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            this.overlayController = deviceService.getOverlayController();
+        } else {
+            this.overlayController = null;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        startMainService();
-        getApplicationContext().bindService(new Intent(this, CarduinoService.class), this.mainServiceConnection, Context.BIND_AUTO_CREATE);
+
+        this.serviceConnection.bind(this.getApplicationContext());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mainService != null) {
-            getApplicationContext().unbindService(this.mainServiceConnection);
-        }
+
+        this.serviceConnection.unbind(this.getApplicationContext());
     }
 
     /**
@@ -142,20 +149,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private void startMainService() {
-        startService(new Intent(SettingsActivity.this, CarduinoService.class));
-    }
-
     private void showOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
-        overlayIntent.putExtra("command", "show_overlay");
-        startService(overlayIntent);
+        if (this.overlayController != null) {
+            this.overlayController.start();
+        }
     }
 
     private void hideOverlay() {
-        Intent overlayIntent = new Intent(SettingsActivity.this, CarduinoService.class);
-        overlayIntent.putExtra("command", "hide_overlay");
-        startService(overlayIntent);
+        if (this.overlayController != null) {
+            this.overlayController.stop();
+        }
     }
 
     /**
@@ -203,9 +206,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_overlay);
             setHasOptionsMenu(true);
 
+            ListPreference volumeStepsPreference = (ListPreference)findPreference("overlay_volume_steps");
+            volumeStepsPreference.setEntryValues(R.array.overlay_volume_steps);
+            volumeStepsPreference.setEntries(R.array.overlay_volume_steps);
+
+            bindPreferenceSummaryToValue(findPreference("overlay_volume_touch_duration"));
+            bindPreferenceSummaryToValue(volumeStepsPreference);
+
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_max"));
             bindPreferenceSummaryToValue(findPreference("overlay_temperature_min"));
             bindPreferenceSummaryToValue(findPreference("overlay_fan_max"));
+            bindPreferenceSummaryToValue(findPreference("overlay_device_uid"));
+
+            ListPreference devicePreference = (ListPreference)findPreference("overlay_device_uid");
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
 
             overlayPermissionPreference = (SwitchPreference)findPreference("overlay_active");
 
@@ -293,15 +307,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_car);
             setHasOptionsMenu(true);
 
-            ListPreference baudRate = (ListPreference)findPreference("car_baud_rate");
-            baudRate.setSummary(baudRate.getValue());
-            findPreference("car_baud_rate").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    mainService.requestBaudRate(Integer.valueOf((String)newValue));
-                    return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
-                }
-            });
+            ListPreference devicePreference = (ListPreference)findPreference("car_device_uid");
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
+            bindPreferenceSummaryToValue(devicePreference);
         }
 
         @Override
@@ -326,7 +334,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_gps);
             setHasOptionsMenu(true);
-            bindPreferenceSummaryToValue(findPreference("gps_baud_rate"));
+
+            ListPreference devicePreference = (ListPreference)findPreference("gps_device_uid");
+            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
+            bindPreferenceSummaryToValue(devicePreference);
         }
 
         @Override
@@ -428,4 +439,45 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(getContext());
         }
     }
+
+    private static class DeviceListTask extends AsyncTask<ListPreference, Void, Void> {
+
+        private Application application;
+
+        public DeviceListTask(@NonNull Application application) {
+            this.application = application;
+        }
+
+        @Override
+        protected Void doInBackground(ListPreference... preferences) {
+            DeviceRepository deviceRepo = new DeviceRepository(this.application);
+            List<DeviceEntity> deviceEntities = deviceRepo.getAllSynchronous();
+            String[] deviceNames = new String[deviceEntities.size() + 1];
+            String[] deviceUids = new String[deviceEntities.size() + 1];
+
+            int lastIndex = deviceEntities.size();
+
+            deviceUids[lastIndex] = "";
+            deviceNames[lastIndex] = this.application.getString(R.string.pref_device_none);
+
+            for (ListPreference preference : preferences) {
+                int selectedIndex = lastIndex;
+                for (int i = 0; i < deviceEntities.size(); i++) {
+                    DeviceEntity deviceEntity = deviceEntities.get(i);
+                    deviceNames[i] = deviceEntity.displayName;
+                    deviceUids[i] = deviceEntity.deviceUid.toString();
+                    if (Objects.equals(preference.getValue(), deviceEntity.deviceUid.toString())) {
+                        selectedIndex = i;
+                    }
+                }
+
+                preference.setEntries(deviceNames);
+                preference.setEntryValues(deviceUids);
+                preference.setSummary(deviceNames[selectedIndex]);
+            }
+
+            return null;
+        }
+    }
+
 }

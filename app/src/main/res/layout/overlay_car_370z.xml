@@ -1,0 +1,409 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:overlaytogglebutton="http://schemas.android.com/apk/res-auto"
+    xmlns:seekarc="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorOverlayBG"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="128dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_col_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_col_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_col_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_col_m1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.375"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_col_m2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.625"/>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imageView"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:padding="16dp"
+        app:cardCornerRadius="40dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_m2"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_m1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_overlay_close"/>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/autoView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:elevation="12dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="12dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_m2"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_m1"
+        app:layout_constraintTop_toBottomOf="@+id/fanView">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/autoButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="top|start"
+            overlaytogglebutton:src="@drawable/ic_cc_auto"/>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/acView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="top|end"
+        android:layout_marginStart="8dp"
+        android:elevation="12dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="12dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tempView"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_4"
+        app:layout_constraintTop_toTopOf="@+id/tempView">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/acButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            overlaytogglebutton:src="@drawable/ic_cc_ac"/>
+
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/modeView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="12dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="12dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_2"
+        app:layout_constraintStart_toStartOf="@+id/fanView"
+        app:layout_constraintTop_toTopOf="@+id/fanView">
+
+        <FrameLayout
+            android:id="@+id/modeButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:paddingLeft="16dp"
+            android:paddingTop="16dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ductFace"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face"/>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ductBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg"/>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ductWindshield"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws"/>
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/ductFeet"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_feet"/>
+
+        </FrameLayout>
+
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/fanView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/offView">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <de.jlab.cardroid.overlay.SeekArc
+                android:id="@+id/fanBar"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_gravity="center_horizontal"
+                android:padding="48dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                seekarc:arcWidth="8dp"
+                seekarc:clockwise="false"
+                seekarc:max="7"
+                seekarc:progress="0"
+                seekarc:progressWidth="8dp"
+                seekarc:roundEdges="true"
+                seekarc:segmentGap="12"
+                seekarc:segments="7"
+                seekarc:startAngle="100"
+                seekarc:sweepAngle="250"/>
+
+            <TextView
+                android:id="@+id/fanChangeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/guide_fan_base"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="OFF"/>
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guide_fan_base"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent="0.7"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/tempView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_3"
+        app:layout_constraintTop_toBottomOf="@+id/offView">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <de.jlab.cardroid.overlay.SeekArc
+                android:id="@+id/temperatureBar"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_gravity="center_horizontal"
+                android:padding="48dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                seekarc:arcWidth="8dp"
+                seekarc:max="28"
+                seekarc:progress="0"
+                seekarc:progressWidth="8dp"
+                seekarc:roundEdges="true"
+                seekarc:segmentGap="7"
+                seekarc:segments="28"
+                seekarc:startAngle="100"
+                seekarc:sweepAngle="250" />
+
+            <TextView
+                android:id="@+id/temperatureChangeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="OFF"/>
+
+            <TextView
+                android:id="@+id/temperatureText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:ellipsize="marquee"
+                android:singleLine="true"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/guide_temp_base"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="OFF"/>
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guide_temp_base"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent="0.7"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/offView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guide_top">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/offButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            overlaytogglebutton:src="@drawable/ic_cc_off"/>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/wshView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_3"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_2"
+        app:layout_constraintTop_toBottomOf="@id/guide_top">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/wshButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            overlaytogglebutton:src="@drawable/ic_cc_wsh"/>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/rwhView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/guide_col_4"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_3"
+        app:layout_constraintTop_toBottomOf="@id/guide_top">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/rwhButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/recirculationView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="9999dp"
+        app:cardElevation="6dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guide_col_4"
+        app:layout_constraintTop_toBottomOf="@id/guide_top">
+
+        <de.jlab.cardroid.overlay.OverlayToggleButton
+            android:id="@+id/recirculationButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -45,6 +45,15 @@
     <string name="pref_title_overlay_toggle">Show Overlay</string>
     <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 
+    <string name="pref_title_overlay_volume">Volume controls</string>
+    <string name="pref_title_overlay_volume_toggle">Enable volume controls</string>
+    <string name="pref_description_overlay_volume_toggle_on">Adjust media volume by touching overlay bubble</string>
+    <string name="pref_description_overlay_volume_toggle_off">Don\'t allow adjusting media volume from overlay</string>
+    <string name="pref_title_overlay_volume_touch_duration">Touch duration</string>
+    <string name="pref_description_overlay_volume_touch_duration">Touch bubble for %1$dms to adjust media volume</string>
+    <string name="pref_title_overlay_volume_steps">Number of steps</string>
+    <string name="pref_description_overlay_volume_steps">Adjust volume in %1$d steps</string>
+
     <string name="pref_title_overlay_temperature_range">Temperature range</string>
     <string name="pref_title_overlay_temperature_min">Temperature minimum</string>
     <string name="pref_description_overlay_temperature_min">Minimum allowed value of temperature adjustment</string>
@@ -65,25 +74,6 @@
     <string name="car_stats_bandwidth">Current: %1$dbps / Avg: %2$dbps (%3$d%%) / Usage: %4$d%%</string>
     <string name="car_stats_packets">Current: %1$dpps / Avg: %2$dpps (%3$d%%)</string>
 
-    <string name="pref_title_car_baud_rate">USB baud rate</string>
-    <string-array name="car_baud_rates">
-        <item>9600</item>
-        <item>19200</item>
-        <item>38400</item>
-        <item>57600</item>
-        <item>115200</item>
-        <item>230400</item>
-        <item>345600</item>
-        <item>460800</item>
-        <item>921600</item>
-        <!-- NOT SUPPORTED BY USB-SERIAL LIBRARY :-(
-        <item>250000</item>
-        <item>500000</item>
-        <item>1000000</item>
-        <item>2000000</item>
--->
-    </string-array>
-
     <string name="pref_title_car_monitor">Car monitor</string>
     <string name="pref_description_car_monitor">View status of Carduino connection</string>
 
@@ -94,12 +84,6 @@
     <string name="pref_header_gps">GPS</string>
     <string name="pref_header_description_gps">Configure an external GPS device</string>
 
-    <string name="pref_title_gps_baud_rate">GPS baud rate</string>
-    <string-array name="gps_baud_rates">
-        <item>4800</item>
-        <item>9600</item>
-    </string-array>
-
     <string name="pref_title_gps_monitor">GPS monitor</string>
     <string name="pref_description_gps_monitor">View status of external GPS receiver</string>
 
@@ -107,11 +91,20 @@
     <string name="pref_header_rules">Rules</string>
     <string name="pref_header_description_rules">Define rules for event based actionEntities</string>
 
+    <string name="pref_header_devices">Devices</string>
+    <string name="pref_header_description_devices">Manage connected devices</string>
+
+    <string name="pref_title_device">Use Device</string>
+    <string name="pref_device_none">None</string>
+
     <!-- status grids -->
     <string name="status_unavailable">N/A</string>
+    <string name="status_device">Device</string>
+    <string name="status_device_none">None</string>
     <string name="status_connection">Connection</string>
     <string name="status_connected">Connected</string>
     <string name="status_disconnected">Disconnected</string>
+    <string name="status_ups">Updates per second</string>
     <string name="status_bps">Serial bps</string>
     <string name="status_usage">Serial usage</string>
     <string name="status_usage_value">%1$d%%</string>
@@ -132,7 +125,8 @@
     <string name="gps_status_bearing">Bearing</string>
     <string name="gps_status_altitude">Altitude</string>
     <string name="gps_status_accuracy">Accuracy</string>
-    <string name="gps_status_satellite_count">Number of satellites</string>
+    <string name="gps_status_satellites_visible">Visible satellites</string>
+    <string name="gps_status_satellites_used">Used satellites</string>
     <string name="gps_status_sps">Sentences per second</string>
     <string name="gps_status_frequency">Frequency</string>
 
@@ -142,6 +136,57 @@
 
     <string name="car_status_packets">Packets per second</string>
     <string name="car_status_variables">Registered variables</string>
+
+    <!-- Device editor -->
+    <string name="title_device_list">Devices</string>
+    <string name="title_device_detail">Device %1$s</string>
+    <string name="title_device_rename">Rename Device</string>
+    <string name="device_name">Device Name</string>
+    <string name="action_device_disconnect">Disconnect</string>
+    <string name="action_device_disconnect_confirm">
+        <![CDATA[
+            <p>This will disconnect the device.</p>
+            <p>The device will only be reconnected after a power-cycle.</p>
+        ]]>
+    </string>
+    <string name="action_device_disconnect_success">Device %1$s successfully disconnected</string>
+    <string name="action_device_disconnect_failure">Device %1$s could not be disconnected</string>
+    <string name="action_device_reset">Reset</string>
+    <string name="action_device_reset_confirm">
+        <![CDATA[
+            <p>This will reset the device to factory settings.</p>
+            <ul>
+                <li>The device will only be reconnected after a power-cycle.</li>
+                <li>The device will be detected as a new device.</li>
+                <li>All user settings associated to the device will not be associated to it anymore.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_reboot">Reboot</string>
+    <string name="action_device_reboot_confirm">
+        <![CDATA[
+            <p>This will reboot the device.</p>
+            <ul>
+                <li>Some devices might require a power-cycle to reconnect.</li>
+                <li>During operation this can lead to unexpected behaviour.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_delete">Delete</string>
+    <string name="action_device_delete_confirm">
+        <![CDATA[
+            <p>This will delete the device.</p>
+            <ul>
+                <li>All user settings associated to the device will not be associated to it anymore.</li>
+                <li>All device settings will be lost.</li>
+                <li>The device will be detected as new device on next connection.</li>
+            </ul>
+        ]]>
+    </string>
+    <string name="action_device_delete_success">Device %1$s successfully deleted</string>
+    <string name="action_device_rename">Rename</string>
+    <string name="device_features">Device Features</string>
+    <string name="error_device_name_blank">Device name cannot be blank</string>
 
     <!-- Rule editor -->
     <string name="title_rule_list">Rules</string>
@@ -155,13 +200,8 @@
 
     <!-- event names -->
     <string name="event_unknown">Unknown event (%1$d)</string>
-    <string name="event_1">Carduino booted</string>
-    <string name="event_2">Carduino sleep</string>
-    <string name="event_3">Carduino wake up</string>
-
-    <string name="event_4">Carduino connected</string>
-    <string name="event_5">Carduino disconnected</string>
-
+    <string name="event_1">Device ready</string>
+    <string name="event_2">Device closing</string>
 
     <!-- ACTIONS -->
     <string name="media_key_action">Media Key</string>
@@ -203,9 +243,39 @@
     <!-- NOTIFICATIONS -->
     <string name="notification_channel_error_name">Errors</string>
     <string name="notification_channel_error_description">Display Errors from Carduino</string>
+    <string name="notification_channel_new_devices_name">New device detections</string>
+    <string name="notification_channel_new_devices_description">Display detection of previously unknown devices</string>
 
     <string name="notification_error_title">%1$d new Carduino errors</string>
     <string name="notification_error_text">Last error: %1$s</string>
+
+    <string name="notification_new_device_title">New device detected</string>
+    <string name="notification_new_device_text">Tap to set up %1$s</string>
+    <string name="notification_new_device_detail_uid">UID: %1$s</string>
+    <string name="notification_new_device_detail_type">Type: %1$s</string>
+
+    <!-- DEVICE TYPES -->
+    <string name="device_type">Device Type</string>
+    <string name="device_type_unknown">Unknown</string>
+    <string name="device_type_carduinousbdevicehandler">Carduino</string>
+    <string name="device_type_gpsusbdevicehandler">GPS</string>
+
+    <!-- DEVICE FEATURES -->
+    <string name="device_feature">Device Feature</string>
+    <string name="device_feature_unknown">Unknown feature</string>
+    <string name="device_feature_unknown_description">This feature is unknown/unsupported</string>
+    <string name="device_feature_errors">Errors</string>
+    <string name="device_feature_errors_description">Can notify the user about external problems</string>
+    <string name="device_feature_location">GPS</string>
+    <string name="device_feature_location_description">Provides location information to the system</string>
+    <string name="device_feature_events_send">Send Events</string>
+    <string name="device_feature_events_send_description">Device sends events that can trigger user defined rules</string>
+    <string name="device_feature_events_receive">Receive Events</string>
+    <string name="device_feature_events_receive_description">Device can receive events to be controlled by the user</string>
+    <string name="device_feature_can">Send CAN-Data</string>
+    <string name="device_feature_can_description">Device sends CAN-bus data which can be used in Variables</string>
+    <string name="device_feature_can_interact">Configure CAN-Interface</string>
+    <string name="device_feature_can_interact_description">Device allows configuration of it\'s CAN-interface</string>
 
     <!-- CARDUINO ERRORS -->
     <string name="carduino_error">%1$s: %2$s x%3$d</string>

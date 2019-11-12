@@ -5,6 +5,38 @@
         android:key="overlay_active"
         android:summary="@string/pref_description_overlay_toggle"
         android:title="@string/pref_title_overlay_toggle"/>
+
+
+    <ListPreference
+        android:key="overlay_device_uid"
+        android:title="@string/pref_title_device"
+        />
+
+    <PreferenceCategory
+        android:title="@string/pref_title_overlay_volume">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="overlay_volume_enabled"
+            android:summary="@string/pref_description_overlay_volume_toggle_on"
+            android:title="@string/pref_title_overlay_volume_toggle"/>
+
+        <EditTextPreference
+            android:defaultValue="100"
+            android:key="overlay_volume_touch_duration"
+            android:inputType="number"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_description_overlay_volume_touch_duration"
+            android:title="@string/pref_title_overlay_volume_touch_duration"/>
+
+        <ListPreference
+            android:defaultValue="10"
+            android:key="overlay_volume_steps"
+            android:title="@string/pref_title_overlay_volume_steps"/>
+
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/pref_title_overlay_temperature_range">
 

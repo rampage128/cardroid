@@ -31,8 +31,9 @@ import de.jlab.cardroid.rules.properties.Property;
 import de.jlab.cardroid.rules.properties.PropertyValue;
 import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.ActionViewDetailModel;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class ActionDetailFragment extends Fragment {
+public class ActionDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment {
 
     public static final String ARG_ACTION_ID = "action_id";
 

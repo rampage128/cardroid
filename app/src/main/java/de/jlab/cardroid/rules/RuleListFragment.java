@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -20,11 +17,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jlab.cardroid.R;
-import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventViewListModel;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class RuleListFragment extends Fragment {
+public class RuleListFragment extends Fragment implements MasterDetailFlowActivity.MasterFragment {
 
     private EventViewListModel eventListModel;
     private FragmentActionListener actionListener;

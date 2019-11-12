@@ -15,7 +15,6 @@ import android.view.View;
 import de.jlab.cardroid.R;
 
 /**
- *
  * SeekArc.java
  *
  * This is a class that functions much like a SeekBar but
@@ -94,6 +93,8 @@ public class SeekArc extends View {
      */
     private boolean mEnabled = true;
 
+    private boolean mAutoLimit = false;
+
     // Internal variables
     private int mArcRadius = 0;
     private float mProgressSweep = 0;
@@ -106,39 +107,11 @@ public class SeekArc extends View {
     private int mThumbYPos;
     private double mTouchAngle;
     private float mTouchIgnoreRadius;
-    private OnSeekArcChangeListener mOnSeekArcChangeListener;
+    private OnSeekArcEventListener mOnSeekArcEventListener;
+    private SeekArcEvent currentEvent = new SeekArcEvent(this);
 
-    public interface OnSeekArcChangeListener {
-
-        /**
-         * Notification that the progress level has changed. Clients can use the
-         * fromUser parameter to distinguish user-initiated changes from those
-         * that occurred programmatically.
-         *
-         * @param seekArc  The SeekArc whose progress has changed
-         * @param progress The current progress level. This will be in the range
-         *                 0..max where max was set by
-         *                 {@link SeekArc#setMax(int)}. (The default value for
-         *                 max is 100.)
-         * @param fromUser True if the progress change was initiated by the user.
-         */
-        void onProgressChanged(SeekArc seekArc, int progress, boolean fromUser);
-
-        /**
-         * Notification that the user has started a touch gesture. Clients may
-         * want to use this to disable advancing the seekbar.
-         *
-         * @param seekArc The SeekArc in which the touch gesture began
-         */
-        void onStartTrackingTouch(SeekArc seekArc);
-
-        /**
-         * Notification that the user has finished a touch gesture. Clients may
-         * want to use this to re-enable advancing the seekarc.
-         *
-         * @param seekArc The SeekArc in which the touch gesture began
-         */
-        void onStopTrackingTouch(SeekArc seekArc);
+    public interface OnSeekArcEventListener {
+        void onSeekArcEvent(SeekArcEvent event);
     }
 
     public SeekArc(Context context) {
@@ -211,6 +184,7 @@ public class SeekArc extends View {
             mClockwise = a.getBoolean(R.styleable.SeekArc_clockwise,
                     mClockwise);
             mEnabled = a.getBoolean(R.styleable.SeekArc_enabled, mEnabled);
+            mAutoLimit = a.getBoolean(R.styleable.SeekArc_autoLimit, mAutoLimit);
 
             arcColor = a.getColor(R.styleable.SeekArc_arcColor, arcColor);
             progressColor = a.getColor(R.styleable.SeekArc_progressColor,
@@ -344,14 +318,16 @@ public class SeekArc extends View {
     }
 
     private void onStartTrackingTouch() {
-        if (mOnSeekArcChangeListener != null) {
-            mOnSeekArcChangeListener.onStartTrackingTouch(this);
+        if (mOnSeekArcEventListener != null) {
+            this.currentEvent.update(mProgress, true, SeekArcEvent.Type.TRACKING_STARTED);
+            mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
         }
     }
 
     private void onStopTrackingTouch() {
-        if (mOnSeekArcChangeListener != null) {
-            mOnSeekArcChangeListener.onStopTrackingTouch(this);
+        if (mOnSeekArcEventListener != null) {
+            this.currentEvent.update(mProgress, true, SeekArcEvent.Type.TRACKING_STOPPED);
+            mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
         }
     }
 
@@ -396,10 +372,18 @@ public class SeekArc extends View {
     private int getProgressForAngle(double angle) {
         int touchProgress = (int) Math.round(valuePerDegree() * angle);
 
-        touchProgress = (touchProgress < 0) ? INVALID_PROGRESS_VALUE
-                : touchProgress;
-        touchProgress = (touchProgress > mMax) ? INVALID_PROGRESS_VALUE
-                : touchProgress;
+        if (mAutoLimit) {
+            touchProgress = (touchProgress < 0) ? 0
+                    : touchProgress;
+            touchProgress = (touchProgress > mMax) ? mMax
+                    : touchProgress;
+        } else {
+            touchProgress = (touchProgress < 0) ? INVALID_PROGRESS_VALUE
+                    : touchProgress;
+            touchProgress = (touchProgress > mMax) ? INVALID_PROGRESS_VALUE
+                    : touchProgress;
+        }
+
         return touchProgress;
     }
 
@@ -440,23 +424,36 @@ public class SeekArc extends View {
             updateThumbPosition();
             invalidate();
 
-            if (mOnSeekArcChangeListener != null) {
-                mOnSeekArcChangeListener
-                        .onProgressChanged(this, progress, fromUser);
+            if (mOnSeekArcEventListener != null) {
+                this.currentEvent.update(mProgress, fromUser, SeekArcEvent.Type.PROGRESS_CHANGED);
+                mOnSeekArcEventListener.onSeekArcEvent(this.currentEvent);
             }
         }
     }
 
-    /**
-     * Sets a listener to receive notifications of changes to the SeekArc's
-     * progress level. Also provides notifications of when the user starts and
-     * stops a touch gesture within the SeekArc.
-     *
-     * @param l The seek bar notification listener
-     * @see SeekArc.OnSeekArcChangeListener
-     */
-    public void setOnSeekArcChangeListener(OnSeekArcChangeListener l) {
-        mOnSeekArcChangeListener = l;
+    public void setOnSeekArcEventListener(OnSeekArcEventListener l) {
+        mOnSeekArcEventListener = l;
+    }
+
+    public void setProgressFromAngle(double angle) {
+        int progress = getProgressForAngle(angle);
+        updateProgress(progress, false);
+    }
+
+    public boolean setProgressFromCoords(int x, int y, boolean fromCenter) {
+        if (fromCenter) {
+            x += mTranslateX;
+            y += mTranslateY;
+        }
+
+        boolean ignoreTouch = ignoreTouch(x, y);
+        if (ignoreTouch) {
+            return false;
+        }
+        double angle = getTouchDegrees(x, y);
+        this.setProgressFromAngle(angle);
+
+        return true;
     }
 
     public void setProgress(int progress) {
@@ -558,6 +555,10 @@ public class SeekArc extends View {
 
     public void setEnabled(boolean enabled) {
         this.mEnabled = enabled;
+    }
+
+    public void setAutoLimit(boolean autoLimit) {
+        mAutoLimit = autoLimit;
     }
 
     public int getProgressColor() {

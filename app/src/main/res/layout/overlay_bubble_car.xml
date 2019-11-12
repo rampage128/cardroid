@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:seekarc="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <de.jlab.cardroid.utils.ui.RoundCardView
+        android:id="@+id/toggleButton"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:elevation="6dp"
+        app:cardBackgroundColor="@color/colorOverlayItemBg"
+        app:cardCornerRadius="48dp"
+        app:cardElevation="6dp">
+
+        <de.jlab.cardroid.overlay.SeekArc
+            android:id="@+id/progressBar"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:padding="4dp"
+            seekarc:arcWidth="4dp"
+            seekarc:clockwise="true"
+            seekarc:enabled="false"
+            seekarc:max="7"
+            seekarc:progress="0"
+            seekarc:progressWidth="4dp"
+            seekarc:roundEdges="true"
+            seekarc:segmentGap="12"
+            seekarc:segments="7"
+            seekarc:startAngle="210"
+            seekarc:sweepAngle="300" />
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="OFF" />
+    </de.jlab.cardroid.utils.ui.RoundCardView>
+</FrameLayout>

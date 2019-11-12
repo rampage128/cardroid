@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,8 +32,9 @@ import de.jlab.cardroid.rules.storage.ActionEntity;
 import de.jlab.cardroid.rules.storage.EventEntity;
 import de.jlab.cardroid.rules.storage.EventViewDetailModel;
 import de.jlab.cardroid.rules.storage.RuleDefinition;
+import de.jlab.cardroid.utils.ui.MasterDetailFlowActivity;
 
-public class RuleDetailFragment extends Fragment {
+public class RuleDetailFragment extends Fragment implements MasterDetailFlowActivity.DetailFragment {
 
     public static final String ARG_ITEM_ID = "item_id";
 
@@ -51,7 +50,7 @@ public class RuleDetailFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         if (context instanceof FragmentActionListener) {
@@ -85,7 +84,8 @@ public class RuleDetailFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
+        Bundle arguments = this.getArguments();
+        if (arguments != null && arguments.containsKey(ARG_ITEM_ID)) {
             Activity activity = this.getActivity();
             assert activity != null;
             final Toolbar toolbar = activity.findViewById(R.id.toolbar);
@@ -115,20 +115,17 @@ public class RuleDetailFragment extends Fragment {
                 }
             }).attachToRecyclerView(recyclerView);
 
-            int eventIdentifier = getArguments().getInt(ARG_ITEM_ID);
+            int eventUid = getArguments().getInt(ARG_ITEM_ID);
             eventViewModel = ViewModelProviders.of(this).get(EventViewDetailModel.class);
-            eventViewModel.getAsRule(eventIdentifier).observe(RuleDetailFragment.this, new Observer<RuleDefinition>() {
-                @Override
-                public void onChanged(@Nullable RuleDefinition ruleEntity) {
-                    if (ruleEntity != null) {
-                        RuleDetailFragment.this.ruleEntity = ruleEntity;
+            eventViewModel.getAsRule(eventUid).observe(RuleDetailFragment.this, ruleEntity -> {
+                if (ruleEntity != null) {
+                    RuleDetailFragment.this.ruleEntity = ruleEntity;
 
-                        RuleDetailFragment.this.eventNameInput.setText(ruleEntity.event.name);
-                        adapter.setActions(ruleEntity.actions);
+                    RuleDetailFragment.this.eventNameInput.setText(ruleEntity.event.name);
+                    adapter.setActions(ruleEntity.actions);
 
-                        if (RuleDetailFragment.this.actionListener != null) {
-                            RuleDetailFragment.this.actionListener.onRuleChange(FragmentActionListener.COMMAND_UPDATED, ruleEntity);
-                        }
+                    if (RuleDetailFragment.this.actionListener != null) {
+                        RuleDetailFragment.this.actionListener.onRuleChange(FragmentActionListener.COMMAND_UPDATED, ruleEntity);
                     }
                 }
             });
@@ -138,7 +135,7 @@ public class RuleDetailFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.rule_detail_menu, menu);
     }
 

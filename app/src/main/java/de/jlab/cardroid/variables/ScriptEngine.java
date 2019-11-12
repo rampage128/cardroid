@@ -5,17 +5,12 @@ import android.util.Log;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
-import java.util.Objects;
+public final class ScriptEngine {
 
-public class ScriptEngine {
-
-    private Context context;
     private Scriptable scope;
 
     public ScriptEngine() {
-        this.context = Context.enter();
-        this.context.setOptimizationLevel(-1); // prevent JVM bytecode generation
-        this.scope = context.initStandardObjects();
+        this.scope = this.createContext().initStandardObjects();
     }
 
     public Expression createGlobalExpression(String expression, ObservableValueBag variables, String contextName) {
@@ -23,12 +18,28 @@ public class ScriptEngine {
     }
 
     public Expression createExpression(String expression, ObservableValueBag variables, String contextName) {
-        Scriptable scope = context.initStandardObjects();
+        Scriptable scope = this.createContext().initStandardObjects();
         return new Expression(expression, variables, contextName, scope, this);
     }
 
-    Object evaluate(String expression, String contextName, Scriptable scope) {
-        return context.evaluateString(scope, expression, contextName, 1, null);
+    public Object evaluate(String expression, String contextName, Scriptable scope) {
+        Context context = this.createContext();
+        Object result = 0L;
+        try {
+            result = context.evaluateString(scope, expression, contextName, 1, null);
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), "Error evaluating \"" + expression + "\"", e);
+        } finally {
+            Context.exit();
+        }
+
+        return result;
+    }
+
+    private Context createContext() {
+        Context context = Context.enter();
+        context.setOptimizationLevel(-1); // prevent JVM bytecode generation
+        return context;
     }
 
 }

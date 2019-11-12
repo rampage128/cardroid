@@ -1,19 +1,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ListPreference
-        android:defaultValue="115200"
-        android:key="car_baud_rate"
-        android:title="@string/pref_title_car_baud_rate"
-        android:entries="@array/car_baud_rates"
-        android:entryValues="@array/car_baud_rates"
+        android:key="car_device_uid"
+        android:title="@string/pref_title_device"
         />
 
     <Preference
-        android:key="gps_monitor"
+        android:key="car_monitor"
         android:title="@string/pref_title_car_monitor"
         android:summary="@string/pref_description_car_monitor">
         <intent android:targetPackage="de.jlab.cardroid"
-                android:targetClass="de.jlab.cardroid.usb.carduino.ui.CarduinoMonitorActivity"/>
+                android:targetClass="de.jlab.cardroid.car.ui.CarMonitorActivity"/>
     </Preference>
 
     <Preference
@@ -21,7 +18,7 @@
         android:title="@string/pref_title_can_sniffer"
         android:summary="@string/pref_description_can_sniffer">
         <intent android:targetPackage="de.jlab.cardroid"
-            android:targetClass="de.jlab.cardroid.cansniffer.CanSnifferActivity"/>
+            android:targetClass="de.jlab.cardroid.car.ui.CanSnifferActivity"/>
     </Preference>
 
 </PreferenceScreen>
