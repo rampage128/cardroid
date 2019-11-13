@@ -269,6 +269,13 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             }
             return super.onOptionsItemSelected(item);
         }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+
+            this.overlayPermissionReceiver.dispose();
+        }
     }
 
     /**
