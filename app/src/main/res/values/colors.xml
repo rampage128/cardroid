@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#607D8B</color>
     <color name="colorOverlayBG">#cd000000</color>
-    <color name="colorAccentBG">#eeeeee</color>
+    <color name="colorAccentBG">#EEEEEE</color>
     <color name="colorTabActive">#ffffffff</color>
     <color name="colorTabInactive">#99ffffff</color>
 
@@ -20,4 +20,7 @@
 
     <color name="progress_gray">#FFD8D8D8</color>
     <color name="progress_gray_dark">#FF383838</color>
+
+    <color name="permission_constraint_required">#F44336</color>
+    <color name="permission_constraint_optional">#FF9800</color>
 </resources>

@@ -6,13 +6,24 @@ import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.jlab.cardroid.R;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.devices.identification.DeviceUid;
+import de.jlab.cardroid.utils.permissions.OverlayPermission;
+import de.jlab.cardroid.utils.permissions.Permission;
+import de.jlab.cardroid.utils.permissions.PermissionReceiver;
+import de.jlab.cardroid.utils.permissions.PermissionRequest;
 import de.jlab.cardroid.variables.VariableController;
 
 public final class OverlayController {
+
+    public static final PermissionRequest[] PERMISSIONS = new PermissionRequest[] {
+        new PermissionRequest(OverlayPermission.PERMISSION_KEY, Permission.Constraint.REQUIRED, R.string.overlay_permission_reason)
+    };
+
+    private Context context;
 
     private CarBubble bubble;
     private CarControls carControls;
@@ -23,11 +34,18 @@ public final class OverlayController {
 
     private Device.StateObserver onDeviceStateChange = this::onDeviceStateChange;
 
+    private PermissionReceiver permissionReceiver;
+
     private long animationDurationShort;
     private long animationDurationMedium;
 
+    private boolean connected = false;
+    private boolean wasStarted = false;
+
     public OverlayController(@NonNull VariableController variableController, @NonNull DeviceController deviceController, @NonNull Context context) {
+        this.context = context;
         this.deviceController = deviceController;
+        this.permissionReceiver = new PermissionReceiver(context, this.getClass(), this::onOverlayPermissionGranted);
 
         this.animationDurationShort = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
         this.animationDurationMedium = context.getResources().getInteger(android.R.integer.config_mediumAnimTime);
@@ -44,7 +62,6 @@ public final class OverlayController {
         this.bubble = new CarBubble(variableController, this, context, maxFanLevel, minTemperature, maxTemperature, enableVolumeControls, volumeTouchDuration);
         this.bubble.create();
 
-
         DeviceUid deviceUid = getDeviceUid(context);
         if (deviceUid != null) {
             this.acController = new AcCanController(deviceController, deviceUid);
@@ -57,8 +74,15 @@ public final class OverlayController {
         this.volumeControls.create();
     }
 
+    private void onOverlayPermissionGranted() {
+        if (this.wasStarted) {
+            this.start();
+        }
+    }
+
     private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
-        if (state == Device.State.READY) {
+        this.connected = state == Device.State.READY;
+        if (this.connected) {
             this.start();
         } else {
             this.stop();
@@ -73,21 +97,32 @@ public final class OverlayController {
     }
 
     public void start() {
-        this.bubble.show();
+        if (!this.connected) {
+            return;
+        }
+
+        if (this.permissionReceiver.requestPermissions(this.context, PERMISSIONS)) {
+            this.bubble.show();
+        }
+
+        this.wasStarted = true;
     }
 
     public void stop() {
         this.bubble.hide();
         this.carControls.hide();
         this.volumeControls.hide();
+        this.wasStarted = false;
     }
 
     public void dispose() {
+        this.permissionReceiver.dispose();
         this.acController.dispose();
         this.volumeControls.destroy();
         this.carControls.destroy();
         this.bubble.destroy();
         this.deviceController.unsubscribeState(this.onDeviceStateChange);
+        this.context = null;
     }
 
     public void showCarControls() {

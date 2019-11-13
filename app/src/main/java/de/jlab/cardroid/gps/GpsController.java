@@ -2,25 +2,23 @@ package de.jlab.cardroid.gps;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.Window;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
+import androidx.annotation.Nullable;
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.devices.Feature;
 import de.jlab.cardroid.devices.identification.DeviceUid;
 import de.jlab.cardroid.devices.serial.gps.GpsPosition;
+import de.jlab.cardroid.utils.permissions.MockLocationPermission;
+import de.jlab.cardroid.utils.permissions.Permission;
+import de.jlab.cardroid.utils.permissions.PermissionReceiver;
+import de.jlab.cardroid.utils.permissions.PermissionRequest;
 
 /// Class responsible for providing a mock location to the system
 public class GpsController {
@@ -31,80 +29,93 @@ public class GpsController {
     private Device.FeatureChangeObserver<GpsObservable> gpsFilter = this::onGpsFeatureStateChange;
     private GpsObservable.PositionListener positionListener = this::updatePosition;
 
+    private boolean shouldBeMockingLocation = false;
+    private boolean isMockingLocation = false;
+
+    private PermissionReceiver permissionReceiver;
+
     public GpsController(@NonNull DeviceController deviceController, @NonNull Context context) {
         this.deviceController = deviceController;
         this.context = context;
-
-        this.deviceController.subscribeFeature(this.gpsFilter, GpsObservable.class);
-
+        this.permissionReceiver = new PermissionReceiver(context, this.getClass(), this::onLocationPermissionGranted);
         this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
-        if (this.locationManager != null && checkGpsPermissions()) {
-            try {
-                // TODO baud rate settings have to be handled on a per device basis in the future.
-                //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
-                //String baudRateString = prefs.getString("gps_baud_rate", String.valueOf(this.getDefaultBaudrate()));
-                //this.setBaudRate(baudRateString != null ? Integer.valueOf(baudRateString) : this.getDefaultBaudrate());
-                this.locationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, false, false, false, true, true, true, 0, 0);
-                this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-            } catch (SecurityException e) {
-                Log.e(this.getClass().getSimpleName(), "Error adding mock location provider. No permission!", e);
-                AlertDialog alertDialog = new AlertDialog.Builder(this.context)
-                        .setTitle(this.context.getString(R.string.gps_permission_title))
-                        .setIcon(R.mipmap.ic_launcher)
-                        .setMessage(this.context.getString(R.string.gps_permission_message))
-                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            Intent actionIntent = new Intent("android.settings.APPLICATION_DEVELOPMENT_SETTINGS");
-                            actionIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            this.context.startActivity(actionIntent);
-                        })
-                        .create();
-                Window window = alertDialog.getWindow();
-                if (window != null) {
-                    alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-                }
-                alertDialog.show();
-            }
+        DeviceUid deviceUid = getDeviceUid(context);
+        if (deviceUid != null) {
+            this.deviceController.subscribeFeature(this.gpsFilter, GpsObservable.class, deviceUid);
         }
     }
 
     public void dispose() {
-        if (this.checkGpsPermissions() && this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
-            try {
-                this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
-                this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
-                this.locationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
-                this.locationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
-            } catch (IllegalArgumentException e) {
-                Log.e(this.getClass().getSimpleName(), "Error disabling GPS provider", e);
-            }
-        }
+        this.stopMocking();
 
+        this.permissionReceiver.dispose();
         this.deviceController.unsubscribeFeature(this.gpsFilter, GpsObservable.class);
+        this.context = null;
+    }
+
+    @Nullable
+    private static DeviceUid getDeviceUid(@NonNull Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String deviceUid = prefs.getString("gps_device_uid", null);
+        return deviceUid != null ? new DeviceUid(deviceUid) : null;
     }
 
     private void updatePosition(@NonNull GpsPosition position, String sentence) {
-        if (position.hasValidLocation()) {
-            // FIXME: this can cause a crash if fine location permission is not granted
+        if (this.isMockingLocation && position.hasValidLocation()) {
             GpsController.this.locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, position.getLocation());
             GpsController.this.locationManager.setTestProviderStatus(LocationManager.GPS_PROVIDER, LocationProvider.AVAILABLE, null, System.currentTimeMillis());
         }
     }
 
-    private void onGpsFeatureStateChange(@NonNull GpsObservable feature, @NonNull Feature.State state) {
-        if (state == Feature.State.AVAILABLE) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.context);
-            String deviceUid = prefs.getString("gps_device_uid", null);
-            if (deviceUid != null && feature.getDevice() != null && feature.getDevice().isDevice(new DeviceUid(deviceUid))) {
-                feature.addListener(this.positionListener);
-            }
-        } else {
-            feature.removeListener(this.positionListener);
+    private void startMocking() {
+        this.shouldBeMockingLocation = true;
+
+        if (this.isMockingLocation) {
+            return;
+        }
+
+        boolean hasPermission = this.permissionReceiver.requestPermissions(
+                this.context,
+                new PermissionRequest(Manifest.permission.ACCESS_FINE_LOCATION, Permission.Constraint.REQUIRED, R.string.location_permission_reason),
+                new PermissionRequest(MockLocationPermission.PERMISSION_KEY, Permission.Constraint.REQUIRED, R.string.location_permission_reason)
+        );
+
+        if (hasPermission) {
+            this.locationManager.addTestProvider(LocationManager.GPS_PROVIDER, false, false, false, false, true, true, true, 0, 0);
+            this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+            this.isMockingLocation = true;
         }
     }
 
-    private boolean checkGpsPermissions() {
-        return ContextCompat.checkSelfPermission(this.context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    private void stopMocking() {
+        this.shouldBeMockingLocation = false;
+
+        if (!this.isMockingLocation) {
+            return;
+        }
+
+        this.locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false);
+        this.locationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
+        this.locationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
+        this.locationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
+        this.isMockingLocation = false;
+    }
+
+    private void onLocationPermissionGranted() {
+        if (this.shouldBeMockingLocation && !this.isMockingLocation) {
+            this.startMocking();
+        }
+    }
+
+    private void onGpsFeatureStateChange(@NonNull GpsObservable feature, @NonNull Feature.State state) {
+        if (state == Feature.State.AVAILABLE) {
+            this.startMocking();
+            feature.addListener(this.positionListener);
+        } else {
+            feature.removeListener(this.positionListener);
+            this.stopMocking();
+        }
     }
 
 }

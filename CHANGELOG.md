@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- `de.jlab.cardroid.utils.permissions` to allow easy and user friendly app permission handling
 - Multi device support to allow connection of multiple simultaneous (usb) devices
 - `DeviceController` to manage multiple device instances simultaneously
 - `Device` classes to manage device types and functionality

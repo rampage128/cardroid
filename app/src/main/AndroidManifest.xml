@@ -26,14 +26,17 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <activity android:name=".devices.ui.DeviceActivity"
+        <activity android:name=".utils.permissions.PermissionActivity"
+            android:label="@string/permissions_title" />
+
+        <activity
+            android:name=".devices.ui.DeviceActivity"
             android:label="@string/title_device_list"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.jlab.cardroid.SettingsActivity" />
         </activity>
-
         <activity
             android:name=".rules.RuleActivity"
             android:label="@string/title_rule_list"

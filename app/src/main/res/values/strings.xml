@@ -288,4 +288,21 @@
     <string name="carduino_error_33">CAN send buffer full</string>
     <string name="carduino_error_34">CAN send timeout</string>
     <string name="carduino_error_35">CAN control error</string>
+
+    <!-- PERMISSIONS -->
+    <string name="permissions_title">Grant permissions</string>
+    <string name="permissions_introduction">%1$s is requesting the permissions listed below.</string>
+    <string name="permissions_dismiss">Dismiss</string>
+    <string name="permission_grant">Grant</string>
+    <string name="permission_constraint_required">Required</string>
+    <string name="permission_constraint_optional">Optional</string>
+
+    <string name="permission_manage_overlay_permission">Draw over other apps</string>
+    <string name="permission_access_fine_location">Access fine location</string>
+    <string name="permission_access_mock_location">Mock location</string>
+
+    <!-- PERMISSION REASONS -->
+    <string name="overlay_permission_reason">to show on-screen vehicle controls</string>
+    <string name="location_permission_reason">to update device location from external GPS device</string>
+
 </resources>

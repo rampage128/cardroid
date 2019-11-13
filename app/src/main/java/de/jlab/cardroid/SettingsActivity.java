@@ -31,6 +31,7 @@ import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
 import de.jlab.cardroid.overlay.OverlayController;
+import de.jlab.cardroid.utils.permissions.PermissionReceiver;
 
 /**
  * FIXME: Migrate this legacy crap to androix.preferences
@@ -196,8 +197,7 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class OverlayPreferenceFragment extends PreferenceFragment {
-        private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
-
+        private PermissionReceiver overlayPermissionReceiver;
         private SwitchPreference overlayPermissionPreference;
 
         @Override
@@ -205,6 +205,8 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_overlay);
             setHasOptionsMenu(true);
+
+            this.overlayPermissionReceiver = new PermissionReceiver(getActivity(), this.getClass(), this::overlayPermissionGranted);
 
             ListPreference volumeStepsPreference = (ListPreference)findPreference("overlay_volume_steps");
             volumeStepsPreference.setEntryValues(R.array.overlay_volume_steps);
@@ -227,16 +229,10 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     if (((Boolean)newValue)) {
-                        if (canDrawOverlay()) {
+                        if (overlayPermissionReceiver.requestPermissions(getActivity(), OverlayController.PERMISSIONS)) {
                             ((SettingsActivity)getActivity()).showOverlay();
                             return true;
                         } else {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                // Open screen to grant overlay permission
-                                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        Uri.parse("package:" + getActivity().getPackageName()));
-                                startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
-                            }
                             return false;
                         }
                     }
@@ -248,40 +244,20 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
             });
         }
 
+        private void overlayPermissionGranted() {
+            ((SettingsActivity)getActivity()).showOverlay();
+            if (!this.overlayPermissionPreference.isChecked()) {
+                this.overlayPermissionPreference.setChecked(true);
+            }
+        }
+
         @Override
         public void onResume(){
             super.onResume();
 
-            if (!canDrawOverlay() && overlayPermissionPreference.isChecked()) {
+            if (!this.overlayPermissionReceiver.checkPermissions(getActivity(), OverlayController.PERMISSIONS)) {
                 overlayPermissionPreference.setChecked(false);
             }
-        }
-
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {
-                //Check if the permission is granted or not.
-                if (canDrawOverlay()) {
-                    ((SettingsActivity)getActivity()).showOverlay();
-                    if (!overlayPermissionPreference.isChecked()) {
-                        overlayPermissionPreference.setChecked(true);
-                    }
-                }
-                //Permission is not available
-                else {
-                    Toast.makeText(getActivity(), R.string.overlay_permission_missing,
-                            Toast.LENGTH_LONG).show();
-                    if (overlayPermissionPreference.isChecked()) {
-                        overlayPermissionPreference.setChecked(false);
-                    }
-                }
-            } else {
-                super.onActivityResult(requestCode, resultCode, data);
-            }
-        }
-
-        private boolean canDrawOverlay() {
-            return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(getActivity());
         }
 
         @Override
