@@ -1,70 +1,78 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <SwitchPreference
-        android:defaultValue="false"
-        android:key="overlay_active"
-        android:summary="@string/pref_description_overlay_toggle"
-        android:title="@string/pref_title_overlay_toggle"/>
-
+        app:defaultValue="false"
+        app:key="overlay_active"
+        app:summary="@string/pref_description_overlay_toggle"
+        app:title="@string/pref_title_overlay_toggle"/>
 
     <ListPreference
-        android:key="overlay_device_uid"
-        android:title="@string/pref_title_device"
+        app:dependency="overlay_active"
+        app:key="overlay_device_uid"
+        app:title="@string/pref_title_device"
         />
 
     <PreferenceCategory
-        android:title="@string/pref_title_overlay_volume">
+        app:dependency="overlay_active"
+        app:title="@string/pref_title_overlay_volume">
 
         <SwitchPreference
-            android:defaultValue="true"
-            android:key="overlay_volume_enabled"
-            android:summary="@string/pref_description_overlay_volume_toggle_on"
-            android:title="@string/pref_title_overlay_volume_toggle"/>
+            app:defaultValue="true"
+            app:key="overlay_volume_enabled"
+            app:summary="@string/pref_description_overlay_volume_toggle_on"
+            app:title="@string/pref_title_overlay_volume_toggle"/>
 
         <EditTextPreference
-            android:defaultValue="100"
-            android:key="overlay_volume_touch_duration"
-            android:inputType="number"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:summary="@string/pref_description_overlay_volume_touch_duration"
-            android:title="@string/pref_title_overlay_volume_touch_duration"/>
+            app:dependency="overlay_volume_enabled"
+            app:defaultValue="100"
+            app:key="overlay_volume_touch_duration"
+            app:singleLine="true"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/pref_title_overlay_volume_touch_duration"/>
 
         <ListPreference
-            android:defaultValue="10"
-            android:key="overlay_volume_steps"
-            android:title="@string/pref_title_overlay_volume_steps"/>
+            app:dependency="overlay_volume_enabled"
+            app:defaultValue="10"
+            app:key="overlay_volume_steps"
+            app:entries="@array/overlay_volume_steps"
+            app:entryValues="@array/overlay_volume_steps"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/pref_title_overlay_volume_steps"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="@string/pref_title_overlay_temperature_range">
+        app:dependency="overlay_active"
+        app:title="@string/pref_title_overlay_temperature_range">
 
         <EditTextPreference
-            android:defaultValue="16"
-            android:key="overlay_temperature_min"
-            android:numeric="integer"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/pref_title_overlay_temperature_min"/>
+            app:defaultValue="16"
+            app:key="overlay_temperature_min"
+            app:singleLine="true"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/pref_title_overlay_temperature_min"/>
+
         <EditTextPreference
-            android:defaultValue="30"
-            android:key="overlay_temperature_max"
-            android:numeric="integer"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/pref_title_overlay_temperature_max"/>
+            app:defaultValue="30"
+            app:key="overlay_temperature_max"
+            app:singleLine="true"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/pref_title_overlay_temperature_max"/>
+
     </PreferenceCategory>
+
     <PreferenceCategory
-        android:title="@string/pref_title_overlay_fan_range">
+        app:dependency="overlay_active"
+        app:title="@string/pref_title_overlay_fan_range">
 
         <EditTextPreference
-            android:defaultValue="7"
-            android:key="overlay_fan_max"
-            android:numeric="integer"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/pref_title_overlay_fan_max"/>
+            app:defaultValue="7"
+            app:key="overlay_fan_max"
+            app:singleLine="true"
+            app:useSimpleSummaryProvider="true"
+            app:title="@string/pref_title_overlay_fan_max"/>
+
     </PreferenceCategory>
 
 </PreferenceScreen>

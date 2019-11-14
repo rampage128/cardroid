@@ -64,7 +64,7 @@ public final class PowerManagementReceiver extends BroadcastReceiver {
         }
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Intent permissionIntent = new Intent(context, SettingsActivity.class);
-            permissionIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.PowerPreferenceFragment.class.getName());
+            permissionIntent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.CompatibilityScreen.class.getName());
             permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(permissionIntent);
         }

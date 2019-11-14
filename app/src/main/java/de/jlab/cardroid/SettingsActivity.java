@@ -1,31 +1,23 @@
 package de.jlab.cardroid;
 
-
-import android.annotation.TargetApi;
 import android.app.Application;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.SwitchPreference;
-import android.provider.Settings;
+import android.text.InputType;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.util.List;
 import java.util.Objects;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreference;
 import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
@@ -33,95 +25,25 @@ import de.jlab.cardroid.devices.storage.DeviceRepository;
 import de.jlab.cardroid.overlay.OverlayController;
 import de.jlab.cardroid.utils.permissions.PermissionReceiver;
 
-/**
- * FIXME: Migrate this legacy crap to androix.preferences
- * A {@link PreferenceActivity} that presents a set of application settings. On
- * handset devices, settings are presented as a single list. On tablets,
- * settings are split by category, with category headers shown to the left of
- * the list of settings.
- * <p>
- * See <a href="http://developer.android.com/design/patterns/settings.html">
- * Android Design: Settings</a> for design guidelines and the <a
- * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
- * API Guide</a> for more information on developing a Settings UI.
- */
-public final class SettingsActivity extends AppCompatPreferenceActivity {
+public final class SettingsActivity extends AppCompatActivity {
+
+    private static final EditTextPreference.OnBindEditTextListener INPUT_INT_UNSIGNED = editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+    private static final EditTextPreference.OnBindEditTextListener INPUT_INT_SIGNED = editText -> editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
 
     private DeviceServiceConnection serviceConnection = new DeviceServiceConnection(this::serviceAction);
     private OverlayController overlayController = null;
 
-    /**
-     * A preference value change listener that updates the preference's summary
-     * to reflect its new value.
-     */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
-            }
-            return true;
-        }
-    };
-
-    /**
-     * Helper method to determine if the device has an extra-large screen. For
-     * example, 10" tablets are extra-large.
-     */
-    private static boolean isXLargeTablet(Context context) {
-        return (context.getResources().getConfiguration().screenLayout
-                & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
-    }
-
-    /**
-     * Binds a preference's summary to its value. More specifically, when the
-     * preference's value is changed, its summary (line of text below the
-     * preference title) is updated to reflect the value. The summary is also
-     * immediately updated upon calling this method. The exact display format is
-     * dependent on the type of preference.
-     *
-     * @see #sBindPreferenceSummaryToValueListener
-     */
-    private static void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
-
-    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
-        if (action == DeviceServiceConnection.Action.BOUND) {
-            this.overlayController = deviceService.getOverlayController();
-        } else {
-            this.overlayController = null;
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setupActionBar();
+        setContentView(R.layout.activity_settings);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.settings_container, new MainScreen())
+                .commit();
+
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -139,14 +61,20 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
         this.serviceConnection.unbind(this.getApplicationContext());
     }
 
-    /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
-     */
-    private void setupActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            // Show the Up button in the action bar.
-            actionBar.setDisplayHomeAsUpEnabled(true);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            this.onBackPressed();
+            return true;
+        }
+        return false;
+    }
+
+    private void serviceAction(@NonNull DeviceService.DeviceServiceBinder deviceService, @NonNull DeviceServiceConnection.Action action) {
+        if (action == DeviceServiceConnection.Action.BOUND) {
+            this.overlayController = deviceService.getOverlayController();
+        } else {
+            this.overlayController = null;
         }
     }
 
@@ -162,90 +90,58 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean onIsMultiPane() {
-        return isXLargeTablet(this);
+    // Settings screen implementations
+
+    public static class MainScreen extends PreferenceFragmentCompat {
+        @Override
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_main, rootKey);
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public void onBuildHeaders(List<Header> target) {
-        loadHeadersFromResource(R.xml.pref_headers, target);
-    }
-
-    /**
-     * This method stops fragment injection in malicious applications.
-     * Make sure to deny any unknown fragments here.
-     */
-    protected boolean isValidFragment(String fragmentName) {
-        return PreferenceFragment.class.getName().equals(fragmentName)
-                || OverlayPreferenceFragment.class.getName().equals(fragmentName)
-                || CarPreferenceFragment.class.getName().equals(fragmentName)
-                || GpsPreferenceFragment.class.getName().equals(fragmentName)
-                || PowerPreferenceFragment.class.getName().equals(fragmentName);
-    }
-
-    /**
-     * This fragment shows overlay preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class OverlayPreferenceFragment extends PreferenceFragment {
+    @SuppressWarnings("unused")
+    public static class OverlayScreen extends PreferenceFragmentCompat {
         private PermissionReceiver overlayPermissionReceiver;
         private SwitchPreference overlayPermissionPreference;
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_overlay);
-            setHasOptionsMenu(true);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_overlay, rootKey);
 
-            this.overlayPermissionReceiver = new PermissionReceiver(getActivity(), this.getClass(), this::overlayPermissionGranted);
+            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
 
-            ListPreference volumeStepsPreference = (ListPreference)findPreference("overlay_volume_steps");
-            volumeStepsPreference.setEntryValues(R.array.overlay_volume_steps);
-            volumeStepsPreference.setEntries(R.array.overlay_volume_steps);
+            this.overlayPermissionReceiver = new PermissionReceiver(activity, this.getClass(), this::overlayPermissionGranted);
 
-            bindPreferenceSummaryToValue(findPreference("overlay_volume_touch_duration"));
-            bindPreferenceSummaryToValue(volumeStepsPreference);
+            ListPreference devicePreference = findPreference("overlay_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(devicePreference);
 
-            bindPreferenceSummaryToValue(findPreference("overlay_temperature_max"));
-            bindPreferenceSummaryToValue(findPreference("overlay_temperature_min"));
-            bindPreferenceSummaryToValue(findPreference("overlay_fan_max"));
-            bindPreferenceSummaryToValue(findPreference("overlay_device_uid"));
+            overlayPermissionPreference = findPreference("overlay_active");
+            Objects.requireNonNull(this.overlayPermissionPreference).setOnPreferenceChangeListener(this::onOverlayToggle);
 
-            ListPreference devicePreference = (ListPreference)findPreference("overlay_device_uid");
-            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
+            setTextInputType(findPreference("overlay_volume_touch_duration"), INPUT_INT_UNSIGNED);
+            setTextInputType(findPreference("overlay_temperature_min"), INPUT_INT_UNSIGNED);
+            setTextInputType(findPreference("overlay_temperature_max"), INPUT_INT_UNSIGNED);
+            setTextInputType(findPreference("overlay_fan_max"), INPUT_INT_UNSIGNED);
+        }
 
-            overlayPermissionPreference = (SwitchPreference)findPreference("overlay_active");
-
-            overlayPermissionPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    if (((Boolean)newValue)) {
-                        if (overlayPermissionReceiver.requestPermissions(getActivity(), OverlayController.PERMISSIONS)) {
-                            ((SettingsActivity)getActivity()).showOverlay();
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-                    else {
-                        ((SettingsActivity)getActivity()).hideOverlay();
-                    }
+        private boolean onOverlayToggle(Preference preference, Object newValue) {
+            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
+            if (((Boolean)newValue)) {
+                if (this.overlayPermissionReceiver.requestPermissions(activity, OverlayController.PERMISSIONS)) {
+                    activity.showOverlay();
                     return true;
+                } else {
+                    return false;
                 }
-            });
+            }
+            else {
+                activity.hideOverlay();
+            }
+            return true;
         }
 
         private void overlayPermissionGranted() {
-            ((SettingsActivity)getActivity()).showOverlay();
+            Objects.requireNonNull((SettingsActivity)getActivity()).showOverlay();
             if (!this.overlayPermissionPreference.isChecked()) {
                 this.overlayPermissionPreference.setChecked(true);
             }
@@ -255,19 +151,9 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
         public void onResume(){
             super.onResume();
 
-            if (!this.overlayPermissionReceiver.checkPermissions(getActivity(), OverlayController.PERMISSIONS)) {
+            if (!this.overlayPermissionReceiver.checkPermissions(Objects.requireNonNull(getActivity()), OverlayController.PERMISSIONS)) {
                 overlayPermissionPreference.setChecked(false);
             }
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
         }
 
         @Override
@@ -278,148 +164,53 @@ public final class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    /**
-     * This fragment shows usb preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class CarPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_car);
-            setHasOptionsMenu(true);
-
-            ListPreference devicePreference = (ListPreference)findPreference("car_device_uid");
-            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
-            bindPreferenceSummaryToValue(devicePreference);
-        }
+    @SuppressWarnings("unused")
+    public static class CarScreen extends PreferenceFragmentCompat {
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_car, rootKey);
+
+            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
+
+            ListPreference devicePreference = findPreference("car_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(devicePreference);
         }
+
     }
 
-    /**
-     * This fragment shows gps preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GpsPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_gps);
-            setHasOptionsMenu(true);
-
-            ListPreference devicePreference = (ListPreference)findPreference("gps_device_uid");
-            new DeviceListTask(getActivity().getApplication()).execute(devicePreference);
-            bindPreferenceSummaryToValue(devicePreference);
-        }
+    @SuppressWarnings("unused")
+    public static class GpsScreen extends PreferenceFragmentCompat {
 
         @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_gps, rootKey);
+
+            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
+
+            ListPreference devicePreference = findPreference("gps_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(devicePreference);
         }
+
     }
 
-    /**
-     * This fragment shows power preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class PowerPreferenceFragment extends PreferenceFragment {
-        private static final int CODE_TOGGLE_DISPLAY = 2084;
-
-        SwitchPreference toggleScreenPreference;
+    public static class CompatibilityScreen extends PreferenceFragmentCompat {
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_power);
-            setHasOptionsMenu(true);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.pref_compatibility, rootKey);
 
-            toggleScreenPreference = (SwitchPreference)findPreference("power_toggle_screen");
-
-            toggleScreenPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    if (((Boolean)newValue)) {
-                        if (canChangeSettings()) {
-                            return true;
-                        } else {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                Intent permissionIntent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
-                                permissionIntent.setData(Uri.parse("package:" + getContext().getPackageName()));
-                                startActivityForResult(permissionIntent, CODE_TOGGLE_DISPLAY);
-                            }
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            });
+            setTextInputType(findPreference("device_detection_delay"), INPUT_INT_UNSIGNED);
+            setTextInputType(findPreference("device_detection_timeout"), INPUT_INT_UNSIGNED);
         }
 
-        @Override
-        public void onResume(){
-            super.onResume();
+    }
 
-            if (!canChangeSettings() && toggleScreenPreference.isChecked()) {
-                toggleScreenPreference.setChecked(false);
-            }
-        }
+    // Helpers
 
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            if (requestCode == CODE_TOGGLE_DISPLAY) {
-                //Check if the permission is granted or not.
-                if (canChangeSettings()) {
-                    if (!toggleScreenPreference.isChecked()) {
-                        toggleScreenPreference.setChecked(true);
-                    }
-                }
-                //Permission is not available
-                else {
-                    Toast.makeText(getActivity(), R.string.write_settings_permission_missing,
-                            Toast.LENGTH_LONG).show();
-                    if (toggleScreenPreference.isChecked()) {
-                        toggleScreenPreference.setChecked(false);
-                    }
-                }
-            } else {
-                super.onActivityResult(requestCode, resultCode, data);
-            }
-        }
-
-        @Override
-        public void onPause() {
-            super.onPause();
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-
-        private boolean canChangeSettings() {
-            return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(getContext());
+    private static void setTextInputType(@Nullable EditTextPreference preference, @NonNull EditTextPreference.OnBindEditTextListener inputType) {
+        if (preference != null) {
+            preference.setOnBindEditTextListener(inputType);
         }
     }
 
