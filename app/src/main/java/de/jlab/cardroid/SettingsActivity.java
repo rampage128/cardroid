@@ -96,6 +96,35 @@ public final class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.pref_main, rootKey);
+
+            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
+
+            ListPreference overlayDevicePreference = findPreference("overlay_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(overlayDevicePreference);
+            Objects.requireNonNull(overlayDevicePreference).setOnPreferenceChangeListener(this::onDeviceSelected);
+
+            ListPreference carDevicePreference = findPreference("car_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(carDevicePreference);
+            Objects.requireNonNull(carDevicePreference).setOnPreferenceChangeListener(this::onDeviceSelected);
+
+            ListPreference gpsDevicePreference = findPreference("gps_device_uid");
+            new DeviceListTask(activity.getApplication()).execute(gpsDevicePreference);
+            Objects.requireNonNull(gpsDevicePreference).setOnPreferenceChangeListener(this::onDeviceSelected);
+        }
+
+        private boolean onDeviceSelected(Preference preference, Object newValue) {
+            ListPreference list = (ListPreference)preference;
+
+            int index = 0;
+            Object[] values = list.getEntryValues();
+            for (int i = 0; i < values.length; i++) {
+                if (Objects.equals(values[i], newValue)) {
+                    index = i;
+                }
+            }
+
+            preference.setSummary(list.getEntries()[index]);
+            return true;
         }
     }
 
@@ -111,9 +140,6 @@ public final class SettingsActivity extends AppCompatActivity {
             SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
 
             this.overlayPermissionReceiver = new PermissionReceiver(activity, this.getClass(), this::overlayPermissionGranted);
-
-            ListPreference devicePreference = findPreference("overlay_device_uid");
-            new DeviceListTask(activity.getApplication()).execute(devicePreference);
 
             overlayPermissionPreference = findPreference("overlay_active");
             Objects.requireNonNull(this.overlayPermissionPreference).setOnPreferenceChangeListener(this::onOverlayToggle);
@@ -162,36 +188,6 @@ public final class SettingsActivity extends AppCompatActivity {
 
             this.overlayPermissionReceiver.dispose();
         }
-    }
-
-    @SuppressWarnings("unused")
-    public static class CarScreen extends PreferenceFragmentCompat {
-
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.pref_car, rootKey);
-
-            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
-
-            ListPreference devicePreference = findPreference("car_device_uid");
-            new DeviceListTask(activity.getApplication()).execute(devicePreference);
-        }
-
-    }
-
-    @SuppressWarnings("unused")
-    public static class GpsScreen extends PreferenceFragmentCompat {
-
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.pref_gps, rootKey);
-
-            SettingsActivity activity = (SettingsActivity)Objects.requireNonNull(getActivity());
-
-            ListPreference devicePreference = findPreference("gps_device_uid");
-            new DeviceListTask(activity.getApplication()).execute(devicePreference);
-        }
-
     }
 
     public static class CompatibilityScreen extends PreferenceFragmentCompat {

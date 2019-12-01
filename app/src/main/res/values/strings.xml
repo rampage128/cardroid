@@ -38,6 +38,15 @@
 
     <!-- Strings related to Settings -->
     <string name="title_activity_settings">CarDroid Settings</string>
+    <string name="pref_title_default_devices">Default Devices</string>
+    <string name="pref_summary_default_devices">Configure default devices to use for each app feature</string>
+
+    <string name="pref_title_default_device_car">Car Connection</string>
+    <string name="pref_title_default_device_location">Location Emulation</string>
+    <string name="pref_title_default_device_overlay">Overlay</string>
+
+    <string name="pref_title_app_features">App features</string>
+    <string name="pref_summary_app_features">Configure individual app features</string>
 
     <!-- Power settings -->
     <string name="pref_header_power">Compatibility Settings</string>

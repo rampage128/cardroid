@@ -1,46 +1,41 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory
+        app:title="@string/pref_title_default_devices"
+        app:summary="@string/pref_summary_default_devices">
 
-    <Preference
-        app:fragment="de.jlab.cardroid.SettingsActivity$OverlayScreen"
-        app:icon="@drawable/ic_pref_overlay"
-        app:title="@string/pref_header_overlay"
-        app:summary="@string/pref_header_description_overlay" />
+        <ListPreference
+            app:key="car_device_uid"
+            app:title="@string/pref_title_default_device_car" />
 
-    <Preference
-        app:fragment="de.jlab.cardroid.SettingsActivity$CarScreen"
-        app:icon="@drawable/ic_pref_car"
-        app:title="@string/pref_header_car"
-        app:summary="@string/pref_header_description_car" />
+        <ListPreference
+            app:key="gps_device_uid"
+            app:title="@string/pref_title_default_device_location" />
 
-    <Preference
-        app:icon="@drawable/ic_pref_devices"
-        app:title="@string/pref_header_devices"
-        app:summary="@string/pref_header_description_devices">
-        <intent android:targetPackage="de.jlab.cardroid"
-            android:targetClass="de.jlab.cardroid.devices.ui.DeviceActivity" />
-    </Preference>
+        <ListPreference
+            app:key="overlay_device_uid"
+            app:title="@string/pref_title_default_device_overlay" />
 
-    <Preference
-        app:icon="@drawable/ic_pref_rules"
-        app:title="@string/pref_header_rules"
-        app:summary="@string/pref_header_description_rules">
-        <intent android:targetPackage="de.jlab.cardroid"
-            android:targetClass="de.jlab.cardroid.rules.RuleActivity" />
-    </Preference>
+    </PreferenceCategory>
 
+    <PreferenceCategory
+        app:title="@string/pref_title_app_features"
+        app:summary="@string/pref_summary_app_features"
+        app:initialExpandedChildrenCount="1">
 
-    <Preference
-        app:fragment="de.jlab.cardroid.SettingsActivity$GpsScreen"
-        app:icon="@drawable/ic_pref_gps"
-        app:title="@string/pref_header_gps"
-        app:summary="@string/pref_header_description_gps" />
+        <Preference
+            app:fragment="de.jlab.cardroid.SettingsActivity$OverlayScreen"
+            app:icon="@drawable/ic_pref_overlay"
+            app:title="@string/pref_header_overlay"
+            app:summary="@string/pref_header_description_overlay" />
 
-    <Preference
-        app:fragment="de.jlab.cardroid.SettingsActivity$CompatibilityScreen"
-        app:icon="@drawable/ic_pref_compatibility"
-        app:title="@string/pref_header_power"
-        app:summary="@string/pref_header_description_power" />
+        <Preference
+            app:fragment="de.jlab.cardroid.SettingsActivity$CompatibilityScreen"
+            app:icon="@drawable/ic_pref_compatibility"
+            app:title="@string/pref_header_power"
+            app:summary="@string/pref_header_description_power" />
+
+    </PreferenceCategory>
+
 
 </PreferenceScreen>

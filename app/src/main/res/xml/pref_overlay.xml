@@ -7,12 +7,6 @@
         app:summary="@string/pref_description_overlay_toggle"
         app:title="@string/pref_title_overlay_toggle"/>
 
-    <ListPreference
-        app:dependency="overlay_active"
-        app:key="overlay_device_uid"
-        app:title="@string/pref_title_device"
-        />
-
     <PreferenceCategory
         app:dependency="overlay_active"
         app:title="@string/pref_title_overlay_volume">
