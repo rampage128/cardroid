@@ -117,7 +117,12 @@ public abstract class Device {
     @NonNull
     @Override
     public String toString() {
-        return this.descriptor.deviceUid + "@" + this.connectionId;
+        StringBuilder sb = new StringBuilder();
+        if (this.descriptor != null) {
+            sb.append(this.descriptor.deviceUid).append("@");
+        }
+        sb.append(this.connectionId);
+        return sb.toString();
     }
 
     //////////////////////////////////////////////////////////
