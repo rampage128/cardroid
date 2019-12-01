@@ -21,6 +21,7 @@ public final class PermissionReceiver {
         public void onReceive(Context context, Intent intent) {
             if (PermissionReceiver.this.action.equalsIgnoreCase(intent.getAction())) {
                 PermissionReceiver.this.consumer.onPermissionsGranted();
+                // TODO figure out a way to auto-remove the BroadcastReceiver. Then we can get rid of dispose()
             }
         }
     };

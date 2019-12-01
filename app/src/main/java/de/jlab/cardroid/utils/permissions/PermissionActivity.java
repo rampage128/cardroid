@@ -45,6 +45,7 @@ public final class PermissionActivity extends AppCompatActivity {
                 }
 
                 this.permissions = Permission.fromParcel(permissionRequests);
+                // FIXME: If a new permission request comes in while the Activity is already created, these new permissions should just be added to the list
                 this.permissionAdapter = new PermissionAdapter(this, this.permissions, this::permissionRequested);
                 permissionList.setAdapter(this.permissionAdapter);
                 this.permissionAdapter.notifyDataSetChanged();
@@ -130,6 +131,7 @@ public final class PermissionActivity extends AppCompatActivity {
         }
     }
 
+    // TODO group permissions by usage to display permission for same usage in one box as a sub-list
     public static class PermissionAdapter extends RecyclerView.Adapter<PermissionActivity.PermissionAdapter.ViewHolder> {
 
         private Context context;
