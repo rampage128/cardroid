@@ -25,6 +25,22 @@
         <attr name="autoLimit" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="CircularMenuView">
+        <attr name="menu" format="reference" />
+        <attr name="innerRadius" format="float" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="foregroundColor" format="color" />
+        <attr name="sweep" format="integer" />
+        <attr name="angle" format="integer" />
+        <attr name="padding" format="dimension" />
+        <attr name="iconSize" format="dimension" />
+        <attr name="fontSize" format="dimension" />
+        <attr name="itemGravity" format="enum">
+            <enum name="GRAVITY_MIDDLE" value="0" />
+            <enum name="GRAVITY_OUTSIDE" value="1" />
+        </attr>
+    </declare-styleable>
+
     <declare-styleable name="SeekArcTheme">
         <attr name="seekArcStyle" format="reference"></attr>
     </declare-styleable>

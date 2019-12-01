@@ -20,6 +20,19 @@
     <string name="usb_status_connecting">Connecting to device…</string>
     <string name="usb_status_disconnecting">Disconnecting from device…</string>
 
+    <!-- Main activity -->
+    <string name="main_headline_active_features">Active Features</string>
+    <string name="main_headline_inactive_features">Inactive Features</string>
+    <string name="main_headline_stats">Status</string>
+    <string name="main_headline_devices">Active Devices</string>
+    <string name="main_devices">Active Devices</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_stats_rules">%1$d Rules</string>
+    <string name="dashboard_stats_devices">%1$d Active Devices</string>
+    <string name="dashboard_stats_features">%1$d Active Features</string>
+    <string name="dashboard_stats_variables">%1$d Variables</string>
+
     <!-- Cansniffer -->
     <string name="cansniffer_line"><b>%1$s</b> : %2$s</string>
 

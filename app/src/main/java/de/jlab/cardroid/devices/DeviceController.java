@@ -25,6 +25,10 @@ public final class DeviceController {
         return this.devices.size() < 1;
     }
 
+    public int getDeviceCount() {
+        return this.devices.size();
+    }
+
     public <FT extends Feature> void subscribeFeature(@NonNull Device.FeatureChangeObserver<FT> observer, @NonNull Class<FT> featureClass, @NonNull DeviceUid... deviceUids) {
         if (deviceUids.length > 0) {
             for (DeviceUid uid : deviceUids) {

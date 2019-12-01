@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_can"
+        android:enabled="true"
+        android:icon="@drawable/ic_pref_car"
+        android:title="@string/pref_title_car_monitor"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_sniffer"
+        android:enabled="true"
+        android:icon="@drawable/ic_pref_car"
+        android:title="@string/pref_title_can_sniffer"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_location"
+        android:enabled="true"
+        android:icon="@drawable/ic_pref_gps"
+        android:title="@string/pref_header_gps"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_devices"
+        android:enabled="true"
+        android:icon="@drawable/ic_pref_devices"
+        android:title="@string/pref_header_devices"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_rules"
+        android:enabled="true"
+        android:icon="@drawable/ic_pref_rules"
+        android:title="@string/pref_header_rules"
+        app:showAsAction="ifRoom" />
+</menu>

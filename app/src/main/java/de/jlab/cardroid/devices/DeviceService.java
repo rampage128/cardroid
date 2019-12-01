@@ -190,6 +190,14 @@ public final class DeviceService extends Service {
             DeviceService.this.deviceController.unsubscribeState(observer);
         }
 
+        public int getDeviceCount() {
+            return DeviceService.this.deviceController.getDeviceCount();
+        }
+
+        public RuleController getRuleController() {
+            return DeviceService.this.ruleController;
+        }
+
         public VariableController getVariableStore() {
             return DeviceService.this.variableController;
         }

@@ -50,6 +50,10 @@ public final class RuleController {
         this.deviceController.unsubscribeFeature(this.eventFilter, EventObservable.class);
     }
 
+    public int getRuleCount() {
+        return this.rules.size();
+    }
+
     private void onEventFeatureStateChange(@NonNull EventObservable feature, @NonNull Feature.State state) {
         if (state == Feature.State.AVAILABLE) {
             feature.addListener(this.eventTrigger);
