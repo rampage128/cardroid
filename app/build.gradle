@@ -24,12 +24,12 @@ android {
 }
 
 dependencies {
-    def room_version = "2.2.0-rc01"
+    def room_version = "2.2.2"
     def lifecycle_version = "2.1.0"
     implementation group: 'org.mozilla', name: 'rhino', version: '1.7.10'
     implementation "androidx.room:room-runtime:$room_version"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta04'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'com.google.android.material:material:1.2.0-alpha02'
     implementation 'androidx.preference:preference:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
