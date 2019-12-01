@@ -2,8 +2,10 @@ package de.jlab.cardroid.devices.detection;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.Timer;
@@ -35,6 +37,10 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 
     @Override
     protected boolean startIdentification(@NonNull UsbDevice device, @NonNull DeviceService service) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(service);
+        long delay = Long.parseLong(prefs.getString("device_detection_delay", "1000"));
+        long timeout = Long.parseLong(prefs.getString("device_detection_timeout", "1000"));
+
         UsbManager usbManager = (UsbManager)service.getApplication().getSystemService(Context.USB_SERVICE);
         this.baudRates = service.getResources().getIntArray(R.array.serial_detection_baud_rates);
         this.connection = new UsbSerialConnection(device, this.baudRates[this.currentBaudRateIndex], usbManager);
@@ -55,7 +61,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
                         detectionFailed();
                     }
                 }
-            }, 1000, 1000);
+            }, timeout, timeout);
         }
 
         return connectionSuccess;
