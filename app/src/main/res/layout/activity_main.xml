@@ -128,7 +128,65 @@
                     app:layout_constraintStart_toStartOf="@+id/circle_inner_radius_l"
                     app:layout_constraintTop_toTopOf="parent"
                     app:strokeColor="@color/divider"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/car_brand"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="NISSAN"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                            app:layout_constraintBottom_toTopOf="@+id/car_model"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_chainStyle="packed"
+                            tools:text="NISSAN" />
+
+                        <TextView
+                            android:id="@+id/car_model"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="370Z"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline3"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toTopOf="@+id/car_spec"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/car_brand"
+                            tools:text="370Z" />
+
+                        <TextView
+                            android:id="@+id/car_spec"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="MY 2010"
+                            android:textAlignment="center"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/car_model"
+                            tools:text="MY 2010" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </de.jlab.cardroid.utils.ui.RoundCardView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
