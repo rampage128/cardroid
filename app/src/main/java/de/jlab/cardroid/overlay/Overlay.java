@@ -17,6 +17,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import de.jlab.cardroid.R;
 
 public abstract class Overlay {
 
@@ -153,6 +154,7 @@ public abstract class Overlay {
     }
 
     protected View setContentView(@LayoutRes int layoutId) {
+        this.context.setTheme(R.style.AppTheme);
         this.contentView = LayoutInflater.from(this.context).inflate(layoutId, null);
         return this.contentView;
     }

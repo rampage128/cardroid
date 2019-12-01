@@ -3,11 +3,12 @@ package de.jlab.cardroid.utils.ui;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import com.google.android.material.card.MaterialCardView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 
-public final class RoundCardView extends CardView {
+public final class RoundCardView extends MaterialCardView {
 
     private int measuredCornerRadius = 0;
 
