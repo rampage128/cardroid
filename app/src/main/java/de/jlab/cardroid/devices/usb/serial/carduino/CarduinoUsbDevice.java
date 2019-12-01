@@ -83,6 +83,7 @@ public final class CarduinoUsbDevice extends UsbSerialDevice<CarduinoSerialReade
     @Override
     protected void onClose(CarduinoSerialReader reader) {
         this.keepAlive.stop();
+        this.isReady = false;
         for (int i = 0; i < this.packetParsers.size(); i++) {
             reader.removeSerialPacketListener(this.packetParsers.remove(i));
         }

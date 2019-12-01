@@ -44,6 +44,7 @@ public final class DeviceServiceConnection {
         if (this.isBound) {
             this.onBindingAction.consume(this.service, Action.UNBOUND);
             context.unbindService(this.serviceConnection);
+            this.isBound = false;
             this.service = null;
         }
     }
