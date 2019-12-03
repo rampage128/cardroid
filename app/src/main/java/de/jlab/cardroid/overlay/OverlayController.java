@@ -117,7 +117,9 @@ public final class OverlayController {
 
     public void dispose() {
         this.permissionReceiver.dispose();
-        this.acController.dispose();
+        if (this.acController != null) {
+            this.acController.dispose();
+        }
         this.volumeControls.destroy();
         this.carControls.destroy();
         this.bubble.destroy();
