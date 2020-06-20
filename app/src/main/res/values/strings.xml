@@ -63,6 +63,9 @@
     <string name="pref_title_overlay_toggle">Show Overlay</string>
     <string name="pref_description_overlay_toggle">Show a permanent overlay for quick access to car controls</string>
 
+    <string name="pref_title_overlay_reset_position">Reset position</string>
+    <string name="pref_description_overlay_reset_position">Reset the overlays position to it\'s default</string>
+
     <string name="pref_title_overlay_volume">Volume controls</string>
     <string name="pref_title_overlay_volume_toggle">Enable volume controls</string>
     <string name="pref_description_overlay_volume_toggle_on">Adjust media volume by touching overlay bubble</string>
@@ -81,6 +84,10 @@
     <string name="pref_title_overlay_fan_range">Fan range</string>
     <string name="pref_title_overlay_fan_max">Fan maximum</string>
     <string name="pref_description_overlay_fan_max">Maximum level of blower fan adjustment</string>
+
+    <string name="pref_title_overlay_demo">Demonstration tools</string>
+    <string name="pref_title_overlay_demo_show">Show demonstration overlay</string>
+    <string name="pref_description_overlay_demo_show">Shows an interactive demonstration of the overlay</string>
 
     <!-- Car settings -->
     <string name="pref_header_car">Car connection</string>

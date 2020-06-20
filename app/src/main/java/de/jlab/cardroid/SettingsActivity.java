@@ -1,8 +1,10 @@
 package de.jlab.cardroid;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -22,6 +24,7 @@ import de.jlab.cardroid.devices.DeviceService;
 import de.jlab.cardroid.devices.DeviceServiceConnection;
 import de.jlab.cardroid.devices.storage.DeviceEntity;
 import de.jlab.cardroid.devices.storage.DeviceRepository;
+import de.jlab.cardroid.overlay.DemoOverlayController;
 import de.jlab.cardroid.overlay.OverlayController;
 import de.jlab.cardroid.utils.permissions.PermissionReceiver;
 
@@ -132,6 +135,7 @@ public final class SettingsActivity extends AppCompatActivity {
     public static class OverlayScreen extends PreferenceFragmentCompat {
         private PermissionReceiver overlayPermissionReceiver;
         private SwitchPreference overlayPermissionPreference;
+        private DemoOverlayController demoOverlayController;
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -148,6 +152,33 @@ public final class SettingsActivity extends AppCompatActivity {
             setTextInputType(findPreference("overlay_temperature_min"), INPUT_INT_UNSIGNED);
             setTextInputType(findPreference("overlay_temperature_max"), INPUT_INT_UNSIGNED);
             setTextInputType(findPreference("overlay_fan_max"), INPUT_INT_UNSIGNED);
+
+            Preference showDemo = findPreference("overlay_demo_show");
+            Objects.requireNonNull(showDemo).setOnPreferenceClickListener(this::showDemoOverlay);
+
+            Preference resetPosition = findPreference("overlay_position_reset");
+            Objects.requireNonNull(resetPosition).setOnPreferenceClickListener(this::resetOverlayPosition);
+
+            this.demoOverlayController = new DemoOverlayController(activity);
+        }
+
+        private boolean resetOverlayPosition(Preference preference) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove("overlay_bubble_x");
+            editor.remove("overlay_bubble_y");
+            editor.apply();
+
+            return true;
+        }
+
+        private boolean showDemoOverlay(Preference preference) {
+            if (this.demoOverlayController.isRunning()) {
+                this.demoOverlayController.stop();
+            } else {
+                this.demoOverlayController.start();
+            }
+            return true;
         }
 
         private boolean onOverlayToggle(Preference preference, Object newValue) {
@@ -183,10 +214,18 @@ public final class SettingsActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onPause() {
+            super.onPause();
+
+            this.demoOverlayController.stop();
+        }
+
+        @Override
         public void onDestroy() {
             super.onDestroy();
 
             this.overlayPermissionReceiver.dispose();
+            this.demoOverlayController.dispose();
         }
     }
 

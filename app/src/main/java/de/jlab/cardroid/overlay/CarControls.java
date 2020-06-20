@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import de.jlab.cardroid.R;
 import de.jlab.cardroid.car.nissan370z.AcCanController;
 import de.jlab.cardroid.utils.ui.UnitValues;
@@ -18,7 +20,7 @@ import de.jlab.cardroid.variables.VariableController;
 
 public final class CarControls extends Overlay {
 
-    private static final String[] VARIABLES = new String[] {
+    public static final String[] VARIABLES = new String[] {
             "hvacTargetTemperature",
             "hvacFanLevel",
             "hvacIsAirductFace",
@@ -48,8 +50,8 @@ public final class CarControls extends Overlay {
 
     private int animationDuration;
     
-    public CarControls(@NonNull VariableController variableController, @NonNull AcCanController acController, @NonNull Context context, int maxFanLevel, int minTemperature, int maxTemperature) {
-        super(context);
+    public CarControls(@Nullable OverlayToggleListener toggleListener, @NonNull AcCanController acController, @NonNull Context context, int maxFanLevel, int minTemperature, int maxTemperature) {
+        super(context, toggleListener);
         this.variableController = variableController;
         this.acController = acController;
         this.maxFanLevel = maxFanLevel;
@@ -186,7 +188,7 @@ public final class CarControls extends Overlay {
         }
     }
 
-    private void onVariableChange(Object oldValue, Object newValue, String variableName) {
+    public void onVariableChange(Object oldValue, Object newValue, String variableName) {
         switch(variableName) {
             case "hvacTargetTemperature":
                 this.state.temperature = UnitValues.constrainToRange(((Number)newValue).floatValue(), this.minTemperature, this.maxTemperature);
@@ -264,18 +266,13 @@ public final class CarControls extends Overlay {
     }
 
     @Override
-    protected void onShow() {
-        this.variableController.subscribe(this.onVariableChange, VARIABLES);
-    }
+    protected void onShow() {}
 
     @Override
-    protected void onHide() {
-        this.variableController.unsubscribe(this.onVariableChange, VARIABLES);
-    }
+    protected void onHide() {}
 
     @Override
     protected void onDestroy() {}
-
 
     private static class AcState {
         private boolean isOn = false;

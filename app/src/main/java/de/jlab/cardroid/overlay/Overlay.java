@@ -5,11 +5,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
 import androidx.annotation.IdRes;
@@ -28,11 +30,13 @@ public abstract class Overlay {
     private View contentView;
     private boolean isVisible = false;
 
+    private OverlayToggleListener toggleListener;
     private Handler uiHandler;
 
-    public Overlay(@NonNull Context context) {
+    public Overlay(@NonNull Context context, @Nullable OverlayToggleListener toggleListener) {
         this.context = context;
         this.layoutParams = this.createLayoutParams();
+        this.toggleListener = toggleListener;
     }
 
     public void create() {
@@ -49,7 +53,7 @@ public abstract class Overlay {
         this.updateLayoutFromContentView();
     }
 
-    public void show() {
+    public void show(@Nullable Point sourcePosition) {
         this.runOnUiThread(() -> {
             if (this.isVisible) {
                 return;
@@ -60,6 +64,25 @@ public abstract class Overlay {
             }
 
             this.windowManager.addView(this.contentView, this.layoutParams);
+
+            this.contentView.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
+                        public void onGlobalLayout() {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                                contentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            } else {
+                                contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                            }
+
+                            if (sourcePosition != null) {
+                                move(sourcePosition.x - contentView.getWidth() / 2, sourcePosition.y - contentView.getHeight() / 2);
+                            }
+                        }
+                    });
+
+            if (this.toggleListener != null) {
+                this.toggleListener.onToggle(true);
+            }
             this.onShow();
 
             this.isVisible = true;
@@ -73,14 +96,17 @@ public abstract class Overlay {
             }
 
             this.windowManager.removeView(this.contentView);
+            if (this.toggleListener != null) {
+                this.toggleListener.onToggle(false);
+            }
             this.onHide();
 
             this.isVisible = false;
         //});
     }
 
-    public void fadeIn(long animationDuration) {
-        this.show();
+    public void fadeIn(long animationDuration, @Nullable Point sourcePosition) {
+        this.show(sourcePosition);
         this.runOnUiThread(() -> {
             this.contentView.setVisibility(View.VISIBLE);
             this.contentView.setAlpha(0f);
@@ -122,6 +148,14 @@ public abstract class Overlay {
         }
     }
 
+    public int getWidth() {
+        return this.contentView != null ? this.contentView.getWidth() : 0;
+    }
+
+    public int getHeight() {
+        return this.contentView != null ? this.contentView.getHeight() : 0;
+    }
+
     protected Resources getResources() {
         return this.context.getResources();
     }
@@ -157,6 +191,21 @@ public abstract class Overlay {
         this.context.setTheme(R.style.AppTheme);
         this.contentView = LayoutInflater.from(this.context).inflate(layoutId, null);
         return this.contentView;
+    }
+
+    @Nullable
+    protected View getContentView() {
+        return this.contentView;
+    }
+
+    @NonNull
+    protected WindowManager.LayoutParams getLayoutParams() {
+        return this.layoutParams;
+    }
+
+    @NonNull
+    protected Context getContext() {
+        return this.context;
     }
 
     protected abstract void onCreate(@NonNull WindowManager.LayoutParams windowParams, @NonNull Context context);
@@ -238,6 +287,7 @@ public abstract class Overlay {
                 windowType,
                 WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS |
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                         PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
@@ -261,6 +311,10 @@ public abstract class Overlay {
          */
 
         return params;
+    }
+
+    public interface OverlayToggleListener {
+        void onToggle(boolean visibility);
     }
 
 }

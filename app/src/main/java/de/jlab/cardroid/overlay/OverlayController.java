@@ -2,50 +2,43 @@ package de.jlab.cardroid.overlay;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.jlab.cardroid.R;
+
 import de.jlab.cardroid.car.nissan370z.AcCanController;
 import de.jlab.cardroid.devices.Device;
 import de.jlab.cardroid.devices.DeviceController;
 import de.jlab.cardroid.devices.identification.DeviceUid;
-import de.jlab.cardroid.utils.permissions.OverlayPermission;
-import de.jlab.cardroid.utils.permissions.Permission;
-import de.jlab.cardroid.utils.permissions.PermissionReceiver;
-import de.jlab.cardroid.utils.permissions.PermissionRequest;
+import de.jlab.cardroid.variables.Variable;
 import de.jlab.cardroid.variables.VariableController;
 
-public final class OverlayController {
-
-    public static final PermissionRequest[] PERMISSIONS = new PermissionRequest[] {
-        new PermissionRequest(OverlayPermission.PERMISSION_KEY, Permission.Constraint.REQUIRED, R.string.overlay_permission_reason)
-    };
-
-    private Context context;
+public final class OverlayController extends AbstractOverlayController {
 
     private CarBubble bubble;
     private CarControls carControls;
     private VolumeControls volumeControls;
 
+    private Variable.VariableChangeListener bubbleVariableListener = this::bubbleVariableChange;
+    private Variable.VariableChangeListener controlVariableListener = this::controlVariableChange;
+
     private DeviceController deviceController;
     private AcCanController acController;
+    private VariableController variableController;
 
     private Device.StateObserver onDeviceStateChange = this::onDeviceStateChange;
-
-    private PermissionReceiver permissionReceiver;
 
     private long animationDurationShort;
     private long animationDurationMedium;
 
     private boolean connected = false;
-    private boolean wasStarted = false;
 
     public OverlayController(@NonNull VariableController variableController, @NonNull DeviceController deviceController, @NonNull Context context) {
-        this.context = context;
+        super(context);
         this.deviceController = deviceController;
-        this.permissionReceiver = new PermissionReceiver(context, this.getClass(), this::onOverlayPermissionGranted);
+        this.variableController = variableController;
 
         this.animationDurationShort = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
         this.animationDurationMedium = context.getResources().getInteger(android.R.integer.config_mediumAnimTime);
@@ -59,7 +52,7 @@ public final class OverlayController {
         long volumeTouchDuration = Long.valueOf(prefs.getString("overlay_volume_touch_duration", "100"));
         boolean enableVolumeControls = prefs.getBoolean("overlay_volume_enabled", true);
 
-        this.bubble = new CarBubble(variableController, this, context, maxFanLevel, minTemperature, maxTemperature, enableVolumeControls, volumeTouchDuration);
+        this.bubble = new CarBubble(this, this::onBubbleToggle, context, maxFanLevel, minTemperature, maxTemperature, enableVolumeControls, volumeTouchDuration);
         this.bubble.create();
 
         DeviceUid deviceUid = getDeviceUid(context);
@@ -68,16 +61,10 @@ public final class OverlayController {
             this.deviceController.subscribeState(this.onDeviceStateChange, deviceUid);
         }
 
-        this.carControls = new CarControls(variableController, this.acController, context, maxFanLevel, minTemperature, maxTemperature);
+        this.carControls = new CarControls(this::onControlToggle, this.acController, context, maxFanLevel, minTemperature, maxTemperature);
         this.carControls.create();
         this.volumeControls = new VolumeControls(context, volumeSteps);
         this.volumeControls.create();
-    }
-
-    private void onOverlayPermissionGranted() {
-        if (this.wasStarted) {
-            this.start();
-        }
     }
 
     private void onDeviceStateChange(@NonNull Device device, @NonNull Device.State state, @NonNull Device.State previous) {
@@ -96,27 +83,17 @@ public final class OverlayController {
         return deviceUid != null ? new DeviceUid(deviceUid) : null;
     }
 
-    public void start() {
-        if (!this.connected) {
-            return;
-        }
-
-        if (this.permissionReceiver.requestPermissions(this.context, PERMISSIONS)) {
-            this.bubble.show();
-        }
-
-        this.wasStarted = true;
+    protected void onStart() {
+        this.bubble.show(null);
     }
 
-    public void stop() {
+    protected void onStop() {
         this.bubble.hide();
         this.carControls.hide();
         this.volumeControls.hide();
-        this.wasStarted = false;
     }
 
-    public void dispose() {
-        this.permissionReceiver.dispose();
+    public void onDispose() {
         if (this.acController != null) {
             this.acController.dispose();
         }
@@ -124,15 +101,57 @@ public final class OverlayController {
         this.carControls.destroy();
         this.bubble.destroy();
         this.deviceController.unsubscribeState(this.onDeviceStateChange);
-        this.context = null;
+    }
+
+    public void bubbleVariableChange(Object oldValue, Object newValue, String variableName) {
+        switch(variableName) {
+            case "hvacTargetTemperature":
+                this.bubble.setTemperature(((Number)newValue).floatValue());
+                break;
+            case "hvacFanLevel":
+                this.bubble.setFanLevel(((Number)newValue).intValue());
+                break;
+        }
+    }
+
+    private void onBubbleToggle(boolean isVisible) {
+        if (isVisible) {
+            this.variableController.subscribe(this.bubbleVariableListener, "hvacTargetTemperature", "hvacFanLevel");
+        } else {
+            this.variableController.unsubscribe(this.bubbleVariableListener, "hvacTargetTemperature", "hvacFanLevel");
+        }
+    }
+
+
+    public void controlVariableChange(Object oldValue, Object newValue, String variableName) {
+        this.carControls.onVariableChange(oldValue, newValue, variableName);
+    }
+
+    private void onControlToggle(boolean isVisible) {
+        if (isVisible) {
+            this.variableController.subscribe(this.controlVariableListener, CarControls.VARIABLES);
+        } else {
+            this.variableController.unsubscribe(this.controlVariableListener, CarControls.VARIABLES);
+        }
+    }
+
+    @Override
+    public void updateBubblePosition(int x, int y) {
+        this.volumeControls.recalculateDials(x, y);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("overlay_bubble_x", x);
+        editor.putInt("overlay_bubble_y", y);
+        editor.apply();
     }
 
     public void showCarControls() {
-        this.carControls.fadeIn(this.animationDurationShort);
+        this.carControls.fadeIn(this.animationDurationShort, null);
     }
 
-    public void showVolumeControls() {
-        this.volumeControls.fadeIn(this.animationDurationMedium);
+    public void showVolumeControls(int x, int y) {
+        Point sourcePosition = new Point(x - this.bubble.getWidth() / 2, y - this.bubble.getHeight() / 2);
+        this.volumeControls.fadeIn(this.animationDurationMedium, sourcePosition);
     }
 
     public void hideVolumeControls() {

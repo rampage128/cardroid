@@ -17,20 +17,23 @@ public class TapTouchListener implements View.OnTouchListener {
     private Handler handler;
     private Runnable checkHolding = this::startHolding;
 
-    private ActionListener actionListener;
+    private TouchActionListener touchActionListener;
+    private TouchActionListener multiTouchActionListener;
     private MotionEvent event;
     private View view;
     private boolean isHolding = false;
+    private TouchActionListener activeListener = null;
     private long touchDuration;
 
-    public TapTouchListener(@NonNull Handler handler, @NonNull ActionListener actionListener, long touchDuration) {
+    public TapTouchListener(@NonNull Handler handler, @NonNull TouchActionListener touchActionListener, @NonNull TouchActionListener multiTouchActionListener, long touchDuration) {
         this.handler = handler;
-        this.actionListener = actionListener;
+        this.touchActionListener = touchActionListener;
+        this.multiTouchActionListener = multiTouchActionListener;
         this.touchDuration = touchDuration;
     }
 
     private void startHolding() {
-        this.actionListener.onAction(this.view, Action.START_HOLD, this.event);
+        this.activeListener.onAction(this.view, Action.START_HOLD, this.event);
         this.isHolding = true;
     }
 
@@ -38,6 +41,7 @@ public class TapTouchListener implements View.OnTouchListener {
         this.stopCheckHolding();
         this.view = view;
         this.event = event;
+        this.activeListener = event.getPointerCount() > 1 ? this.multiTouchActionListener : this.touchActionListener;
         this.handler.postDelayed(this.checkHolding, this.touchDuration);
     }
 
@@ -46,10 +50,11 @@ public class TapTouchListener implements View.OnTouchListener {
     }
 
     private void stopHolding() {
-        this.actionListener.onAction(this.view, Action.STOP_HOLD, this.event);
+        this.activeListener.onAction(this.view, Action.STOP_HOLD, this.event);
         this.view = null;
         this.event = null;
         this.isHolding = false;
+        this.activeListener = null;
     }
 
     @Override
@@ -68,13 +73,17 @@ public class TapTouchListener implements View.OnTouchListener {
         } else if (isPressed) {
             this.startCheckHolding(view, event);
         } else if (isMoved) {
-            this.actionListener.onAction(view, Action.MOVE_HOLD, event);
+            // It seems in an ACTION_DOWN the pointer count is always 1, so we need to check this when moving
+            if (event.getPointerCount() > 1) {
+                this.activeListener = this.multiTouchActionListener;
+            }
+            this.activeListener.onAction(view, Action.MOVE_HOLD, event);
         }
 
         return true;
     }
 
-    public interface ActionListener {
+    public interface TouchActionListener {
         void onAction(@NonNull View view, @NonNull Action action, @NonNull MotionEvent motionEvent);
     }
 

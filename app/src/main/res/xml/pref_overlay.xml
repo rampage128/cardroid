@@ -7,6 +7,12 @@
         app:summary="@string/pref_description_overlay_toggle"
         app:title="@string/pref_title_overlay_toggle"/>
 
+    <Preference
+        app:dependency="overlay_active"
+        app:key="overlay_position_reset"
+        app:title="@string/pref_title_overlay_reset_position"
+        app:summary="@string/pref_description_overlay_reset_position" />
+
     <PreferenceCategory
         app:dependency="overlay_active"
         app:title="@string/pref_title_overlay_volume">
@@ -66,6 +72,17 @@
             app:singleLine="true"
             app:useSimpleSummaryProvider="true"
             app:title="@string/pref_title_overlay_fan_max"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:dependency="overlay_active"
+        app:title="@string/pref_title_overlay_demo">
+
+        <Preference
+            app:key="overlay_demo_show"
+            app:title="@string/pref_title_overlay_demo_show"
+            app:summary="@string/pref_description_overlay_demo_show" />
 
     </PreferenceCategory>
 
