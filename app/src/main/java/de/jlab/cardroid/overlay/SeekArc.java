@@ -354,6 +354,7 @@ public class SeekArc extends View {
         return ignore;
     }
 
+    // FIXME: This "algorithm" is not right
     private double getTouchDegrees(float xPos, float yPos) {
         float x = xPos - mTranslateX;
         float y = yPos - mTranslateY;
@@ -362,10 +363,12 @@ public class SeekArc extends View {
         // convert to arc Angle
         double angle = Math.toDegrees(Math.atan2(y, x) + (Math.PI / 2)
                 - Math.toRadians(mRotation));
-        if (angle < 0) {
+        angle -= mStartAngle;
+
+        if (angle < -90) {
             angle = 360 + angle;
         }
-        angle -= mStartAngle;
+
         return angle;
     }
 
