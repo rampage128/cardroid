@@ -27,11 +27,15 @@ public class UsbSerialDeviceDetectionTask {
     private Timer timer = null;
     private int currentBaudRateIndex = 0;
 
-    public UsbSerialDeviceDetectionTask(@NonNull UsbDevice device, @NonNull DeviceService service, @NonNull UsbDeviceDetector detector, UsbSerialDeviceDetector.SerialMatcher... matchers) {
+    public UsbSerialDeviceDetectionTask(@NonNull UsbDevice device, @NonNull DeviceService service, @NonNull UsbDeviceDetector detector) {
         this.device = device;
         this.service = service;
         this.matchers = matchers;
         this.detector = detector;
+        this.matchers = new UsbSerialDeviceDetector.SerialMatcher[] {
+            new CarduinoSerialMatcher(),
+            new GpsSerialMatcher()
+        };
     }
 
     public void detect(@NonNull UsbManager usb, long timeout, int... baudRates) {

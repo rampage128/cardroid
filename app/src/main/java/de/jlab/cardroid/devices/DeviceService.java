@@ -71,10 +71,8 @@ public final class DeviceService extends Service {
                 this,
                 this::deviceDetected,
                 this::deviceDetectionFailed,
-                new UsbSerialDeviceDetector(
-                        new CarduinoSerialMatcher(),
-                        new GpsSerialMatcher()
-                ));
+                new UsbSerialDeviceDetector()
+        );
 
         this.deviceController.subscribeState(this.deviceStateObserver);
 

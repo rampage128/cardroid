@@ -17,12 +17,6 @@ import de.jlab.cardroid.devices.DeviceService;
 
 public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
 
-    private SerialMatcher[] matchers;
-
-    public UsbSerialDeviceDetector(SerialMatcher... matchers) {
-        this.matchers = matchers;
-    }
-
     @Override
     protected boolean startIdentification(@NonNull UsbDevice device, @NonNull DeviceService service) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(service);
@@ -32,7 +26,7 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         UsbManager usbManager = (UsbManager)service.getApplication().getSystemService(Context.USB_SERVICE);
         int[] baudRates = service.getResources().getIntArray(R.array.serial_detection_baud_rates);
 
-        UsbSerialDeviceDetectionTask detectionTask = new UsbSerialDeviceDetectionTask(device, service, this, this.matchers);
+        UsbSerialDeviceDetectionTask detectionTask = new UsbSerialDeviceDetectionTask(device, service, this);
         detectionTask.detect(usbManager, timeout, baudRates);
 
         return true;
