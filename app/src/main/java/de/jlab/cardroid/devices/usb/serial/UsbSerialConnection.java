@@ -5,13 +5,17 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 
-import com.felhr.usbserial.UsbSerialDevice;
-import com.felhr.usbserial.UsbSerialInterface;
-
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
+
 import de.jlab.cardroid.devices.serial.SerialConnectionListener;
 import de.jlab.cardroid.devices.serial.SerialReader;
 import de.jlab.cardroid.utils.UsageStatistics;
@@ -20,8 +24,8 @@ public final class UsbSerialConnection {
     private UsbManager usbManager;
 
     private UsbDevice device;
-    private UsbDeviceConnection connection;
-    private UsbSerialDevice serial;
+    private UsbSerialPort serialPort = null;
+    private SerialInputOutputManager usbIoManager = null;
     private int baudRate = 0;
 
     private boolean isConnected = false;
@@ -31,15 +35,22 @@ public final class UsbSerialConnection {
     private ArrayList<SerialConnectionListener> listeners = new ArrayList<>();
     private ArrayList<SerialReader> readers = new ArrayList<>();
 
-    private UsbSerialInterface.UsbReadCallback readCallback = bytes -> {
-        bandWidthUsage.count(bytes.length);
-        for (int i = 0; i < this.readers.size(); i++) {
-            this.readers.get(i).onReceiveData(bytes);
+    private SerialInputOutputManager.Listener readCallback = new SerialInputOutputManager.Listener() {
+        @Override
+        public void onNewData(byte[] data) {
+            bandWidthUsage.count(data.length);
+            for (int i = 0; i < readers.size(); i++) {
+                readers.get(i).onReceiveData(data);
+            }
+        }
+
+        @Override
+        public void onRunError(Exception e) {
+            Log.e(this.getClass().getSimpleName(), "Error in read callback of device " + device.getDeviceName(), e);
         }
     };
 
     public UsbSerialConnection(@NonNull UsbDevice device, int baudRate, @Nullable UsbManager usbManager) {
-        // FIXME: There seems to be a bug in the JNI part of the serial communication lib. It seems keeping an instance of the device can trigger native errors. Not sure tho.
         this.usbManager = usbManager;
         this.device = device;
         this.baudRate = baudRate;
@@ -62,32 +73,33 @@ public final class UsbSerialConnection {
             return false;
         }
 
-        connection = this.usbManager.openDevice(this.device);
+        UsbSerialDriver driver = UsbSerialProber.getDefaultProber().probeDevice(this.device);
+        if(driver == null) {
+            Log.w(this.getClass().getSimpleName(), "No driver found for " + this.device.getDeviceName());
+            return false;
+        }
+
+        UsbDeviceConnection connection = this.usbManager.openDevice(this.device);
         if (connection == null) {
             return false;
         }
 
-        this.serial = UsbSerialDevice.createUsbSerialDevice(device, connection);
-        // Serial device will be null if no driver is found
-        if(this.serial == null) {
+        // Retrieve first port from serial device
+        this.serialPort = driver.getPorts().get(0);
+        try {
+            this.serialPort.open(connection);
+            this.serialPort.setParameters(baudRate, UsbSerialPort.DATABITS_8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), "Opening port on device " + this.device.getDeviceName() + " failed!", e);
             return false;
         }
 
-        // Serial port will not open if there is an I/O error or the wrong driver is used
-        if (!this.serial.open()) {
-            return false;
-        }
-
-        this.serial.setBaudRate(baudRate);
-        this.serial.setDataBits(UsbSerialInterface.DATA_BITS_8);
-        this.serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
-        this.serial.setParity(UsbSerialInterface.PARITY_NONE);
-        this.serial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-        this.serial.read(readCallback);
+        this.usbIoManager = new SerialInputOutputManager(this.serialPort, this.readCallback);
+        Executors.newSingleThreadExecutor().submit(this.usbIoManager);
 
         this.isConnected = true;
 
-        for (SerialConnectionListener listener : listeners) {
+        for (SerialConnectionListener listener : this.listeners) {
             listener.onConnect();
         }
 
@@ -99,17 +111,19 @@ public final class UsbSerialConnection {
             return;
         }
 
-        if (this.serial != null) {
-            this.serial.close();
-            this.serial = null;
+        if(this.usbIoManager != null) {
+            this.usbIoManager.stop();
         }
+        this.usbIoManager = null;
 
-        /*
-        if (this.connection != null) {
-            this.connection.close();
-            this.connection = null;
+        if (this.serialPort != null) {
+            try {
+                this.serialPort.close();
+            } catch (Exception e) {
+                Log.d(this.getClass().getSimpleName(), "Can not close port on device " + this.device.getDeviceName(), e);
+            }
+            this.serialPort = null;
         }
-         */
 
         this.isConnected = false;
 
@@ -127,12 +141,20 @@ public final class UsbSerialConnection {
             return false;
         }
 
-        this.serial.write(data);
+        try {
+            this.serialPort.write(data, 2000);
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), "Could not write to port on " + this.device.getDeviceName());
+        }
         return true;
     }
 
     public void setBaudRate(int baudRate) {
-        this.serial.setBaudRate(baudRate);
+        try {
+            this.serialPort.setParameters(baudRate, UsbSerialPort.DATABITS_8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+        } catch (Exception e) {
+            Log.e(this.getClass().getSimpleName(), "Could not set new baud rate on " + this.device.getDeviceName(), e);
+        }
     }
 
     public void addBandwidthStatisticsListener(@NonNull UsageStatistics.UsageStatisticsListener listener) {
