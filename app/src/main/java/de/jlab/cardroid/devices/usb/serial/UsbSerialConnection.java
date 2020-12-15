@@ -111,6 +111,8 @@ public final class UsbSerialConnection {
             return;
         }
 
+        Log.d(this.getClass().getSimpleName(), "Closing serial port on " + this.device.getDeviceName());
+
         if(this.usbIoManager != null) {
             this.usbIoManager.stop();
         }
