@@ -1,6 +1,7 @@
 package de.jlab.cardroid.devices.serial.carduino;
 
 import android.app.Application;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 
@@ -48,6 +49,7 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
             this.device.setBaudRate(baudRate);
         }
         else if (eventType == 0x03) {
+            Log.d(this.getClass().getSimpleName(), "Disconnect request received from " + this.device);
             this.device.close();
         }
         else if (eventType == 0x49) {
@@ -59,9 +61,11 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         this.pingReceived = true;
         byte[] carduinoId = packet.readBytes(OFFSET_CARDUINO_ID, LENGTH_CARDUINO_ID);
         if (CarduinoUidGenerator.isValidId(carduinoId)) {
+            Log.d(this.getClass().getSimpleName(), "Ping received with valid ID from " + this.device);
             this.device.onCarduinoIdReceived(carduinoId);
             this.requestConnection(packet);
         } else {
+            Log.d(this.getClass().getSimpleName(), "Ping with invalid ID from " + this.device);
             this.requestNewId();
         }
     }
@@ -69,12 +73,15 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
     private void newIdReceived(@NonNull CarduinoSerialPacket packet) {
         byte[] carduinoId = packet.readBytes(0, LENGTH_CARDUINO_ID);
         if (CarduinoUidGenerator.isValidId(carduinoId)) {
+            Log.d(this.getClass().getSimpleName(), "New valid carduino ID " + new String(carduinoId) + " received from " + this.device);
             this.device.onCarduinoIdReceived(carduinoId);
             this.requestConnection(packet);
         } else if (this.idRetryCount < MAX_ID_RETRIES){
             this.idRetryCount++;
+            Log.d(this.getClass().getSimpleName(), "New invalid ID " + new String(carduinoId) + " received from " + this.device);
             this.requestNewId();
         } else {
+            Log.d(this.getClass().getSimpleName(), "Too many invalid IDs received from " + this.device);
             this.device.close();
         }
     }
@@ -85,6 +92,7 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
     }
 
     private void acceptHandshake() {
+        Log.d(this.getClass().getSimpleName(), "Accepting Handshake from " + this.device);
         this.device.onHandshake();
             /* FIXME: per device baud-rate configuration has to be added!
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.getService());
@@ -106,8 +114,10 @@ public final class CarduinoMetaParser extends CarduinoPacketParser {
         //int revision = packet.readByte(2);
 
         if (major == PROTOCOL_MAJOR) {
+            Log.d(this.getClass().getSimpleName(), "Requesting Connection from " + this.device);
             this.device.sendImmediately(PACKET_CONNECTION_REQUEST);
         } else {
+            Log.e(this.getClass().getSimpleName(), "Rejecting wrong protocol from " + this.device);
             this.device.close();
         }
     }
