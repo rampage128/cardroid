@@ -43,9 +43,9 @@ public final class UsbSerialDeviceDetector extends UsbDeviceDetector {
         super.deviceDetected(connectionRequest);
     }
 
-    protected void detectionFailed() {
+    protected void detectionFailed(@NonNull UsbDevice device) {
         Log.e(this.getClass().getSimpleName(), "Serial device detection failed");
-        super.detectionFailed();
+        super.detectionFailed(device);
     }
 
     public interface SerialMatcher {

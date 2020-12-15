@@ -17,12 +17,12 @@ public final class UsbDeviceDetectionController {
     private DeviceXmlFilter filter;
 
     private UsbDeviceDetector.DeviceSink sink;
-    private Runnable onError;
+    private UsbDeviceDetector.DeviceDrain drain;
 
-    public UsbDeviceDetectionController(@NonNull DeviceService service, @NonNull UsbDeviceDetector.DeviceSink sink, @NonNull Runnable onError, @NonNull UsbDeviceDetector ...detectors) {
+    public UsbDeviceDetectionController(@NonNull DeviceService service, @NonNull UsbDeviceDetector.DeviceSink sink, @NonNull UsbDeviceDetector.DeviceDrain drain, @NonNull UsbDeviceDetector ...detectors) {
         this.service = service;
         this.sink = sink;
-        this.onError = onError;
+        this.drain = drain;
         this.filter = new DeviceXmlFilter(R.xml.device_filter, service, detectors);
     }
 
@@ -30,11 +30,11 @@ public final class UsbDeviceDetectionController {
         Iterator<UsbDeviceDetector> detectors = this.filter.getIterator(device);
 
         if (detectors != null) {
-            Detection detection = new Detection(service, device, this.sink, this.onError, detectors);
-            detection.run();
+            Detection detection = new Detection(service, this.sink, this.drain, detectors);
+            detection.run(device);
         } else {
             Log.w(this.getClass().getSimpleName(), "No UsbDeviceDetector available for UsbDevice " + device.getVendorId() + "/" + device.getProductId() + "@" + device.getDeviceName());
-            this.onError.run();
+            this.drain.deviceDetectionFailed(device);
         }
     }
 
@@ -42,30 +42,28 @@ public final class UsbDeviceDetectionController {
 
         private Iterator<UsbDeviceDetector> detectors;
         private UsbDeviceDetector.DeviceSink sink;
-        private Runnable onError;
-        private UsbDevice device;
+        private UsbDeviceDetector.DeviceDrain drain;
         private DeviceService service;
 
-        public Detection(@NonNull DeviceService service, @NonNull UsbDevice device, @NonNull UsbDeviceDetector.DeviceSink sink, @NonNull Runnable onError, @NonNull Iterator<UsbDeviceDetector> detectors) {
-            this.device = device;
+        public Detection(@NonNull DeviceService service, @NonNull UsbDeviceDetector.DeviceSink sink, @NonNull UsbDeviceDetector.DeviceDrain drain, @NonNull Iterator<UsbDeviceDetector> detectors) {
             this.sink = sink;
-            this.onError = onError;
+            this.drain = drain;
             this.detectors = detectors;
             this.service = service;
         }
 
-        public void run() {
+        public void run(@NonNull UsbDevice device) {
             if (this.detectors != null && this.detectors.hasNext()) {
-                this.detect(this.detectors.next());
+                this.detect(device, this.detectors.next());
             } else {
-                this.deviceDetectionFailed();
+                this.deviceDetectionFailed(device);
             }
         }
 
-        private void detect(@NonNull UsbDeviceDetector detector) {
+        private void detect(@NonNull UsbDevice device, @NonNull UsbDeviceDetector detector) {
             detector.setSink(this::deviceDetected);
             detector.setOnError(this::onDetectorError);
-            detector.identify(this.device, service);
+            detector.identify(device, this.service);
         }
 
         private void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest) {
@@ -73,19 +71,18 @@ public final class UsbDeviceDetectionController {
             this.dispose();
         }
 
-        private void deviceDetectionFailed() {
-            this.onError.run();
+        private void deviceDetectionFailed(@NonNull UsbDevice device) {
+            this.drain.deviceDetectionFailed(device);
             this.dispose();
         }
 
-        private void onDetectorError() {
-            this.run();
+        private void onDetectorError(@NonNull UsbDevice device) {
+            this.run(device);
         }
 
         private void dispose() {
             this.service = null;
             this.detectors = null;
-            this.device = null;
         }
 
     }

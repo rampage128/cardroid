@@ -149,8 +149,8 @@ public final class DeviceService extends Service {
         this.deviceController.add(connectionRequest);
     }
 
-    private void deviceDetectionFailed() {
-        Log.w(this.getClass().getSimpleName(), "Detection of device failed!");
+    private void deviceDetectionFailed(@NonNull UsbDevice device) {
+        Log.w(this.getClass().getSimpleName(), "Detection of device failed " + device.getDeviceName());
         this.disposeIfEmpty();
     }
 

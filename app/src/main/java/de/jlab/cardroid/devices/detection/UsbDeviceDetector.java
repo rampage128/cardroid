@@ -9,19 +9,19 @@ import de.jlab.cardroid.devices.DeviceService;
 public abstract class UsbDeviceDetector {
 
     private DeviceSink sink;
-    private Runnable onError;
+    private DeviceDrain drain;
 
     public void setSink(@NonNull DeviceSink sink) {
         this.sink = sink;
     }
 
-    public void setOnError(@NonNull Runnable onError) {
-        this.onError = onError;
+    public void setOnError(@NonNull DeviceDrain drain) {
+        this.drain = drain;
     }
 
     public void identify(@NonNull UsbDevice device, @NonNull DeviceService service) {
         if (!this.startIdentification(device, service)) {
-            this.detectionFailed();
+            this.detectionFailed(device);
         }
     }
 
@@ -29,14 +29,18 @@ public abstract class UsbDeviceDetector {
         this.sink.deviceDetected(connectionRequest);
     }
 
-    protected void detectionFailed() {
-        this.onError.run();
+    protected void detectionFailed(@NonNull UsbDevice device) {
+        this.drain.deviceDetectionFailed(device);
     }
 
     protected abstract boolean startIdentification(@NonNull UsbDevice device, @NonNull DeviceService service);
 
     public interface DeviceSink {
         void deviceDetected(@NonNull DeviceConnectionRequest connectionRequest);
+    }
+
+    public interface DeviceDrain {
+        void deviceDetectionFailed(@NonNull UsbDevice device);
     }
 
 }

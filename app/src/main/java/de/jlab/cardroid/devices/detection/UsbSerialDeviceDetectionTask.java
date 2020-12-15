@@ -52,12 +52,12 @@ public class UsbSerialDeviceDetectionTask {
                         reader.clear();
                         currentBaudRateIndex++;
                     } else {
-                        detectionFailed();
+                        detectionFailed(device);
                     }
                 }
             }, timeout, timeout);
         } else {
-            this.detectionFailed();
+            this.detectionFailed(this.device);
         }
     }
 
@@ -86,8 +86,8 @@ public class UsbSerialDeviceDetectionTask {
         this.dispose();
     }
 
-    private void detectionFailed() {
-        this.detector.detectionFailed();
+    private void detectionFailed(@NonNull UsbDevice device) {
+        this.detector.detectionFailed(device);
         this.dispose();
     }
 
