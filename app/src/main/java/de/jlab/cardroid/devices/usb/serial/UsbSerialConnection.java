@@ -142,7 +142,7 @@ public final class UsbSerialConnection {
         }
 
         try {
-            this.serialPort.write(data, 2000);
+            this.serialPort.write(data, 0);
         } catch (Exception e) {
             Log.e(this.getClass().getSimpleName(), "Could not write to port on " + this.device.getDeviceName());
         }
