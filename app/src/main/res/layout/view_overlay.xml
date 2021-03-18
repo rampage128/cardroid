@@ -144,8 +144,7 @@
                             android:id="@+id/modeButton"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_gravity="center_vertical|center_horizontal"
-                            >
+                            android:layout_gravity="center_vertical|center_horizontal">
 
                             <FrameLayout
                                 android:id="@+id/modeDisplay"
@@ -153,29 +152,43 @@
                                 android:layout_height="72dp"
                                 android:layout_gravity="center_horizontal|center_vertical">
 
+                                <TextView
+                                    android:id="@+id/ductAuto"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_marginTop="-4dp"
+                                    android:text="A"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold" />
+
                                 <android.support.v7.widget.AppCompatImageView
                                     android:id="@+id/ductFace"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face"/>
+                                    android:visibility="visible"
+                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face" />
 
                                 <android.support.v7.widget.AppCompatImageView
                                     android:id="@+id/ductFeet"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_feet"/>
+                                    android:visibility="visible"
+                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_feet" />
 
                                 <android.support.v7.widget.AppCompatImageView
                                     android:id="@+id/ductWindshield"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws"/>
+                                    android:visibility="visible"
+                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws" />
 
                                 <android.support.v7.widget.AppCompatImageView
                                     android:id="@+id/ductBackground"
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg"/>
+                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg" />
                             </FrameLayout>
 
                         </FrameLayout>
@@ -195,7 +208,7 @@
                         seekarc:progressWidth="4dp"
                         seekarc:roundEdges="true"
                         seekarc:startAngle="100"
-                        seekarc:sweepAngle="250"/>
+                        seekarc:sweepAngle="250" />
 
                     <FrameLayout
                         android:layout_width="96dp"
@@ -212,8 +225,7 @@
                             android:textAlignment="center"
                             android:textColor="@android:color/white"
                             android:textSize="24sp"
-                            android:textStyle="bold"
-                            />
+                            android:textStyle="bold" />
                     </FrameLayout>
 
                 </FrameLayout>

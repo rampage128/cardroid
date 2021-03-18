@@ -76,6 +76,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         View modeFaceIcon;
         View modeFeetIcon;
         View modeWsIcon;
+        TextView modeAuto;
         SeekArc fanDial;
         TextView fanChangeText;
         OverlayToggleButton autoButton;
@@ -135,6 +136,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         viewHolder.modeFaceIcon = viewHolder.rootView.findViewById(R.id.ductFace);
         viewHolder.modeFeetIcon = viewHolder.rootView.findViewById(R.id.ductFeet);
         viewHolder.modeWsIcon = viewHolder.rootView.findViewById(R.id.ductWindshield);
+        viewHolder.modeAuto = (TextView)viewHolder.rootView.findViewById(R.id.ductAuto);
         viewHolder.fanChangeText = (TextView)viewHolder.rootView.findViewById(R.id.fanChangeText);
         viewHolder.fanDial = (SeekArc)viewHolder.rootView.findViewById(R.id.fanBar);
         viewHolder.autoButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.autoButton);
@@ -350,11 +352,19 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                         viewHolder.modeFaceIcon.setVisibility(View.INVISIBLE);
                         viewHolder.modeFeetIcon.setVisibility(View.INVISIBLE);
                         viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
+                        viewHolder.modeAuto.setVisibility(View.INVISIBLE);
                         viewHolder.fanChangeText.setText(R.string.cc_off);
                     } else {
-                        viewHolder.modeFaceIcon.setVisibility(system.isDuctFaceActive() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeFeetIcon.setVisibility(system.isDuctFeetActive() ? View.VISIBLE : View.INVISIBLE);
-                        viewHolder.modeWsIcon.setVisibility(system.isDuctWindshieldActive() ? View.VISIBLE : View.INVISIBLE);
+                        viewHolder.modeAuto.setVisibility(system.isDuctAutoActive() ? View.VISIBLE : View.INVISIBLE);
+                        if (system.isDuctAutoActive()) {
+                            viewHolder.modeFaceIcon.setVisibility(View.INVISIBLE);
+                            viewHolder.modeFeetIcon.setVisibility(View.INVISIBLE);
+                            viewHolder.modeWsIcon.setVisibility(View.INVISIBLE);
+                        } else {
+                            viewHolder.modeFaceIcon.setVisibility(system.isDuctFaceActive() ? View.VISIBLE : View.INVISIBLE);
+                            viewHolder.modeFeetIcon.setVisibility(system.isDuctFeetActive() ? View.VISIBLE : View.INVISIBLE);
+                            viewHolder.modeWsIcon.setVisibility(system.isDuctWindshieldActive() ? View.VISIBLE : View.INVISIBLE);
+                        }
                         viewHolder.fanChangeText.setText(fanText);
                     }
                     viewHolder.fanDial.setProgress(Math.max(0, fanLevel));

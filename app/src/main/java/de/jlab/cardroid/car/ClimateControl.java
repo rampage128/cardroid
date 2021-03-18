@@ -12,6 +12,7 @@ public class ClimateControl extends ManageableCarSystem {
     private boolean isDuctFeetActive = false;
     private boolean isDuctFaceActive = false;
     private boolean isDuctWindshieldActive = false;
+    private boolean isDuctAutoActive = false;
     private byte fanLevel = 0;
     private float temperature = 0;
 
@@ -20,15 +21,16 @@ public class ClimateControl extends ManageableCarSystem {
         this.fanLevel = packet.readByte(1);
         this.temperature = packet.readByte(2) / 2f;
 
-        this.isAuto = packet.readFlag(0, 6);
-        this.isAcOn = packet.readFlag(0, 7);
-        this.isRecirculation = packet.readFlag(0, 0);
-        this.isWindshieldHeating = packet.readFlag(0, 2);
-        this.isRearWindowHeating = packet.readFlag(0, 1);
+        this.isAuto = packet.readFlag(3, 0);
+        this.isAcOn = packet.readFlag(0, 1);
+        this.isRecirculation = packet.readFlag(0, 7);
+        this.isWindshieldHeating = packet.readFlag(0, 5);
+        this.isRearWindowHeating = packet.readFlag(0, 6);
 
-        this.isDuctWindshieldActive = packet.readFlag(0, 5);
-        this.isDuctFaceActive = packet.readFlag(0, 4);
-        this.isDuctFeetActive = packet.readFlag(0, 3);
+        this.isDuctWindshieldActive = packet.readFlag(0, 2);
+        this.isDuctFaceActive = packet.readFlag(0, 3);
+        this.isDuctFeetActive = packet.readFlag(0, 4);
+        this.isDuctAutoActive = packet.readFlag(0, 1);
     }
 
     public boolean isAcOn() {
@@ -59,6 +61,10 @@ public class ClimateControl extends ManageableCarSystem {
         return isDuctFaceActive;
     }
 
+    public boolean isDuctAutoActive() {
+        return isDuctAutoActive();
+    }
+
     public boolean isDuctWindshieldActive() {
         return isDuctWindshieldActive;
     }
@@ -81,7 +87,7 @@ public class ClimateControl extends ManageableCarSystem {
     }
 
     public void pushAutoButton() {
-        this.manage(CarSystemEvent.CC_AUTO_BUTTON);
+        this.manage(CarSystemEvent.CC_AUTO_FAN_BUTTON);
     }
 
     public void pushRecirculationButton() {
@@ -97,7 +103,11 @@ public class ClimateControl extends ManageableCarSystem {
     }
 
     public void pushModeButton() {
-        this.manage(CarSystemEvent.CC_MODE_BUTTON);
+        if (this.isDuctWindshieldActive && this.isWindshieldHeating && !isDuctAutoActive) {
+            this.manage(CarSystemEvent.CC_AUTO_BUTTON);
+        } else {
+            this.manage(CarSystemEvent.CC_MODE_BUTTON);
+        }
     }
 
     public void setTemperature(float temperature) {

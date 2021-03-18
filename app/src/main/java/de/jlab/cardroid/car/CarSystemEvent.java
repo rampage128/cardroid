@@ -11,7 +11,8 @@ enum CarSystemEvent {
     CC_RWH_BUTTON(0x06),
     CC_MODE_BUTTON(0x07),
     CC_TEMPERATURE(0x08),
-    CC_FAN_LEVEL(0x09);
+    CC_FAN_LEVEL(0x09),
+    CC_AUTO_FAN_BUTTON(0x10);
 
     private byte command;
 
