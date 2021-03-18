@@ -67,7 +67,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         View detailView;
 
         OverlayToggleButton offButton;
-        OverlayToggleButton wshButton;
         OverlayToggleButton rwhButton;
         OverlayToggleButton recirculationButton;
 
@@ -127,7 +126,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
         viewHolder.detailView = viewHolder.rootView.findViewById(R.id.detailContainer);
 
         viewHolder.offButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.offButton);
-        viewHolder.wshButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.wshButton);
         viewHolder.rwhButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.rwhButton);
         viewHolder.recirculationButton = (OverlayToggleButton)viewHolder.rootView.findViewById(R.id.recirculationButton);
 
@@ -179,9 +177,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                     case R.id.offButton:
                         climateControl.pushOffButton();
                         break;
-                    case R.id.wshButton:
-                        climateControl.pushWindshieldHeatingButton();
-                        break;
                     case R.id.rwhButton:
                         climateControl.pushRearWindowHeatingButton();
                         break;
@@ -201,7 +196,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
             }
         };
         viewHolder.offButton.setOnClickListener(buttonListener);
-        viewHolder.wshButton.setOnClickListener(buttonListener);
         viewHolder.rwhButton.setOnClickListener(buttonListener);
         viewHolder.recirculationButton.setOnClickListener(buttonListener);
         viewHolder.modeButton.setOnClickListener(buttonListener);
@@ -315,7 +309,7 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        params.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
 
         return params;
     }
@@ -343,7 +337,6 @@ public class OverlayWindow implements CarSystem.ChangeListener<ClimateControl> {
                 viewHolder.mainFanIcon.setProgress(Math.round(fanLevel / (float)OverlayWindow.this.maxFanLevel * 300));
 
                 viewHolder.offButton.setState(!isOff);
-                viewHolder.wshButton.setState(system.isWindshieldHeating());
                 viewHolder.rwhButton.setState(system.isRearWindowHeating());
                 viewHolder.recirculationButton.setState(system.isRecirculation());
 

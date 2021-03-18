@@ -8,312 +8,319 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/detailContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorOverlayBG"
-        android:orientation="vertical">
+        android:background="@color/colorOverlayBG">
 
-        <FrameLayout
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_vertical|center_horizontal">
 
-            <android.support.v7.widget.AppCompatImageView
-                android:id="@+id/imageView"
+            <FrameLayout
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="8dp">
+
+                <android.support.v7.widget.AppCompatImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    app:cardCornerRadius="40dp"
+                    app:srcCompat="@drawable/ic_overlay_close"/>
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|center_horizontal"
-                app:cardCornerRadius="40dp"
-                app:srcCompat="@drawable/ic_overlay_close"/>
-        </FrameLayout>
+                android:layout_gravity="center_horizontal"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:padding="8dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <android.support.v7.widget.CardView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginEnd="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="48dp"
-                app:cardElevation="6dp">
-
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/offButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_off"/>
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="48dp"
-                app:cardElevation="6dp">
-
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/autoButton"
+                <android.support.v7.widget.CardView
                     android:layout_width="96dp"
                     android:layout_height="96dp"
-                    android:layout_gravity="top|start"
-                    overlaytogglebutton:src="@drawable/ic_cc_auto" />
+                    android:layout_marginEnd="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="6dp">
 
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="48dp"
-                app:cardElevation="6dp">
-
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/rwhButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
-            </android.support.v7.widget.CardView>
-
-            <android.support.v7.widget.CardView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginStart="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="48dp"
-                app:cardElevation="6dp">
-
-                <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/recirculationButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
-            </android.support.v7.widget.CardView>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:padding="8dp">
-
-            <android.support.v7.widget.CardView
-                android:layout_width="208dp"
-                android:layout_height="208dp"
-                android:layout_marginEnd="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="104dp"
-                app:cardElevation="6dp">
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <android.support.v7.widget.CardView
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:layout_marginEnd="8dp"
-                        android:elevation="12dp"
-                        seekarc:cardBackgroundColor="@color/colorOverlayItemBg"
-                        seekarc:cardCornerRadius="48dp"
-                        seekarc:cardElevation="12dp">
-
-                        <FrameLayout
-                            android:id="@+id/modeButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center_vertical|center_horizontal">
-
-                            <FrameLayout
-                                android:id="@+id/modeDisplay"
-                                android:layout_width="72dp"
-                                android:layout_height="72dp"
-                                android:layout_gravity="center_horizontal|center_vertical">
-
-                                <TextView
-                                    android:id="@+id/ductAuto"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
-                                    android:layout_marginTop="-4dp"
-                                    android:text="A"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="32sp"
-                                    android:textStyle="bold" />
-
-                                <android.support.v7.widget.AppCompatImageView
-                                    android:id="@+id/ductFace"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:visibility="visible"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face" />
-
-                                <android.support.v7.widget.AppCompatImageView
-                                    android:id="@+id/ductFeet"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:visibility="visible"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_feet" />
-
-                                <android.support.v7.widget.AppCompatImageView
-                                    android:id="@+id/ductWindshield"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:visibility="visible"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws" />
-
-                                <android.support.v7.widget.AppCompatImageView
-                                    android:id="@+id/ductBackground"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg" />
-                            </FrameLayout>
-
-                        </FrameLayout>
-
-                    </android.support.v7.widget.CardView>
-
-                    <de.jlab.cardroid.overlay.SeekArc
-                        android:id="@+id/fanBar"
-                        android:layout_width="208dp"
-                        android:layout_height="208dp"
-                        android:layout_gravity="center_horizontal"
-                        android:padding="48dp"
-                        seekarc:arcWidth="4dp"
-                        seekarc:clockwise="false"
-                        seekarc:max="6"
-                        seekarc:progress="0"
-                        seekarc:progressWidth="4dp"
-                        seekarc:roundEdges="true"
-                        seekarc:startAngle="100"
-                        seekarc:sweepAngle="250" />
-
-                    <FrameLayout
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/offButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:layout_gravity="center_vertical|center_horizontal"
-                        android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp">
+                        overlaytogglebutton:src="@drawable/ic_cc_off"/>
+                </android.support.v7.widget.CardView>
 
-                        <TextView
-                            android:id="@+id/fanChangeText"
-                            android:layout_width="64dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="24sp"
-                            android:textStyle="bold" />
-                    </FrameLayout>
+                <android.support.v7.widget.CardView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="6dp">
 
-                </FrameLayout>
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/autoButton"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="top|start"
+                        overlaytogglebutton:src="@drawable/ic_cc_auto" />
 
-            </android.support.v7.widget.CardView>
+                </android.support.v7.widget.CardView>
 
-            <android.support.v7.widget.CardView
-                android:layout_width="208dp"
-                android:layout_height="208dp"
-                android:layout_marginStart="8dp"
-                android:elevation="6dp"
-                app:cardBackgroundColor="@color/colorOverlayItemBg"
-                app:cardCornerRadius="104dp"
-                app:cardElevation="6dp">
+                <android.support.v7.widget.CardView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="6dp">
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/rwhButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        overlaytogglebutton:src="@drawable/ic_cc_rwh"/>
+                </android.support.v7.widget.CardView>
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginStart="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="6dp">
+
+                    <de.jlab.cardroid.overlay.OverlayToggleButton
+                        android:id="@+id/recirculationButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical|center_horizontal"
+                        overlaytogglebutton:src="@drawable/ic_cc_recirculation"/>
+                </android.support.v7.widget.CardView>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:padding="8dp">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="208dp"
+                    android:layout_height="208dp"
+                    android:layout_marginEnd="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="104dp"
+                    app:cardElevation="6dp">
 
                     <FrameLayout
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:layout_gravity="center_horizontal|center_vertical"
-                        android:layout_marginEnd="16dp"
-                        android:layout_marginTop="16dp"
-                        tools:layout_editor_absoluteX="8dp"
-                        tools:layout_editor_absoluteY="8dp">
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                        <TextView
-                            android:id="@+id/temperatureChangeText"
-                            android:layout_width="64dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:visibility="invisible"/>
-
-                        <TextView
-                            android:id="@+id/temperatureText"
-                            android:layout_width="64dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="24sp"
-                            android:textStyle="bold"/>
-                    </FrameLayout>
-
-                    <de.jlab.cardroid.overlay.SeekArc
-                        android:id="@+id/temperatureBar"
-                        android:layout_width="208dp"
-                        android:layout_height="208dp"
-                        android:layout_gravity="center_horizontal"
-                        android:padding="48dp"
-                        seekarc:arcWidth="4dp"
-                        seekarc:max="28"
-                        seekarc:progress="0"
-                        seekarc:progressWidth="4dp"
-                        seekarc:roundEdges="true"
-                        seekarc:startAngle="100"
-                        seekarc:sweepAngle="250"/>
-
-                    <android.support.v7.widget.CardView
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:layout_gravity="top|end"
-                        android:elevation="12dp"
-                        app:cardBackgroundColor="@color/colorOverlayItemBg"
-                        app:cardCornerRadius="48dp"
-                        app:cardElevation="12dp">
-
-                        <de.jlab.cardroid.overlay.OverlayToggleButton
-                            android:id="@+id/acButton"
+                        <android.support.v7.widget.CardView
                             android:layout_width="96dp"
                             android:layout_height="96dp"
-                            overlaytogglebutton:src="@drawable/ic_cc_ac"/>
+                            android:layout_marginEnd="8dp"
+                            android:elevation="12dp"
+                            seekarc:cardBackgroundColor="@color/colorOverlayItemBg"
+                            seekarc:cardCornerRadius="48dp"
+                            seekarc:cardElevation="12dp">
 
-                    </android.support.v7.widget.CardView>
-                </FrameLayout>
+                            <FrameLayout
+                                android:id="@+id/modeButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center_vertical|center_horizontal">
 
-            </android.support.v7.widget.CardView>
+                                <FrameLayout
+                                    android:id="@+id/modeDisplay"
+                                    android:layout_width="72dp"
+                                    android:layout_height="72dp"
+                                    android:layout_gravity="center_horizontal|center_vertical">
+
+                                    <TextView
+                                        android:id="@+id/ductAuto"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginTop="-4dp"
+                                        android:text="A"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="32sp"
+                                        android:textStyle="bold" />
+
+                                    <android.support.v7.widget.AppCompatImageView
+                                        android:id="@+id/ductFace"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:visibility="visible"
+                                        overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_face" />
+
+                                    <android.support.v7.widget.AppCompatImageView
+                                        android:id="@+id/ductFeet"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:visibility="visible"
+                                        overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_feet" />
+
+                                    <android.support.v7.widget.AppCompatImageView
+                                        android:id="@+id/ductWindshield"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:visibility="visible"
+                                        overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_ws" />
+
+                                    <android.support.v7.widget.AppCompatImageView
+                                        android:id="@+id/ductBackground"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        overlaytogglebutton:srcCompat="@drawable/ic_cc_mode_bg" />
+                                </FrameLayout>
+
+                            </FrameLayout>
+
+                        </android.support.v7.widget.CardView>
+
+                        <de.jlab.cardroid.overlay.SeekArc
+                            android:id="@+id/fanBar"
+                            android:layout_width="208dp"
+                            android:layout_height="208dp"
+                            android:layout_gravity="center_horizontal"
+                            android:padding="48dp"
+                            seekarc:arcWidth="4dp"
+                            seekarc:clockwise="false"
+                            seekarc:max="6"
+                            seekarc:progress="0"
+                            seekarc:progressWidth="4dp"
+                            seekarc:roundEdges="true"
+                            seekarc:startAngle="100"
+                            seekarc:sweepAngle="250" />
+
+                        <FrameLayout
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:layout_gravity="center_vertical|center_horizontal"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="16dp">
+
+                            <TextView
+                                android:id="@+id/fanChangeText"
+                                android:layout_width="64dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical|center_horizontal"
+                                android:textAlignment="center"
+                                android:textColor="@android:color/white"
+                                android:textSize="24sp"
+                                android:textStyle="bold" />
+                        </FrameLayout>
+
+                    </FrameLayout>
+
+                </android.support.v7.widget.CardView>
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="208dp"
+                    android:layout_height="208dp"
+                    android:layout_marginStart="8dp"
+                    android:elevation="6dp"
+                    app:cardBackgroundColor="@color/colorOverlayItemBg"
+                    app:cardCornerRadius="104dp"
+                    app:cardElevation="6dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <FrameLayout
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:layout_gravity="center_horizontal|center_vertical"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="16dp"
+                            tools:layout_editor_absoluteX="8dp"
+                            tools:layout_editor_absoluteY="8dp">
+
+                            <TextView
+                                android:id="@+id/temperatureChangeText"
+                                android:layout_width="64dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical|center_horizontal"
+                                android:textAlignment="center"
+                                android:textColor="@android:color/white"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:visibility="invisible"/>
+
+                            <TextView
+                                android:id="@+id/temperatureText"
+                                android:layout_width="64dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical|center_horizontal"
+                                android:textAlignment="center"
+                                android:textColor="@android:color/white"
+                                android:textSize="24sp"
+                                android:textStyle="bold"/>
+                        </FrameLayout>
+
+                        <de.jlab.cardroid.overlay.SeekArc
+                            android:id="@+id/temperatureBar"
+                            android:layout_width="208dp"
+                            android:layout_height="208dp"
+                            android:layout_gravity="center_horizontal"
+                            android:padding="48dp"
+                            seekarc:arcWidth="4dp"
+                            seekarc:max="28"
+                            seekarc:progress="0"
+                            seekarc:progressWidth="4dp"
+                            seekarc:roundEdges="true"
+                            seekarc:startAngle="100"
+                            seekarc:sweepAngle="250"/>
+
+                        <android.support.v7.widget.CardView
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:layout_gravity="top|end"
+                            android:elevation="12dp"
+                            app:cardBackgroundColor="@color/colorOverlayItemBg"
+                            app:cardCornerRadius="48dp"
+                            app:cardElevation="12dp">
+
+                            <de.jlab.cardroid.overlay.OverlayToggleButton
+                                android:id="@+id/acButton"
+                                android:layout_width="96dp"
+                                android:layout_height="96dp"
+                                overlaytogglebutton:src="@drawable/ic_cc_ac"/>
+
+                        </android.support.v7.widget.CardView>
+                    </FrameLayout>
+
+                </android.support.v7.widget.CardView>
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
+    </FrameLayout>
 
     <android.support.v7.widget.CardView
         android:id="@+id/toggleButton"
