@@ -66,11 +66,12 @@
                 app:cardElevation="6dp">
 
                 <de.jlab.cardroid.overlay.OverlayToggleButton
-                    android:id="@+id/wshButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical|center_horizontal"
-                    overlaytogglebutton:src="@drawable/ic_cc_wsh"/>
+                    android:id="@+id/autoButton"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_gravity="top|start"
+                    overlaytogglebutton:src="@drawable/ic_cc_auto" />
+
             </android.support.v7.widget.CardView>
 
             <android.support.v7.widget.CardView
@@ -311,24 +312,6 @@
             </android.support.v7.widget.CardView>
 
         </LinearLayout>
-
-        <android.support.v7.widget.CardView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="-24dp"
-            android:elevation="12dp"
-            seekarc:cardBackgroundColor="@color/colorOverlayItemBg"
-            seekarc:cardCornerRadius="48dp"
-            seekarc:cardElevation="12dp">
-
-            <de.jlab.cardroid.overlay.OverlayToggleButton
-                android:id="@+id/autoButton"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_gravity="top|start"
-                overlaytogglebutton:src="@drawable/ic_cc_auto"/>
-        </android.support.v7.widget.CardView>
 
     </LinearLayout>
 
